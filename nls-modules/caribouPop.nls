@@ -1,11 +1,11 @@
 ;Caribou pop dynamics code.
 ;This needs to be integrated w/ mothership code.
 ;breeds, variables, and procedures need testing w/ mothership.
-globals [ caribou-pop caribou/agent ]
+globals [ caribou-pop caribou/agent r-caribou ]
 breed [ caribou a-caribou ] ;may become redundant w/ mothership code.
 
-to setup-caribou-pop
-  set caribou-pop 11200 ;can adjust for different scenarios.
+to gen-caribou-pop ;call this procedure in the mothership setup procedure.
+  set caribou-pop 11200 ;can adjust for different scenarios. This is the starting pop value.
   set caribou/agent 500 ;will likely have to be calibrated.
   let num-agents round (caribou-pop / caribou/agent)
   ask n-of num-agents patches
@@ -13,26 +13,26 @@ to setup-caribou-pop
    sprout-caribou 1
   ]
   set caribou-pop count caribou * caribou/agent
-  reset-ticks
 end
 
 
-to go-caribou-pop
+to go-caribou-pop ;call this procedure in the mothership go procedure b/w model
+                  ;iterations/years.
   let carrying-cap 65000 ;Appears to be carrying capacity based off of ADFG GMU 26A
                          ;data, Tab. 4, 2014.
   let chance (caribou-pop / carrying-cap)
   let roll (1 + random 100) / 100
   ifelse roll <= chance
   [
-    set r -1 * random-exponential 6.84 ;Exponential parameter from fitted ADFG
+    set r-caribou -1 * random-exponential 6.84 ;Exponential parameter from fitted ADFG
                                        ;GMU 26A data, Tab. 4, 2014.
                                        ;Fit was made using data from 1984-2008.
   ]
   [
-    set r random-exponential 6.84
+    set r-caribou random-exponential 6.84
   ]
-  set r r / 100
-  let new-pop caribou-pop * (exp r)
+  set r-caribou r-caribou / 100
+  let new-pop caribou-pop * (exp r-caribou)
   let num-agents round (new-pop / caribou/agent)
 
     ifelse count caribou > num-agents
@@ -52,6 +52,6 @@ to go-caribou-pop
   ]
 
   set caribou-pop count caribou * caribou/agent
-
-  tick
+  ;each iteration of this procedure represents a year of time. Should only be
+  ;called when iterating the model between summer seasons.
 end
