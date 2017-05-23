@@ -1,0 +1,57 @@
+;Caribou pop dynamics code.
+;This needs to be integrated w/ mothership code.
+;breeds, variables, and procedures need testing w/ mothership.
+globals [ caribou-pop caribou/agent ]
+breed [ caribou a-caribou ] ;may become redundant w/ mothership code.
+
+to setup-caribou-pop
+  set caribou-pop 11200 ;can adjust for different scenarios.
+  set caribou/agent 500 ;will likely have to be calibrated.
+  let num-agents round (caribou-pop / caribou/agent)
+  ask n-of num-agents patches
+  [
+   sprout-caribou 1
+  ]
+  set caribou-pop count caribou * caribou/agent
+  reset-ticks
+end
+
+
+to go-caribou-pop
+  let carrying-cap 65000 ;Appears to be carrying capacity based off of ADFG GMU 26A
+                         ;data, Tab. 4, 2014.
+  let chance (caribou-pop / carrying-cap)
+  let roll (1 + random 100) / 100
+  ifelse roll <= chance
+  [
+    set r -1 * random-exponential 6.84 ;Exponential parameter from fitted ADFG
+                                       ;GMU 26A data, Tab. 4, 2014.
+                                       ;Fit was made using data from 1984-2008.
+  ]
+  [
+    set r random-exponential 6.84
+  ]
+  set r r / 100
+  let new-pop caribou-pop * (exp r)
+  let num-agents round (new-pop / caribou/agent)
+
+    ifelse count caribou > num-agents
+  [
+    let diff count caribou - num-agents
+    ask n-of diff caribou [ die ]
+  ]
+  [
+    if count caribou < num-agents
+    [
+      let diff num-agents - count caribou
+      ask n-of diff patches
+      [
+        sprout-caribou 1
+      ]
+    ]
+  ]
+
+  set caribou-pop count caribou * caribou/agent
+
+  tick
+end
