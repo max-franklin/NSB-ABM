@@ -1,0 +1,58 @@
+;Moose pop dynamics code.
+;This needs to be integrated w/ mothership code.
+;breeds, variables, and procedures need testing w/ mothership.
+globals [ moose-pop moose/agent r-moose ]
+breed [ moose a-moose ] ;may become redundant w/ mothership code.
+
+to gen-moose-pop ;call this procedure in the mothership setup procedure.
+  set moose-pop 300 ;can adjust for different scenarios. This is the starting pop value.
+  set moose/agent 20 ;will likely have to be calibrated.
+  let num-agents round (moose-pop / moose/agent)
+  ask n-of num-agents patches
+  [
+   sprout-moose 1
+  ]
+  set moose-pop count moose * moose/agent
+end
+
+
+to go-moose-pop ;call this procedure in the mothership go procedure b/w model
+                ;iterations/years.
+  let carrying-cap 1500 ;Appears to be carrying capacity based off of ADFG GMU 26A
+                         ;data, Tab. 4, 2014.
+  let chance (moose-pop / carrying-cap)
+  let roll (1 + random 100) / 100
+  ifelse roll <= chance
+  [
+    set r-moose -1 * random-exponential 15 ;Exponential parameter from fitted ADFG
+                                       ;GMU 26A data, Tab. 4, 2014.
+                                       ;Fit was made using data from 1984-2008.
+  ]
+  [
+    set r-moose random-exponential 15
+  ]
+  set r-moose r-moose / 100
+  let new-pop moose-pop * (exp r-moose)
+  let num-agents round (new-pop / moose/agent)
+
+    ifelse count moose > num-agents
+  [
+    let diff count moose - num-agents
+    ask n-of diff moose [ die ]
+  ]
+  [
+    if count moose < num-agents
+    [
+      let diff num-agents - count moose
+      ask n-of diff patches
+      [
+        sprout-moose 1
+      ]
+    ]
+  ]
+
+  set moose-pop count moose * moose/agent
+
+  ;each iteration of this procedure represents a year of time. Should only be
+  ;called when iterating the model between summer seasons.
+end
