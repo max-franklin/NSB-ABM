@@ -2,6 +2,10 @@
 
 ;The model can be obtained from:
 ;https://drive.google.com/a/alaska.edu/file/d/0B6Qg-B9DYEuKUEVTQUNsT0xqMVU/view?usp=sharing
+; Data ZIP file
+;   https://drive.google.com/a/alaska.edu/file/d/0B6Qg-B9DYEuKVE5EQldZMjUtRlE/view?usp=sharing
+; Folder Containing individual data files
+;   https://drive.google.com/drive/folders/0B6Qg-B9DYEuKNzBkaEhvNmJzU1U?usp=sharing
 extensions [ gis array matrix table csv]
 
 breed [ moose a-moose]
