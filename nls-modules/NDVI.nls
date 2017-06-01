@@ -1,0 +1,58 @@
+;LOAD VEGETATION
+to load-gis-ndvi
+  ;ndvi matrix updated every 10 days, from May 1 to Oct. 20
+  let ndvi-matrix floor ((day - 121) / 10)
+  let matrix (item ndvi-matrix vegetation-ndvi-list)
+  set ndvi-dataset gis:load-dataset matrix
+  set ndvi-max (gis:maximum-of ndvi-dataset)
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of ndvi-dataset))
+  gis:apply-raster ndvi-dataset ndvi-quality
+  correct-ndvi
+end
+
+;SET VEG LIST
+to set-ndvi-data-list
+ carefully [ set vegetation-ndvi-list ["NDVI Matrices/GreenMatrix1.asc" "NDVI Matrices/GreenMatrix2.asc" "NDVI Matrices/GreenMatrix3.asc" "NDVI Matrices/GreenMatrix4.asc" "NDVI Matrices/GreenMatrix5.asc" "NDVI Matrices/GreenMatrix6.asc" "NDVI Matrices/GreenMatrix7.asc"
+                            "NDVI Matrices/GreenMatrix8.asc" "NDVI Matrices/GreenMatrix9.asc" "NDVI Matrices/GreenMatrix10.asc" "NDVI Matrices/GreenMatrix11.asc" "NDVI Matrices/GreenMatrix12.asc" "NDVI Matrices/GreenMatrix13.asc" "NDVI Matrices/GreenMatrix14.asc"
+                            "NDVI Matrices/GreenMatrix15.asc" "NDVI Matrices/GreenMatrix16.asc" "NDVI Matrices/GreenMatrix17.asc"] ]
+ [ print "Failed to load the NDVI files. Please make sure you are referencing the correct directory." ]
+end
+
+
+;CORECT NDVI
+to correct-ndvi
+  let fix-count (count patches with [ocean = 0 and ndvi-quality = 0])
+  ask patches with [ocean = 0 and ndvi-quality = 0]
+  [
+    let neigh-count (count neighbors with [ocean = 0 and ndvi-quality > 0])
+    let ndvi-sum 0
+    ask neighbors with [ocean = 0 and ndvi-quality > 0]
+    [
+      set ndvi-sum (ndvi-sum + ndvi-quality)
+    ]
+    if (neigh-count > 0) [set ndvi-quality (ndvi-sum / neigh-count) ]
+  ]
+  if (fix-count > 0) [correct-ndvi]
+end
+
+to go-ndvi
+  let ndvi-matrix floor ((day - 121) / 10)
+  if ndvi-matrix >= 0 and ((day - 121) mod 10 = 0) [ print "loading ndvi..." reset-timer load-gis-ndvi print "ndvi successfully loaded, time = " show timer]
+  ;print "loading ndvi..." load-gis-ndvi
+end
+
+to show-ndvi
+  let #p-ndvi count patches with [ ndvi-quality > 0 ]
+  ifelse #p-ndvi > 0
+  [
+    let min-v min [ ndvi-quality ] of patches with [ ndvi-quality > 0 ]
+    let max-v max [ ndvi-quality ] of patches with [ ndvi-quality > 0 ]
+    ask patches with [ ndvi-quality > 0 ]
+    [
+      set pcolor scale-color green ndvi-quality min-v max-v
+    ]
+  ]
+  [
+    print "No NDVI values > 0 have been assigned to the patches!"
+  ]
+end

@@ -5,7 +5,7 @@
 
 extensions [ gis array matrix table csv]
 
-__includes["insect.nls"]
+__includes["insect.nls" "NDVI.nls"]
 
 breed [ moose a-moose]
 breed [ caribou a-caribou]
@@ -25,6 +25,12 @@ globals
   patch-streams-dataset
   patch-elevation-dataset
   patch-ocean-dataset
+
+  ;globals for the NDVI.nls module.
+  ndvi-dataset
+  vegetation-ndvi-list
+  ;ndvi-matrix
+  ndvi-max
 
   patch-vegetation-dataset
   max-roughness
@@ -98,6 +104,7 @@ patches-own
   elevation
   boundsTest
   vegetation-type
+  ndvi-quality
 
   ;;Utility Values
   ;caribou
@@ -118,10 +125,10 @@ patches-own
   mosquito-scale
   oestrid-scale
   gray-scale
-  water
+  ;water ;doesn't appear to be used atm, but playing it safe. (Max)
   coast
   ;needed?
-  bool-ocean
+  ;bool-ocean
 ]
 
 centroids-own
@@ -233,10 +240,10 @@ mem-markers-own
 ;wraps to other setup functions
 to setup
   clear-all
-  set max-roughness 442.442
-
   set time-of-year 0
-
+  set max-roughness 442.442
+  set hour 0
+  set day 0
   setup-deflectors
   ;this must be called to apply first deflector values
   go-deflectors
@@ -724,11 +731,13 @@ to go
   [
     set hour 0
     set day (day + 1)
+    go-ndvi
     if(day > 365)
     [
       set day (day mod 365)
     ]
   ]
+
   go-deflectors
   go-insect
   go-moose
@@ -1198,6 +1207,13 @@ to hide-protograph
 end
 ;Loading of terrain layers. Need perceptation
 to setup-terrain-layers
+
+  ;set ndvi-matrix 0 ;initializing to May 1 NDVI layer. Shouldnt be used ofc until May 1 is reached in the model, though..
+                    ;need to implement timing for NDVI layer switching. Day 121 = May 1 in the simulation, and day 263 = Oct. 20
+                    ;(day 1 = Jan. 1)
+  ask patches [ set ndvi-quality 0 ]
+  set-ndvi-data-list ;setting up the NDVI list
+  if day >= 121 [ go-ndvi ]
   set patch-wetness-dataset gis:load-dataset "data/patches/PatchWetness.asc"
   set patch-streams-dataset gis:load-dataset "data/patches/PatchStreams.asc"
   set patch-elevation-dataset gis:load-dataset "data/patches/PatchElevation.asc"
@@ -1961,9 +1977,9 @@ end
 to set-coastline
   ask patches
   [
-     if water = false
+     if ocean = 0
      [
-        if any? neighbors with [water = true]
+        if any? neighbors with [ocean = 1]
         [
            set coast true
         ]
@@ -2021,7 +2037,7 @@ end
 to reduce-coast
   ask patches with [coast = true]
   [
-    ask patches in-radius 2 with [water = false]
+    ask patches in-radius 2 with [ocean = 0]
     [
          set mosquito-density (random-float (.5 * mosquito-max-tenth))
         set oestrid-density (random-float (.5 * oestrid-max-tenth))

@@ -1,3 +1,5 @@
+;This is the .nls module for loading and updating insect values in the model.
+
 to setup-insect
   ask patches
     [
@@ -8,14 +10,14 @@ to setup-insect
          set mosquito-scale 0
          set oestrid-scale 0
          set pcolor 0
-         set water true
-         set bool-ocean true
+         ;set water true
+         ;set bool-ocean true
       ]
-      if (elevation >= 0)
-      [
-         set water false
-         set bool-ocean false
-      ]
+      ;if (elevation >= 0)
+      ;[
+      ;   set water false
+      ;   set bool-ocean false
+      ;]
     ]
 end
 
@@ -42,7 +44,7 @@ to go-insect
         ;GO PATCHES
         ; print "Time of year:"
         ; print time-of-year
-        ask patches with [water = false]
+        ask patches with [ocean = 0]
         [ set-densities ]
         repeat 2 [diffuse-test]
         set insect-needs-reset true
@@ -67,10 +69,10 @@ end
 
 to diffuse-test
   let num-patches count patches
-  ask patches with [water = false] ;and gray-scale <= 5]
+  ask patches with [ocean = 0] ;and gray-scale <= 5]
   [
 
-    let x (count neighbors with [water = false or water = 0])
+    let x (count neighbors with [ ocean = 0])
     let diffuse-hold-mos 0
     let diffuse-hold-oes 0
     let diffuse-package-mos 0
@@ -86,7 +88,7 @@ to diffuse-test
        if (oestrid-density < 0) [set oestrid-density 0]
        set diffuse-package-mos (diffuse-hold-mos / x)
        set diffuse-package-oes (diffuse-hold-oes / x)
-       ask neighbors with [water = false or water = 0]
+       ask neighbors with  [ocean = 0]
        [
           set mosquito-density (mosquito-density + diffuse-package-mos)
           set oestrid-density (oestrid-density + diffuse-package-oes)
@@ -152,9 +154,9 @@ end
 
 ;DENSITY INCREASE
 to clump-density-increase
-   let p count patches with [water = false]
+   let p count patches with [ocean = 0]
    let n (floor (0.03 * p))
-   ask n-of n patches with [water = false]
+   ask n-of n patches with [ocean = 0]
    [
       set mosquito-density (mosquito-density + (2 * mosquito-max-tenth))
       set oestrid-density (oestrid-density + (2 * oestrid-max-tenth))
@@ -165,9 +167,9 @@ end
 
 ;DENSITY DECREASE
 to clump-density-decrease
-   let l count patches with [water = false]
+   let l count patches with [ocean = 0]
    let m (floor (0.03 * l))
-   ask n-of m patches with [water = false]
+   ask n-of m patches with [ocean = 0]
    [
    set mosquito-density (mosquito-density - (4 * mosquito-max-tenth))
    set oestrid-density (oestrid-density - (4 * oestrid-max-tenth))
