@@ -1,0 +1,177 @@
+to setup-insect
+  ask patches
+    [
+       if (elevation < 0) ;ocean has negative raster values
+      [
+         set mosquito-density 0
+         set oestrid-density 0
+         set mosquito-scale 0
+         set oestrid-scale 0
+         set pcolor 0
+         set water true
+         set bool-ocean true
+      ]
+      if (elevation >= 0)
+      [
+         set water false
+         set bool-ocean false
+      ]
+    ]
+end
+
+to go-insect
+  ; Modification to match 1 day to 1 tick
+  set-mosquito-mean
+  set-oestrid-mean
+  let insect-day day
+  set insect-day (insect-day - 180)
+  let mod-day 0
+
+  ifelse(insect-day > -1 and insect-day < 118)
+    [
+      ifelse(insect-day = 0)
+      [
+        set mod-day 0
+      ]
+      [
+        set mod-day floor(insect-day / (122 / 42))
+
+        set time-of-year mod-day
+        ;set time-of-year (time-of-year + 1)
+
+        ;GO PATCHES
+        ; print "Time of year:"
+        ; print time-of-year
+        ask patches with [water = false]
+        [ set-densities ]
+        repeat 2 [diffuse-test]
+        set insect-needs-reset true
+      ]
+    ]
+    [
+      ;else densities are 0
+      if(insect-needs-reset = true)
+      [
+        ask patches
+        [
+          set mosquito-density 0
+          set oestrid-density 0
+          set mosquito-scale 0
+          set oestrid-scale 0
+          set gray-scale 0
+        ]
+        set insect-needs-reset false
+      ]
+    ]
+end
+
+to diffuse-test
+  let num-patches count patches
+  ask patches with [water = false] ;and gray-scale <= 5]
+  [
+
+    let x (count neighbors with [water = false or water = 0])
+    let diffuse-hold-mos 0
+    let diffuse-hold-oes 0
+    let diffuse-package-mos 0
+    let diffuse-package-oes 0
+   ; let diffuse-amt 0.25
+    if (x > 0)
+    [
+       set diffuse-hold-mos (diffuse-amt * mosquito-density)
+       set diffuse-hold-oes (diffuse-amt * oestrid-density)
+       set mosquito-density (mosquito-density - diffuse-hold-mos)
+       set oestrid-density (oestrid-density - diffuse-hold-oes)
+       if (mosquito-density < 0) [set mosquito-density 0]
+       if (oestrid-density < 0) [set oestrid-density 0]
+       set diffuse-package-mos (diffuse-hold-mos / x)
+       set diffuse-package-oes (diffuse-hold-oes / x)
+       ask neighbors with [water = false or water = 0]
+       [
+          set mosquito-density (mosquito-density + diffuse-package-mos)
+          set oestrid-density (oestrid-density + diffuse-package-oes)
+          if (mosquito-density > mosquito-max) [set mosquito-density mosquito-max]
+          if (oestrid-density > oestrid-max) [set oestrid-density oestrid-max]
+       ]
+    ]
+
+ ]
+end
+
+;SET DENSITIES
+to set-densities ;sets a random insect density with a max of the mean + 1 standard deviation and subtracts by an elevation scalar
+   set mosquito-density ((random-float mosquito-max) - (mosquito-max-tenth)*(elevation-scale))
+   set oestrid-density ((random-float oestrid-max) - (oestrid-max-tenth)*(elevation-scale))
+end
+
+
+;SET MOSQUITOS LIST
+to set-mosquito-means-list   ;reads in max mosquito idexes file and loads them into the mosquito-indexes-max array
+  set mosquito-means-list []
+  let i 0
+  let temp ""
+  set mosquito-sigma 0.126148716416492
+  file-open "mosquito_means.txt"
+  while [file-at-end? = false]
+  [
+    set temp file-read-line
+    set mosquito-means-list lput (read-from-string temp) mosquito-means-list
+  ]
+  file-close
+end
+
+;SET OESTRID LIST
+to set-oestrid-means-list   ;reads in max mosquito idexes file and loads them into the oestrid-indexes-max array
+  set oestrid-means-list []
+  let j 0
+  let temp2 ""
+  file-open "oestrid_means.txt"
+  set oestrid-sigma 0.124657702160509
+  while [file-at-end? = false]
+  [
+     set temp2 file-read-line
+     set oestrid-means-list lput (read-from-string temp2) oestrid-means-list
+  ]
+  file-close
+end
+
+
+;SET MOSQUITO MEAN
+to set-mosquito-mean
+   set mosquito-max ((item time-of-year mosquito-means-list) + mosquito-sigma)
+   set mosquito-mean (item time-of-year mosquito-means-list)
+   set mosquito-max-tenth (0.1 * mosquito-max)
+end
+
+;SET OESTRID MEAN
+to set-oestrid-mean
+  set oestrid-max ((item time-of-year oestrid-means-list) + oestrid-sigma)
+  set oestrid-mean (item time-of-year oestrid-means-list)
+  set oestrid-max-tenth (0.1 * oestrid-max)
+end
+
+;DENSITY INCREASE
+to clump-density-increase
+   let p count patches with [water = false]
+   let n (floor (0.03 * p))
+   ask n-of n patches with [water = false]
+   [
+      set mosquito-density (mosquito-density + (2 * mosquito-max-tenth))
+      set oestrid-density (oestrid-density + (2 * oestrid-max-tenth))
+      if (mosquito-density > mosquito-max) [set mosquito-density mosquito-max]
+      if (oestrid-density > oestrid-max) [set oestrid-density oestrid-max]
+   ]
+end
+
+;DENSITY DECREASE
+to clump-density-decrease
+   let l count patches with [water = false]
+   let m (floor (0.03 * l))
+   ask n-of m patches with [water = false]
+   [
+   set mosquito-density (mosquito-density - (4 * mosquito-max-tenth))
+   set oestrid-density (oestrid-density - (4 * oestrid-max-tenth))
+   if (mosquito-density < 0) [set mosquito-density 0]
+   if (oestrid-density < 0) [set oestrid-density 0]
+   ]
+end
