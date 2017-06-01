@@ -19,7 +19,7 @@ to set-ndvi-data-list
 end
 
 
-;CORECT NDVI
+;CORRECT NDVI
 to correct-ndvi
   let fix-count (count patches with [ocean = 0 and ndvi-quality = 0])
   ask patches with [ocean = 0 and ndvi-quality = 0]
