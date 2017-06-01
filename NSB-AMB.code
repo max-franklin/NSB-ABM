@@ -2,7 +2,6 @@
 
 ;The model can be obtained from:
 ;https://drive.google.com/a/alaska.edu/file/d/0B6Qg-B9DYEuKUEVTQUNsT0xqMVU/view?usp=sharing
-
 extensions [ gis array matrix table csv]
 
 breed [ moose a-moose]
@@ -27,6 +26,10 @@ globals
   patch-vegetation-dataset
   max-roughness
 
+  ;use boxes;
+ ; mutation-rate
+ ; mutation-amt
+ ; learn-rate
 
   ;;Bounds Data
   boundsTestData
@@ -40,7 +43,8 @@ globals
   day
   hour
   ;;FCM
-
+  base-fcm-caribou
+  best-caribou-val
 
 
   ;PatchList for movement decisions
@@ -166,7 +170,7 @@ caribou-own
   ;migrate/taxi
   mg-amt-min
   mg-amt-max
-
+ast-winner-caribou-val
   ;goal patch for foraging
   goal-patch
   goal-reached
@@ -279,82 +283,7 @@ to setup-centroids
   ]
 
   file-close
-  ;Test Centroids
-;  create-centroids 1
-;  [
-;    set cid 1
-;    setxy -53 16
-;  ]
-;
-;  create-centroids 1
-;  [
-;    set cid 2
-;    setxy -53 -56
-;  ]
-;
-;  create-centroids 1
-;  [
-;    set cid 3
-;    setxy 0 0
-;  ]
-;
-;  create-centroids 1
-;  [
-;    set cid 4
-;    setxy 53 16
-;  ]
-;
-;  create-centroids 1
-;  [
-;    set cid 5
-;    setxy 53 -56
-;  ]
-;
-;  create-centroids 1
-;  [
-;    set cid 5
-;    setxy 53 -56
-;
-;  ]
-;
-;  create-centroids 1
-;  [
-;    set category "elev"
-;    set cid 5
-;    setxy 29 3
-;  ]
-;
-;  create-centroids 1
-;  [
-;    set category "elev"
-;    set cid 5
-;    setxy -30 6
-;  ]
-;  ;;;
-;  create-centroids 1
-;  [
-;    set category "insect1"
-;    set cid 5
-;    setxy 54 -10
-;  ]
-;  create-centroids 1
-;  [
-;    set category "insect1"
-;    set cid 5
-;    setxy 26 -15
-;  ]
-;  create-centroids 1
-;  [
-;    set category "insect1"
-;    set cid 5
-;    setxy 19 -2
-;  ]
-;  create-centroids 1
-;  [
-;    set category "insect1"
-;    set cid 5
-;    setxy 0 -27
-;  ]
+
 
 
 end
@@ -362,6 +291,16 @@ end
 to setup-caribou
 
   let caribou-group-number floor(caribou-amt / caribou-group-amt)
+
+  ;set base fcm
+  set base-fcm-caribou matrix:make-identity 7
+  matrix:set-row base-fcm-caribou 0 [0 0 0 0.5 -0.5 0 0] ;util low
+  matrix:set-row base-fcm-caribou 1 [0 0 0 -0.5 0.5 0 0] ;util high
+  matrix:set-row base-fcm-caribou 2 [0 0 0 0 -0.5 0.5 -0.5] ;cent close
+  matrix:set-row base-fcm-caribou 3 [0 0 0 0 0 0 0.5]   ;cent far
+  matrix:set-row base-fcm-caribou 4 [0 0 0 0 0 0 0]
+  matrix:set-row base-fcm-caribou 5 [0 0 0 0 0 0 0]
+  matrix:set-row base-fcm-caribou 6 [0 0 0 0 0 0 0]
 
   create-caribou caribou-group-amt
   [
@@ -425,14 +364,14 @@ to setup-caribou
     setxy rxcor rycor
 
     ;set by group population
-    set weight (130 * caribou-group-number)
-    set bioenergy (130 * caribou-group-number)
+    set weight (132 * caribou-group-number)
+    set bioenergy (27.5 * caribou-group-number * 1000) ; In kJ
 
 
       ;;Edges
   ;array:set graph-edges 0 1.0
 
-  set cog-map matrix:make-identity 7
+;  set cog-map matrix:make-identity 7
 
 
   ;;WIP;;
@@ -447,14 +386,43 @@ to setup-caribou
   ; forage-state/               ; 5
   ; cent-attraction             ; 6
 
-  matrix:set-row cog-map 0 [0 0 0 1 -1 0 0] ;util low
-  matrix:set-row cog-map 1 [0 0 0 -1 1 0 0] ;util high
-  matrix:set-row cog-map 2 [0 0 0 0 -1 1 -1] ;cent close
-  matrix:set-row cog-map 3 [0 0 0 0 0 0 1]   ;cent far
-  matrix:set-row cog-map 4 [0 0 0 0 0 0 0]
-  matrix:set-row cog-map 5 [0 0 0 0 0 0 0]
-  matrix:set-row cog-map 6 [0 0 0 0 0 0 0]
+;  matrix:set-row cog-map 0 [0 0 0 1 -1 0 0] ;util low
+;  matrix:set-row cog-map 1 [0 0 0 -1 1 0 0] ;util high
+;  matrix:set-row cog-map 2 [0 0 0 0 -1 1 -1] ;cent close
+;  matrix:set-row cog-map 3 [0 0 0 0 0 0 1]   ;cent far
+;  matrix:set-row cog-map 4 [0 0 0 0 0 0 0] ;change cent/taxi
+;  matrix:set-row cog-map 5 [0 0 0 0 0 0 0] ;forage
+;  matrix:set-row cog-map 6 [0 0 0 0 0 0 0] ; cent attraction
+   set cog-map matrix:copy base-fcm-caribou
 
+   let rand (random-float (mutate-amt * 2) - mutate-amt)
+   matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
+
+   set rand (random-float (mutate-amt * 2) - mutate-amt)
+   matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
+
+   set rand (random-float (mutate-amt * 2) - mutate-amt)
+   matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
+
+   set rand (random-float (mutate-amt * 2) - mutate-amt)
+   matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
+
+   set rand (random-float (mutate-amt * 2) - mutate-amt)
+   matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
+
+   set rand (random-float (mutate-amt * 2) - mutate-amt)
+   matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
+
+   set rand (random-float (mutate-amt * 2) - mutate-amt)
+   matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
+
+   set rand (random-float (mutate-amt * 2) - mutate-amt)
+   matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
+
+   if(is-training?)
+   [
+     setxy -12 -27
+   ]
 
   ]
 end
@@ -521,6 +489,60 @@ to setup-caribou-utility
   ]
 end
 
+to update-caribou-fcm
+  ask caribou
+  [
+    ;look for highest average energy
+    ;if this.highest > last.highest
+    ;  set last.highest this.highest
+    ;change base to this.cog-map
+    ;update/reset all agents
+    ;use new base-map for all agents
+    ; apply mutations
+
+
+    let best max-one-of caribou [bioenergy]
+    if([bioenergy] of best > best-caribou-val or best-caribou-val = 0)
+    [
+      set base-fcm-caribou matrix:copy [cog-map] of best
+      set best-caribou-val [bioenergy] of best
+    ]
+
+    ask caribou
+    [
+
+      set cog-map matrix:copy base-fcm-caribou
+
+      let rand (random-float (mutate-amt * 2) - mutate-amt)
+      matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
+
+      set rand (random-float (mutate-amt * 2) - mutate-amt)
+      matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
+
+      set rand (random-float (mutate-amt * 2) - mutate-amt)
+      matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
+
+      set rand (random-float (mutate-amt * 2) - mutate-amt)
+      matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
+
+      set rand (random-float (mutate-amt * 2) - mutate-amt)
+      matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
+
+      set rand (random-float (mutate-amt * 2) - mutate-amt)
+      matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
+
+      set rand (random-float (mutate-amt * 2) - mutate-amt)
+      matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
+
+      set rand (random-float (mutate-amt * 2) - mutate-amt)
+      matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
+
+      setxy -12 -27
+    ]
+
+
+  ]
+end
 to update-caribou-utility
   ask patches
   [
@@ -736,7 +758,22 @@ to go
   update-caribou-utility
   update-moose-utility
   go-dynamic-display
+
+  if(is-training? and day = 365)
+  [
+    update-caribou-fcm
+    export-fcm
+  ]
+
+
   tick
+end
+
+
+to export-fcm
+  file-open "FCM-List.txt"
+  file-write matrix:to-row-list base-fcm-caribou
+  file-close
 end
 
 ;Apply deflectors, bug with updating adding wrong values
@@ -849,6 +886,14 @@ to go-caribou
 ;cent-dist-far
 
 
+;  matrix:set-row cog-map 0 [0 0 0 1 -1 0 0] ;util low
+;  matrix:set-row cog-map 1 [0 0 0 -1 1 0 0] ;util high
+;  matrix:set-row cog-map 2 [0 0 0 0 -1 1 -1] ;cent close
+;  matrix:set-row cog-map 3 [0 0 0 0 0 0 1]   ;cent far
+;  matrix:set-row cog-map 4 [0 0 0 0 0 0 0] ;change cent/taxi
+;  matrix:set-row cog-map 5 [0 0 0 0 0 0 0] ;forage
+;  matrix:set-row cog-map 6 [0 0 0 0 0 0 0] ; cent attraction
+
 let migrate-val 0.2
 
 ask caribou
@@ -869,11 +914,22 @@ ask caribou
       [
         set util-low 1
         set util-high 0
+
+        set taxi-state taxi-state + matrix:get cog-map 1 4
+        set forage-state forage-state + matrix:get cog-map 1 3
       ]
       [
        set util-low 0
        set util-high 1
+
+       set taxi-state taxi-state + matrix:get cog-map 1 4
+       set forage-state forage-state + matrix:get cog-map 1 3
       ]
+
+
+      ;increase taxi/migration based on high values util values
+
+
 
       ;Centroid Attraction rate
       set magic-centroid current-centroid
@@ -886,27 +942,73 @@ ask caribou
       [
         set cent-dist-close 0
         set cent-dist-far 1
+
+        set centroid-attraction centroid-attraction-max
       ]
       [
         set cent-dist-close 1
         set cent-dist-far 0
+
+        set taxi-state taxi-state + matrix:get cog-map 1 4
+        set forage-state forage-state + matrix:get cog-map 1 3
+
+        set centroid-attraction (temp-dist / caribou-cent-dist-cutoff) * centroid-attraction-max
+        if(centroid-attraction < centroid-attraction-min)
+        [
+          set centroid-attraction centroid-attraction-min
+        ]
+
       ]
+      if(taxi-state > 1)
+      [
+        set taxi-state 1
+      ]
+
+      if(taxi-state < 0)
+      [
+        set taxi-state 0
+      ]
+
+      ; based on percentages in Semeniuk et al
+      ifelse(taxi-state > 0.8)
+      [
+        ifelse(forage-state > 0.5)
+        [
+          set state 2
+        ]
+        [
+          set state 1
+        ]
+      ]
+      [
+        ifelse(forage-state > 0.5)
+        [
+          set state 0
+        ]
+        [
+          set state 2
+        ]
+      ]
+
+
+
+
       ;other-state-found used to get around if-else limitations
-      if(state = 0)
+      if(state = 0) ;intra forage
       [
         set fd-amt fga-amt
         set other-state-found true
       ]
 
-      if(state = 1 and not other-state-found)
+      if(state = 1 and not other-state-found);taxi/migrate
       [
         set current-centroid (random 115 + 1)
-        set centroid-attraction (centroid-attraction * attraction-factor)
+        ;set centroid-attraction (centroid-attraction * attraction-factor)
         set fd-amt mg-amt-max
         set other-state-found true
       ]
 
-      if(state = 2 and not other-state-found)
+      if(state = 2 and not other-state-found);interforage
       [
         set fd-amt fge-amt
       ]
@@ -930,9 +1032,23 @@ ask caribou
       [
         set caribou-modifier caribou-modifier + caribou-modify-amt
       ]
+
+      ;look 1 patch ahead
+      ifelse([elevation] of patch-at-heading-and-distance heading 1 > [elevation] of patch-here)
+      [
+        ;uphill
+        ;0.4556 patch distance = 1km
+        set bioenergy bioenergy - (3.640 * weight * (fd-amt / 0.4556))
+      ]
+      [
+        set bioenergy bioenergy - (1.293 * weight * (fd-amt / 0.4556))
+      ]
+
+      ;Move the agent forward by determined amount
       fd fd-amt
 
-
+      let acquired-energy caribou-veg-type-energy [vegetation-type] of patch-here * group-size
+      set bioenergy bioenergy + acquired-energy
 
       ifelse(temp-dist > caribou-cent-dist-cutoff)
       [
@@ -1300,6 +1416,51 @@ to display-simultaneous
   ask patches [if(streams > 1000) [set pcolor scale-color red streams minVal maxVal]]
 end
 
+to-report caribou-veg-type-energy [val]
+
+;1 - Dry prostrate-shrub tundra; barrens
+;2 - Moist graminoid, prostrate-shrub tundra (moist, non-acidic tundra)
+;3 - Moist dwarf-shrub, tussock graminoid tundra (typical acidic, tussock tundra)
+;4 - Moist low-shrub tundra; other shrublands
+;5 - Wet graminoid tundra
+;6 -  Water
+;7 - Clouds, ice
+;8 - Shadow
+;9 - Moist tussock graminoid, dwarf-shrub tundra (moist, cold, acidic, sandy tussock tundra)
+
+  ;values in MJ in patc
+  if(val = 1)
+  [
+    report 0
+  ]
+  if(val = 2)
+  [
+    report 0.15 * 48.77 ;(2195m our patch / 45m Semeniuk patch)
+  ]
+  if(val = 3)
+  [
+    report 0.15 * 48.77 ;(2195m our patch / 45m Semeniuk patch)
+  ]
+  if(val = 4)
+  [
+    report 0.15 * 48.77 ;(2195m our patch / 45m Semeniuk patch)
+  ]
+  if(val = 5)
+  [
+    report 0.58 * 48.77 ;(2195m our patch / 45m Semeniuk patch)
+  ]
+  if(val = 9)
+  [
+    report 0.365 * 48.77 ;(2195m our patch / 45m Semeniuk patch) average of wetland/shrub
+  ]
+
+  ;other patch type
+  report 0
+
+
+end
+
+
 ;;Correction Functions
 to correct-vegetation
   ;Removes clouds and cloud shadows
@@ -1329,7 +1490,7 @@ to correct-vegetation
   ]
 ]
 end
-;Convers NAD27 Coordinates to Patches in the model
+;Converts NAD27 Coordinates to Patches in the model
 to nad-to-patch-pos [x y]
   ;extents of the data used
   let hmin 2099760
