@@ -5,7 +5,7 @@
 
 extensions [ gis array matrix table csv]
 
-__includes["insect.nls"]
+__includes["insect.nls" "precip.nls"]
 
 breed [ moose a-moose]
 breed [ caribou a-caribou]
@@ -30,9 +30,15 @@ globals
   max-roughness
 
   ;use boxes;
- ; mutation-rate
- ; mutation-amt
- ; learn-rate
+  ; mutation-rate
+  ; mutation-amt
+  ; learn-rate
+
+  ;Globals Precipitation
+  precipitation-dataset
+	precipitation-data-list
+ 	precipitation-max
+ precipitation-matrix-number
 
   ;;Bounds Data
   boundsTestData
@@ -98,6 +104,11 @@ patches-own
   elevation
   boundsTest
   vegetation-type
+
+  ;Patches Precipitation.nls
+  precipitation-amt
+  prec-paint
+
 
   ;;Utility Values
   ;caribou
@@ -247,6 +258,7 @@ to setup
   set-oestrid-mean
   set-coastline
 
+  setup-precipitation
   setup-terrain-layers
   setup-caribou-utility
   setup-moose-utility
@@ -255,6 +267,7 @@ to setup
   setup-caribou
   setup-patch-list
   setup-insect
+  set-precipitation-data-list
   reset-ticks
 end
 
@@ -733,6 +746,7 @@ to go
   go-insect
   go-moose
   go-caribou
+  go-percipitation
   update-caribou-utility
   update-moose-utility
   go-dynamic-display
@@ -1344,6 +1358,10 @@ to display-simultaneous
   set maxVal maxVal + offsetMax
   set minVal minVal + offsetMin
   ask patches [if(streams > 1000) [set pcolor scale-color red streams minVal maxVal]]
+end
+
+to display-precipitation
+  ask patches [set pcolor scale-color blue precipitation-amt 0 25]
 end
 
 to-report caribou-veg-type-energy [val]
