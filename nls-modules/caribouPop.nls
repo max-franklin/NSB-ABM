@@ -18,7 +18,7 @@ end
 
 to go-caribou-pop ;call this procedure in the mothership go procedure b/w model
                   ;iterations/years.
-  let carrying-cap 65000 ;Appears to be carrying capacity based off of ADFG GMU 26A
+  let carrying-cap 65000 ;Appears to be "carrying capacity" based off of ADFG GMU 26A
                          ;data, Tab. 4, 2014.
   let chance (caribou-pop / carrying-cap)
   let roll (1 + random 100) / 100
