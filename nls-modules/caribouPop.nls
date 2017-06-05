@@ -1,12 +1,9 @@
 ;Caribou pop dynamics code.
-;This needs to be integrated w/ mothership code.
-;breeds, variables, and procedures need testing w/ mothership.
-globals [ caribou-pop caribou/agent r-caribou ]
-breed [ caribou a-caribou ] ;may become redundant w/ mothership code.
 
 to gen-caribou-pop ;call this procedure in the mothership setup procedure.
   set caribou-pop 11200 ;can adjust for different scenarios. This is the starting pop value.
-  set caribou/agent 500 ;will likely have to be calibrated.
+  set caribou/agent caribou-amt / caribou-group-amt
+  ;500 ;will likely have to be calibrated.
   let num-agents round (caribou-pop / caribou/agent)
   ask n-of num-agents patches
   [
