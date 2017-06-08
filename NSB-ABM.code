@@ -1,14 +1,15 @@
 ;Main code for the ABM
 
 ;Zip file w/ model and data:
-;https://drive.google.com/a/alaska.edu/file/d/0B6Qg-B9DYEuKVE5EQldZMjUtRlE/view?usp=sharing
-
+;https://drive.google.com/drive/folders/0B6Qg-B9DYEuKUTU0bTlMM3BZa00?usp=sharing
+;Cory, please allow editing for Henri and myself on the Google Drive (Max)
+; -- I've created a new folder and moved the file to it to see if that resolves the issue.
 extensions [ gis array matrix table csv]
 
-__includes["insect.nls" "precip.nls" "NDVI.nls"]
+__includes["insect.nls" "precip.nls" "NDVI.nls" "caribouPop.nls"]
 
-breed [ moose a-moose]
-breed [ caribou a-caribou]
+breed [moose a-moose]
+breed [caribou a-caribou]
 breed [cisco a-cisco]
 breed [char a-char]
 breed [whitefish a-whitefish]
@@ -19,6 +20,7 @@ breed [mem-markers mem-mark]
 
 globals
 [
+
 ;GIS DATA
   patch-roughness-dataset
   patch-wetness-dataset
@@ -55,6 +57,7 @@ globals
   adjacency-matrix
 
   ;Time Info
+  year
   day
   hour
   ;;FCM
@@ -71,6 +74,9 @@ globals
   ;;WORK AROUND NUMBERS;; These numbers are used to work around limitations with the
   ;    NetLogo language
 
+  caribou-pop
+  caribou/agent
+  r-caribou
   ;;Caribou Activation Control
   ;caribou-cent-dist-cutoff
   ;caribou-util-cutoff
@@ -255,6 +261,7 @@ to setup
   set max-roughness 442.442
   set hour 0
   set day 0
+  set year 0
   setup-deflectors
   ;this must be called to apply first deflector values
   go-deflectors
@@ -324,6 +331,7 @@ to setup-caribou
   matrix:set-row base-fcm-caribou 4 [0 0 0 0 0 0 0]
   matrix:set-row base-fcm-caribou 5 [0 0 0 0 0 0 0]
   matrix:set-row base-fcm-caribou 6 [0 0 0 0 0 0 0]
+
 
   create-caribou caribou-group-amt
   [
@@ -449,6 +457,8 @@ to setup-caribou
 
   ]
 end
+
+
 
 to setup-caribou-utility
   ;pseudo utility val for demonstration
@@ -747,6 +757,9 @@ to go
     go-ndvi
     if(day > 365)
     [
+      if caribouPopMod? = true
+      [ go-caribou-pop ]
+      set year year + 1
       set day (day mod 365)
     ]
   ]
