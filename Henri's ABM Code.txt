@@ -1,0 +1,213 @@
+;TO DOWNLOAD FULL CODE, HERE IS THE LINK:
+;https://drive.google.com/drive/u/1/folders/0B5sN6_snmjHqaFItdzhNMDNRY2M
+
+__includes [
+             "Modules/KDEs.nls"
+             "Modules/insect.nls"
+             "Modules/elevation.nls"
+             "Modules/vegetation-rank.nls"
+             "Modules/precipitation.nls"
+             "Modules/caribou-test.nls"
+             "Modules/NDVI.nls"
+             "Modules/hunters.nls"
+           ]
+
+;EXTENSIONS
+extensions [
+             gis
+             array
+             matrix
+             table
+           ]
+
+;GLOBALS
+globals [
+         ;datasets
+         elevation-dataset
+         ndvi-dataset
+         vegetation-class-dataset
+         precipitation-dataset
+         kde-elevation-dataset
+         kde-insect-dataset
+         kde-NDVI-dataset
+         kde-precipitation-dataset
+         kde-vegrank-dataset
+         ;lists
+         insect-kde-data-list
+         NDVI-kde-data-list
+         precipitation-kde-data-list
+         vegrank-kde-data-list
+         vegetation-ndvi-list
+         precipitation-data-list
+         vegetation-CP-list
+         vegetation-CNP-list
+         vegetation-PC-list
+         vegetation-MH-list
+         vegetation-ML-list
+         vegetation-OH-list
+         vegetation-OL-list
+         vegetation-LS-list
+         mosquito-means-list
+         oestrid-means-list
+         mosquito-sigma-list
+         oestrid-sigma-list
+         ;maximums
+         ndvi-max
+         precipitation-max
+         elevation-max
+         mosquito-sigma
+         oestrid-sigma
+         visit-max
+         elev-max-k
+         elev-min-k
+         insect-max-k
+         insect-min-k
+         ndvi-max-k
+         ndvi-min-k
+         prec-max-k
+         prec-min-k
+         vegrank-max-k
+         vegrank-min-k
+         mosquito-max
+         oestrid-max
+         ;coloring variables
+         mosquito-max-color
+         oestrid-max-color
+         mosquito-max-tenth-color
+         oestrid-max-tenth-color
+         mosquito-max-tenth
+         oestrid-max-tenth
+         mosquito-mean
+         oestrid-mean
+         ;world
+         day
+         ;FCM
+         fcm-matrix
+        ]
+
+;PATCHES
+patches-own [
+             elevation
+             ndvi-quality
+             vegetation-type
+             vegetation-beta
+             precipitation-amt
+             veg-paint
+             elev-paint
+             prec-paint
+             mosquito-density
+             oestrid-density
+             coast
+             water
+             ocean
+             river
+             elevation-scale
+             patch-max-avg-elevation
+             patch-min-avg-elevation
+             elevation-avg
+             gray-scale
+             mosquito-scale
+             oestrid-scale
+             distance-to-coast
+             visitation
+             visit-scale
+             kde-elevation-estimate
+             kde-insect-estimate
+             kde-NDVI-estimate
+             kde-precipitation-estimate
+             kde-vegrank-estimate
+            ]
+
+;HUNTERS
+breed [ hunters hunter ]
+hunters-own [
+             prey-close      ;from 0:3/5 of hunter vision, activator of hunting
+             prey-far        ;from 2/5:5/5 of hunter vision, activator of exploring
+             stalking        ;level of internal concept
+             curiousity      ;level of internal concept
+             hunt            ;hunting function
+             explore         ;exploring function
+            ]
+
+;SETUP
+to setup
+  clear-all
+  ;set insect-season 0
+  load-elevation-gis
+  set-ndvi-data-list
+  ;set-precipitation-data-list
+  ;set-insect-indices
+  ;set-mosquito-activity
+  ;set-oestrid-activity
+  setup-patches
+  load-veg-classification-gis
+  set-vegetation-rank-lists
+  set-vegetation-selection-season
+  ;set-coastline
+  new-population
+  reset-ticks
+end
+
+;GO
+to go
+   ;set-mosquito-mean
+   ;set-oestrid-mean
+   ;go-patches
+   ;set insect-season (insect-season + 1)
+   ask turtles
+   [
+     ifelse (ndvi-quality > layer-restriction * ndvi-max)
+     [
+       ;head in a random direction or rest
+       ifelse ticks mod 2 = 0
+       [ random-walk ]
+       [ rest ]
+     ]
+     [
+       ;walk straight from last heading
+       straight-walk
+     ]
+   ]
+   if (ticks mod 20 = 0)
+   [ ask turtles [ enter-visitation ] ]
+   tick
+   if ticks = 15000 [stop]
+end
+
+;SETUP PATHCES
+to setup-patches
+   setup-insect
+   ;ask patches with [water = false]
+   ;[
+    ;  set-elevation-scale
+    ;  set-densities
+   ;]
+   ;ask patches
+   ;[ set-gray-scale ]
+   ;repeat 2 [diffuse-test]
+   ask patches with [ water = true ] [ set pcolor blue ]
+end
+
+;GO PATCHES
+to go-patches
+   ask patches with [water = false]
+   [ set-densities ]
+   repeat 2 [diffuse-test]
+end
+
+to set-FCM
+  set fcm-matrix matrix:from-row-list [[ 0  0  1 -1  0  0 ]
+                                       [ 0  0 -1  1  0  0 ]
+                                       [ 0  0  0  0  1  0 ]
+                                       [ 0  0  0  0  0  1 ]
+                                       [ 0  0  0  0  0  0 ]
+                                       [ 0  0  0  0  0  0 ]]
+end
+
+to hunt-funct
+
+end
+
+to explore-funct
+
+end

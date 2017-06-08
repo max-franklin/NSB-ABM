@@ -1,0 +1,63 @@
+;DISPLAY ELEVATION
+to display-elevation   ;displays a gray scaled elevation map from the raster data
+   gis:paint elevation-dataset 0
+end
+
+;LOAD ELEVATION
+to load-elevation-gis   ;loads in the north slope GIS elevation raster to a dataset in NetLogo
+  set elevation-dataset gis:load-dataset "NorthSlopeFull.asc"
+  set elevation-max (gis:maximum-of elevation-dataset)
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of elevation-dataset))
+  gis:apply-raster elevation-dataset elevation
+end
+
+;PAINT ELEVATION
+to paint-elevation
+  let elev-tenth (0.1 * elevation-max)
+  ask patches with [water = false] [ if (elevation > 0) and (elevation <= elev-tenth) [ set elev-paint 1 ]]
+  ask patches with [water = false] [ if (elevation > (1 * elev-tenth)) and (elevation <= (2 * elev-tenth)) [ set elev-paint 2 ]]
+  ask patches with [water = false] [ if (elevation > (2 * elev-tenth)) and (elevation <= (3 * elev-tenth)) [ set elev-paint 3 ]]
+  ask patches with [water = false] [ if (elevation > (3 * elev-tenth)) and (elevation <= (4 * elev-tenth)) [ set elev-paint 4 ]]
+  ask patches with [water = false] [ if (elevation > (4 * elev-tenth)) and (elevation <= (5 * elev-tenth)) [ set elev-paint 5 ]]
+  ask patches with [water = false] [ if (elevation > (5 * elev-tenth)) and (elevation <= (6 * elev-tenth)) [ set elev-paint 6 ]]
+  ask patches with [water = false] [ if (elevation > (6 * elev-tenth)) and (elevation <= (7 * elev-tenth)) [ set elev-paint 7 ]]
+  ask patches with [water = false] [ if (elevation > (7 * elev-tenth)) and (elevation <= (8 * elev-tenth)) [ set elev-paint 8 ]]
+  ask patches with [water = false] [ if (elevation > (8 * elev-tenth)) and (elevation <= (9 * elev-tenth)) [ set elev-paint 9 ]]
+  ask patches with [water = false] [ if (elevation > (9 * elev-tenth)) and (elevation <= (10 * elev-tenth)) [ set elev-paint 9.9 ]]
+  ask patches with [water = false] [ set pcolor elev-paint ]
+  ask patches with [water = true] [ set pcolor blue ]
+end
+
+;SET ELEVATION SCALE
+to set-elevation-scale ;determines the level of elevation scaling for insect densities
+  if (elevation < 0) [set elevation-scale 10]
+  if (elevation >= 0) and (elevation < 30) [ set elevation-scale 0 ]
+  if (elevation >= 30) and (elevation < 60) [ set elevation-scale 2 ]
+  if (elevation >= 60) and (elevation < 200) [ set elevation-scale 5 ]
+  if (elevation >= 200) and (elevation < 500 ) [ set elevation-scale 8 ]
+  if (elevation >= 500) and (elevation < elevation-max ) [ set elevation-scale 9 ]
+end
+
+
+;SET COASTLINE
+to set-coastline
+  ask patches
+  [
+     if water = false
+     [
+        if any? neighbors with [water = true]
+        [
+           set coast true
+        ]
+     ]
+  ]
+end
+
+;SHOW COASTLINE
+to show-coastline
+   ask patches with [coast = true]
+   [
+      set pcolor 86
+   ]
+end
+

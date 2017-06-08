@@ -1,0 +1,200 @@
+;LOAD VEGETATION TYPE
+to load-veg-classification-gis
+  set vegetation-class-dataset gis:load-dataset "NorthSlopeVegetation.asc"
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of vegetation-class-dataset))
+  gis:apply-raster vegetation-class-dataset vegetation-type
+  correct-vegetation
+end
+
+to show-veg-type
+ask patches with [vegetation-type > 0]
+[ if (vegetation-type = 1)[set pcolor brown]
+  if (vegetation-type = 2)[set pcolor 63]
+  if (vegetation-type = 3)[set pcolor green]
+  if (vegetation-type = 4)[set pcolor turquoise]
+  if (vegetation-type = 5)[set pcolor 82]
+  if (vegetation-type = 6)[set pcolor sky]
+  if (vegetation-type = 7)[set pcolor white]
+  if (vegetation-type = 8)[set pcolor 2]
+  if (vegetation-type = 9)[set pcolor violet]
+]
+end
+
+
+;SET VEGETATION RANK LISTS
+;classes ranked relative to the season
+to set-vegetation-rank-lists
+  set vegetation-CP-list [1 10 9 7 8 1 1 1 9]
+  set vegetation-CNP-list [1 9 10 9 7 1 1 1 10]
+  set vegetation-PC-list [1 8 10 10 7 1 1 1 10]
+  set vegetation-MH-list [10 1 10 5 7 1 1 1 10]
+  set vegetation-ML-list [3 1 10 8 5 1 1 1 10]
+  set vegetation-OH-list [10 2 2 3 1 1 1 1 2]
+  set vegetation-OL-list [10 1 4 6 1 1 1 1 4]
+  set vegetation-LS-list [10 10 7 10 1 1 1 1 7]
+end
+
+;SET VEG SELECTION SEASON
+to set-vegetation-selection-season
+  if veg-selection-season = 0 [ set-vegetation-betas-CP ]
+  if veg-selection-season = 1 [ set-vegetation-betas-CNP ]
+  if veg-selection-season = 2 [ set-vegetation-betas-PC ]
+  if veg-selection-season = 3 [ set-vegetation-betas-MH ]
+  if veg-selection-season = 4 [ set-vegetation-betas-ML ]
+  if veg-selection-season = 5 [ set-vegetation-betas-OH ]
+  if veg-selection-season = 6 [ set-vegetation-betas-OL ]
+  if veg-selection-season = 7 [ set-vegetation-betas-LS ]
+end
+
+;COLOR POSITIVE BETA PATCHES
+to color-high-beta
+  show-veg-type
+  ask patches with [ vegetation-beta = 10]
+  [ set pcolor gray ]
+end
+
+;SET VEGETATION BETAS
+to set-vegetation-betas-CP
+  ask patches with [water = false]
+  [
+    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-CP-list) ]
+    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-CP-list) ]
+    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-CP-list) ]
+    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-CP-list) ]
+    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-CP-list) ]
+    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-CP-list) ]
+    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-CP-list) ]
+    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-CP-list) ]
+    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-CP-list) ]
+  ]
+end
+
+to set-vegetation-betas-CNP
+  ask patches with [water = false]
+  [
+    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-CNP-list) ]
+    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-CNP-list) ]
+    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-CNP-list) ]
+    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-CNP-list) ]
+    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-CNP-list) ]
+    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-CNP-list) ]
+    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-CNP-list) ]
+    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-CNP-list) ]
+    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-CNP-list) ]
+  ]
+end
+
+to set-vegetation-betas-PC
+  ask patches with [water = false]
+  [
+    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-PC-list) ]
+    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-PC-list) ]
+    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-PC-list) ]
+    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-PC-list) ]
+    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-PC-list) ]
+    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-PC-list) ]
+    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-PC-list) ]
+    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-PC-list) ]
+    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-PC-list) ]
+  ]
+end
+
+to set-vegetation-betas-MH
+  ask patches with [water = false]
+  [
+    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-MH-list) ]
+    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-MH-list) ]
+    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-MH-list) ]
+    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-MH-list) ]
+    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-MH-list) ]
+    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-MH-list) ]
+    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-MH-list) ]
+    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-MH-list) ]
+    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-MH-list) ]
+  ]
+end
+
+to set-vegetation-betas-ML
+  ask patches with [water = false]
+  [
+    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-ML-list) ]
+    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-ML-list) ]
+    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-ML-list) ]
+    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-ML-list) ]
+    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-ML-list) ]
+    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-ML-list) ]
+    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-ML-list) ]
+    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-ML-list) ]
+    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-ML-list) ]
+  ]
+end
+
+to set-vegetation-betas-OH
+  ask patches with [water = false]
+  [
+    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-OH-list) ]
+    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-OH-list) ]
+    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-OH-list) ]
+    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-OH-list) ]
+    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-OH-list) ]
+    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-OH-list) ]
+    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-OH-list) ]
+    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-OH-list) ]
+    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-OH-list) ]
+  ]
+end
+
+to set-vegetation-betas-OL
+  ask patches with [water = false]
+  [
+    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-OL-list) ]
+    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-OL-list) ]
+    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-OL-list) ]
+    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-OL-list) ]
+    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-OL-list) ]
+    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-OL-list) ]
+    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-OL-list) ]
+    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-OL-list) ]
+    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-OL-list) ]
+  ]
+end
+
+to set-vegetation-betas-LS
+  ask patches with [water = false]
+  [
+    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-LS-list) ]
+    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-LS-list) ]
+    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-LS-list) ]
+    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-LS-list) ]
+    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-LS-list) ]
+    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-LS-list) ]
+    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-LS-list) ]
+    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-LS-list) ]
+    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-LS-list) ]
+  ]
+end
+
+
+;CORRECT VEGETATION TYPE
+to correct-vegetation
+  ;Removes clouds and cloud shadows
+  ask patches
+  [
+     while [(vegetation-type = 7) or (vegetation-type = 8)]
+     [
+
+       let rand random 3
+       let tempx (rand - 1)
+       set rand random 3
+       let tempy (rand - 1)
+
+       if(tempx + pxcor <= 64) and (tempx + pxcor > -65) and (tempy + pycor <= 64) and (tempy + pycor > -65)
+       [
+         let veg-temp ([vegetation-type] of patch-at tempx tempy)
+         if (not(veg-temp = 7) and not(veg-temp = 8))
+         [ set vegetation-type veg-temp ]
+       ]
+     ]
+   ]
+end
+

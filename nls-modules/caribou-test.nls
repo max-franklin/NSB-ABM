@@ -1,0 +1,131 @@
+;MAKE NEW TURTLE POPULATION
+to new-population
+  reset-ticks
+  create-turtles population
+  [
+    set color white; - 2 + random 5  ;; random shades look nice
+    set size 1.75  ;; easier to see
+    let done false
+    let x 0
+    let y 0
+    while [done != true]
+    [
+       set x random-xcor
+       set y random-ycor
+       ask patch-at x y
+       [
+         if (water = false)
+         [
+           set done true
+         ]
+       ]
+    ]
+    setxy x y
+  ]
+end
+
+;REST
+to rest
+  rt random-float 360
+end
+
+;RANDOM WALK
+to random-walk
+  rt random-float 360
+  let done false
+  if (patch-ahead 1 != nobody)
+  [
+     ask patch-ahead 1
+     [
+       if water = false
+       [ set done true ]
+     ]
+  ]
+  ifelse done = true
+  [fd 1]
+  [random-walk]
+end
+
+;STRAIGHT WALK
+to straight-walk
+  let right-turn 0
+  let left-turn 0
+  set right-turn random-float 5
+  set left-turn random-float 5
+  make-turn right-turn left-turn
+  let done false
+  if (patch-ahead 1 != nobody)
+  [
+     ask patch-ahead 1
+     [
+       if water = false
+       [ set done true ]
+     ]
+  ]
+  ifelse done = true
+  [fd 2]
+  [straight-walk]
+end
+
+;MAKE TURN
+; turn right or left based on the larger turn angle
+to make-turn [rturn lturn]  ; turtle procedure
+  ;et turn (rturn - lturn)
+  ifelse rturn > lturn
+  [ rt rturn ]
+  [ lt lturn ]
+end
+
+;MAKE VISITATION COORDINATES
+to make-visitation-coordinates
+  file-open file-name
+  ask patches with [visitation > 0]
+  [
+    file-print (word pxcor "," pycor)
+  ]
+  file-close
+end
+
+;ENTER VISITATION
+to enter-visitation
+   ask patch-here
+    [
+      set visitation (visitation + 1)
+    ]
+end
+
+;PAINT VISITATION
+to paint-visitations
+  set visit-max (max [visitation] of patches)
+  let visit-max-tenth (0.1 * visit-max)
+  ask patches
+  [
+   if (visitation = 0) [ set visit-scale 1 ]
+   if (visitation > 0) and (visitation <= (visit-max-tenth)) [ set visit-scale 2 ]
+   if (visitation > visit-max-tenth) and (visitation <= (2 * visit-max-tenth)) [ set visit-scale 3 ]
+   if (visitation > (2 * visit-max-tenth)) and (visitation <= (3 * visit-max-tenth)) [ set visit-scale 4 ]
+   if (visitation > (3 * visit-max-tenth)) and (visitation <= (4 * visit-max-tenth)) [ set visit-scale 5 ]
+   if (visitation > (4 * visit-max-tenth)) and (visitation <= (5 * visit-max-tenth)) [ set visit-scale 6 ]
+   if (visitation > (5 * visit-max-tenth)) and (visitation <= (6 * visit-max-tenth)) [ set visit-scale 7 ]
+   if (visitation > (6 * visit-max-tenth)) and (visitation <= (7 * visit-max-tenth)) [ set visit-scale 8 ]
+   if (visitation > (7 * visit-max-tenth)) and (visitation <= (8 * visit-max-tenth)) [ set visit-scale 9 ]
+   if (visitation > (8 * visit-max-tenth)) and (visitation <= (10 * visit-max-tenth)) [ set visit-scale 9.9 ]
+   if (water = true) [ set pcolor blue ]
+   set pcolor visit-scale
+  ]
+end
+
+;FILTER VISITATIONS
+to filter-visitations
+  ask patches with [visitation <= visit-filter] [set visitation 0]
+end
+
+;CLEAR VISITATIONS
+to clear-visitations
+  ask patches [ set visitation 0 ]
+end
+
+;REMOVE TURTLES
+to remove-turtles
+   ask turtles [ die ]
+end
