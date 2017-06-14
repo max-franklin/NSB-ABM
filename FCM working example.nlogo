@@ -85,8 +85,10 @@ to test
  ; show R
  ; print "new activation values"
  ; show C
- ; tick
+  tick
 end
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 29
