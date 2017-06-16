@@ -180,7 +180,7 @@ to hide-protograph
   ask turtles[if hidden-label = "moose-graph" [die]]
 end
 
-CD5 Lat/Long: 70.302618, -151.142401
+;CD5 Lat/Long: 70.302618, -151.142401
 ;Two maps are required, one project in WGS84
 ; another in the standard NAD27-Alaska
 ; coordinate grabber in QGIS must be set to WGS84
