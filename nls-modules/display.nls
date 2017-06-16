@@ -1,0 +1,299 @@
+;;DISPLAY FUNCTIONS;;
+
+;1 - Dry prostrate-shrub tundra; barrens
+;2 - Moist graminoid, prostrate-shrub tundra (moist, non-acidic tundra)
+;3 - Moist dwarf-shrub, tussock graminoid tundra (typical acidic, tussock tundra)
+;4 - Moist low-shrub tundra; other shrublands
+;5 - Wet graminoid tundra
+;6 -  Water
+;7 - Clouds, ice
+;8 - Shadow
+;9 - Moist tussock graminoid, dwarf-shrub tundra (moist, cold, acidic, sandy tussock tundra)
+
+to display-vegetation
+  ask patches [if (vegetation-type = 1) [set pcolor brown - 2 ]]
+  ask patches [if (vegetation-type = 2) [set pcolor (green - 1) ]]
+  ask patches [if (vegetation-type = 3) [set pcolor green ]]
+  ask patches [if (vegetation-type = 4) [set pcolor (green + 1) ]]
+  ask patches [if (vegetation-type = 5) [set pcolor (green + 2) ]]
+  ask patches [if (vegetation-type = 6) [set pcolor blue ]]
+  ask patches [if (vegetation-type = 7) [set pcolor yellow + 1 ]]
+  ask patches [if (vegetation-type = 8) [set pcolor yellow + 1 ]]
+  ask patches [if (vegetation-type = 9) [set pcolor (green - 2) ]]
+end
+
+to display-streams
+  let offsetMin 0
+  let offsetMax -125500
+
+
+  let maxVal gis:maximum-of patch-streams-dataset
+  let minVal gis:minimum-of patch-streams-dataset
+
+  set maxVal maxVal + offsetMax
+  set minVal minVal + offsetMin
+  ask patches [set pcolor scale-color red streams minVal maxVal]
+end
+
+to display-wetness
+  let offsetMin 0
+  let offsetMax 0
+
+  let maxVal gis:maximum-of patch-wetness-dataset
+  let minVal gis:minimum-of patch-wetness-dataset
+
+  set maxVal maxVal + offsetMax
+  set minVal minVal + offsetMin
+  ask patches [set pcolor scale-color blue wetness minVal maxVal]
+end
+
+to display-ocean
+  let offsetMin 2
+  let offsetMax -1
+
+  let maxVal gis:maximum-of patch-ocean-dataset
+  let minVal gis:minimum-of patch-ocean-dataset
+
+  set maxVal maxVal + offsetMax
+  set minVal minVal + offsetMin
+  ask patches [ifelse(ocean = 1)[set pcolor blue - 3][set pcolor white]]; (set pcolor scale-color blue ocean minVal maxVal]
+end
+
+to display-roughness
+  let offsetMin 0
+  let offsetMax -380
+
+  let maxVal gis:maximum-of patch-roughness-dataset
+  let minVal gis:minimum-of patch-roughness-dataset
+
+  set maxVal maxVal + offsetMax
+  set minVal minVal + offsetMin
+  ask patches [set pcolor scale-color green roughness minVal maxVal]
+end
+
+to display-elevation
+  let offsetMin -100
+  let offsetMax -400
+
+  let maxVal gis:maximum-of patch-elevation-dataset
+  let minVal gis:minimum-of patch-elevation-dataset
+
+  set maxVal maxVal + offsetMax
+  set minVal minVal + offsetMin
+  ask patches [set pcolor scale-color black elevation minVal maxVal]
+end
+
+to display-simultaneous
+  ;OCEAN
+  let offsetMin 2
+  let offsetMax -1
+
+  let maxVal gis:maximum-of patch-ocean-dataset
+  let minVal gis:minimum-of patch-ocean-dataset
+
+  set maxVal maxVal + offsetMax
+  set minVal minVal + offsetMin
+  ask patches [if(ocean = 1)[set pcolor blue - 2]]
+
+  ;ROUGHNESS
+  set offsetMin 0
+  set offsetMax -20
+  set maxVal gis:maximum-of patch-roughness-dataset
+  set minVal gis:minimum-of patch-roughness-dataset
+
+  set maxVal maxVal + offsetMax
+  set minVal minVal + offsetMin
+  ask patches [if(roughness > 0) [set pcolor scale-color green roughness minVal maxVal]]
+
+  ;Wetness
+  set offsetMin 0
+  set offsetMax 0
+  set maxVal gis:maximum-of patch-wetness-dataset
+  set minVal gis:minimum-of patch-wetness-dataset
+
+  set maxVal maxVal + offsetMax
+  set minVal minVal + offsetMin
+
+  ask patches [if(wetness > 0.15) [set pcolor scale-color blue wetness minVal maxVal]]
+
+  ;STREAMS
+  set offsetMin -5000
+  set offsetMax -115500
+
+  set maxVal gis:maximum-of patch-streams-dataset
+  set minVal gis:minimum-of patch-streams-dataset
+
+  set maxVal maxVal + offsetMax
+  set minVal minVal + offsetMin
+  ask patches [if(streams > 1000) [set pcolor scale-color red streams minVal maxVal]]
+end
+
+to display-precipitation
+  ask patches [set pcolor scale-color blue precipitation-amt 0 25]
+end
+
+to display-caribou-utility
+  ask patches [set pcolor scale-color green caribou-utility 0 3 ]
+end
+
+to display-moose-utility
+  ask patches [set pcolor scale-color green moose-utility 0 3 ]
+end
+
+;show bounds files
+to display-bounds
+  cd
+  set boundsTestData gis:load-dataset BoundsFile
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of boundsTestData))
+  show "loaded"
+  show gis:maximum-of boundsTestData
+  gis:paint boundsTestData 70
+end
+
+;Example graph for movements through harvest areas
+to display-protograph
+  let proto-dat gis:load-dataset "data/ascBounds/MooseNodes.asc"
+  hide-protograph
+  let i 0
+  while [i < gis:width-of proto-dat] [
+
+    let j 0
+
+    while [j < gis:height-of proto-dat] [
+      if (gis:raster-value proto-dat i j > 0) [
+        create-turtles 1 [
+          set color orange
+          set size 3.7
+          setxy (((i / 4720) * 129) - 64.5) ((((4720 - j) / 4720) * 129) - 64.5)
+          set shape "dot"
+          set hidden-label "moose-graph"
+        ]
+      ]
+      set j j + 1
+    ]
+    set i i + 1
+  ]
+end
+
+
+to hide-protograph
+  ask turtles[if hidden-label = "moose-graph" [die]]
+end
+
+CD5 Lat/Long: 70.302618, -151.142401
+;Two maps are required, one project in WGS84
+; another in the standard NAD27-Alaska
+; coordinate grabber in QGIS must be set to WGS84
+; long Lat tools allow zooming in Lat/Long to select
+; the location and pull the NAD27-Alaska point to convert.
+to display-CD5
+  hide-CD5
+  let patch-x -2.2409039548022633
+  let patch-y 8.624632768361579
+
+  create-turtles 1 [
+    set color red
+    set size 5
+    setxy patch-x patch-y
+    set shape "dot"
+    set label "CD5"
+    set label-color red
+  ]
+end
+
+to hide-CD5
+  ask turtles [if label = "CD5" [die]]
+end
+
+;Show location of Nuiqsut
+to display-nuiqsut
+  hide-nuiqsut
+  let patch-x 0.38689265536723383
+  let patch-y 4.621468926553675
+
+  create-turtles 1 [
+    set color green
+    set size 5
+    setxy patch-x patch-y
+    set shape "dot"
+    set label "NUIQSUT"
+    set label-color green
+  ]
+end
+
+to hide-nuiqsut
+  ask turtles [if label = "NUIQSUT" [die]]
+end
+
+;Obsolete, cisco harvest region. Use ASCII files instead, quicker/easier to implement
+to display-cisco
+  hide-cisco
+  let tempx  [
+    3.118644067796609
+    2.6964971751412463
+    2.183050847457622
+    1.6515254237288133
+    1.0413559322033876
+    0.567683615819206
+    0.7087005649717497
+    0.32949152542373383
+    -0.03435028248587457
+    0.04564971751412372
+    0.12248587570621794
+    -0.21694915254236946
+    -0.24135593220339047
+    -0.7380790960451975
+    -1.1181920903954818
+    -1.0445197740112988
+    -1.1340112994350307
+    -1.3491525423728845
+    -1.6501694915254248
+    -1.6605649717514126
+    -1.7943502824858726
+  ]
+
+  let tempy [
+    5.326101694915252
+    4.964519774011293
+    4.843389830508471
+    5.089265536723161
+    4.720451977401126
+    4.790960451977398
+    5.454011299435024
+    5.620790960451984
+    5.667796610169489
+    7.063502824858759
+    8 ;This is not a typo
+    8.27435028248587
+    8.967231638418085
+    9.611751412429385
+    10.263954802259889
+    11.095593220338984
+    11.84271186440678
+    12.226440677966096
+    12.764293785310741
+    13.630734463276838
+    14.79728813559322
+  ]
+
+  let xpoints array:from-list tempx
+  let ypoints array:from-list tempy
+
+  let i 0
+  while [i < array:length xpoints] [
+
+    create-turtles 1 [
+    set color pink
+    set size 2.7
+    setxy array:item xpoints i array:item ypoints i
+    set shape "dot"
+    set hidden-label "cisco"
+    ]
+
+    set i i + 1
+  ]
+end
+
+to hide-cisco
+  ask turtles[if hidden-label = "cisco" [die]]
+end

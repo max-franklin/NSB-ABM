@@ -1,0 +1,542 @@
+
+;; FROM-NLS: patch-list.nls : fcm.nls
+to setup-caribou
+
+  let caribou-group-number floor(caribou-amt / caribou-group-amt)
+
+;  ;set base fcm
+;  set base-fcm-caribou matrix:make-identity 7
+;  matrix:set-row base-fcm-caribou 0 [0 0 0 0.5 -0.5 0 0] ;util low
+;  matrix:set-row base-fcm-caribou 1 [0 0 0 -0.5 0.5 0 0] ;util high
+;  matrix:set-row base-fcm-caribou 2 [0 0 0 0 -0.5 0.5 -0.5] ;cent close
+;  matrix:set-row base-fcm-caribou 3 [0 0 0 0 0 0 0.5]   ;cent far
+;  matrix:set-row base-fcm-caribou 4 [0 0 0 0 0 0 0]
+;  matrix:set-row base-fcm-caribou 5 [0 0 0 0 0 0 0]
+;  matrix:set-row base-fcm-caribou 6 [0 0 0 0 0 0 0]
+
+
+  set fcm-adja-base matrix:make-constant 21 11 0
+   ;initialize the adjacency list to predefined values
+;  matrix:set-row fcm-adja-base 0	[	4	0	0.1	0	-1	1	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 1	[	-4	0	0	0	0.5	-0.5	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 2	[	0	0.5	-0.1	0.1	0.5	-0.5	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 3	[	0	0	0.2	-0.2	-0.7	0.7	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 4	[	0.4	4	0	0	-2.2	2.2	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 5	[	0	-1	0.2	-0.2	1.5	-1.5	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 6	[	0	-0.2	-0.3	0.3	1.1	-1.1	0	0	0	2.6	0	]
+;  matrix:set-row fcm-adja-base 7	[	0	0.2	1	-1	-1.1	1.1	0	0	0	-4	0	]
+;  matrix:set-row fcm-adja-base 8	[	2	0	0	0	-1	1	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 9	[	-2	0	0	0	0.5	-0.5	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 10	[	0.5	0	0	0	0	0	3.5	-0.8	-1	-1	-1	]
+;  matrix:set-row fcm-adja-base 11	[	0	0.3	0	0	0	0	-0.8	2.1	-0.5	4	-1.8	]
+;  matrix:set-row fcm-adja-base 12	[	0	0	0.1	0	0	0	-0.1	0.5	-0.2	-0.3	-0.2	]
+;  matrix:set-row fcm-adja-base 13	[	0	0	0	0.1	0	0	0	-0.5	0.2	0.3	0.2	]
+;  matrix:set-row fcm-adja-base 14	[	0	0	0	0	0	0	-0.1	-0.8	1.5	0.8	0.7	]
+;  matrix:set-row fcm-adja-base 15	[	0	0	0	0	0	0	0.4	1	-1.2	-0.7	-0.7	]
+;  matrix:set-row fcm-adja-base 16	[	0	0	0	0	0	0	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 17	[	0	0	0	0	0	0	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 18	[	0	0	0	0	0	0	0	0	0.2	0	0	]
+;  matrix:set-row fcm-adja-base 19	[	0	0	0	0	0	0	0	0	0	0	0	]
+;  matrix:set-row fcm-adja-base 20	[	0	0	0	0	0	0	0	0	0	0	0	]
+;  
+  matrix:set-row fcm-adja-base 0	[	4.00	0.00	0.10	0.00	-1	  1.00	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 1	[	-4  	0.00	0.00	0.00	0.50	-0.5	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 2	[	0.00	0.50	-0.1	0.10	0.50	-0.5	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 3	[	0.00	0.00	0.20	-0.2	-0.7	0.70	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 4	[	0.40	4.00	0.00	0.00	-2.2	2.20	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 5	[	0.00	-1	  0.20	-0.2	1.50	-1.5	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 6	[	0.00	-0.2	-0.3	0.30	1.10	-1.1	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 7	[	0.00	0.20	1.00	-1  	-1.1	1.10	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 8	[	2.00	0.00	0.00	0.00	-1.00	1.00	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 9	[	-2.00	0.00	0.00	0.00	0.50	-0.50	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 10	[	0.00	0.00	0.00	0.00	0.00	0.00	3.50	-0.8	-1  	-1	    -1	]
+  matrix:set-row fcm-adja-base 11	[	0.00	0.00	0.00	0.00	0.00	0.00	-0.8	2.10	-0.5	4.00	-1.8	]
+  matrix:set-row fcm-adja-base 12	[	0.00	0.00	0.00	0.00	0.00	0.00	-0.1	0.50	-0.2	-0.3	-0.2	]
+  matrix:set-row fcm-adja-base 13	[	0.00	0.00	0.00	0.00	0.00	0.00	0.00	-0.5	0.20	0.30	0.20	]
+  matrix:set-row fcm-adja-base 14	[	0.00	0.00	0.00	0.00	0.00	0.00	-0.1	-0.8	1.50	0.80	0.70	]
+  matrix:set-row fcm-adja-base 15	[	0.00	0.00	0.00	0.00	0.00	0.00	0.40	1.00	-1.2	-0.7	-0.7	]
+  matrix:set-row fcm-adja-base 16	[	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 17	[	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 18	[	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 19	[	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 20	[	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	]
+
+
+  create-caribou caribou-group-amt
+  [
+    ;State management
+    set last-state-migrate false
+    set allowed-to-remember false
+    set color blue + 2
+    let rxcor random-xcor
+    let rycor random-ycor
+
+
+    ;forage intra-patch
+    set fga-amt 135 / 2195 ;SemeniukVal * 3 / patch width&height in meters
+    ;forage inter-patch
+    set fge-amt 1350 / 2195 ; move-towards new patch, set as goal, check if reached, clear goal.
+    ;migrate/taxi
+    set mg-amt-min 3000 / 2195
+    set mg-amt-max 6000 / 2195
+
+
+    ;fcm setup
+
+    set fcm-mat-sensor matrix:make-constant 10 1 0
+    set fcm-mat-conc-delta matrix:make-constant 11 1 0; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
+    set fcm-adja matrix:copy fcm-adja-base ; Adj
+    set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
+
+    ;TODO Evaluate real values
+    set close-range 1.0;  ex: 1.2
+    set far-range 6; ex: 1.8
+    set fcm-sigmoid-scalar 1
+
+
+    ;taxi based on upto 3 patches away
+
+
+    ;;Attraction factor to migrate
+    set attraction-factor 15
+    set test-migration 0
+    set last-patches array:from-list n-values 45 [0]
+    set last-patch-index 0
+
+    set last-taxi-vals array:from-list n-values 10 [0]
+    set last-taxi-index 0
+
+    set last-forage-vals array:from-list n-values 10 [0]
+    set last-forage-index 0
+
+
+    while[rxcor < -63 or rxcor > 63]
+    [
+      set rxcor random-xcor
+    ]
+
+    while[rycor < -63 or rycor > 63]
+    [
+      set rycor random-ycor
+    ]
+    ;Size is radius of herd
+    set radius caribou-radius
+    set shape "circle 2"
+    set size radius
+
+    set current-centroid (random 5 + 1)
+
+    set centroid-attraction set-centroid-attraction
+
+    set group-size caribou-group-amt
+    set fd-amt 0.25 ;place holder overwritten in go-caribou
+   while [not check-location rxcor rycor]
+   [
+     set rxcor random-xcor
+     set rycor random-ycor
+   ]
+    setxy rxcor rycor
+
+    ;set by group population
+    set weight (132 * caribou-group-number)
+    set bioenergy (27.5 * caribou-group-number * 1000) ; In kJ
+    set bioenergy-upper (33 * caribou-group-number * 1000) ; kJ
+    set bioenergy-lower (22 * caribou-group-number) ; kJ
+
+      ;;Edges
+  ;array:set graph-edges 0 1.0
+
+;  set cog-map matrix:make-identity 7
+
+
+  ;;WIP;;
+  ;;FCM-caribou end states
+  ;Perception
+  ; util-low                    ; 0
+  ; util-high (inverse of low)  ; 1
+  ; cent-close                  ; 2
+  ; cent-far                    ; 3
+  ;Action
+  ; change-cent/taxi state      ; 4
+  ; forage-state/               ; 5
+  ; cent-attraction             ; 6
+
+;  matrix:set-row cog-map 0 [0 0 0 1 -1 0 0] ;util low
+;  matrix:set-row cog-map 1 [0 0 0 -1 1 0 0] ;util high
+;  matrix:set-row cog-map 2 [0 0 0 0 -1 1 -1] ;cent close
+;  matrix:set-row cog-map 3 [0 0 0 0 0 0 1]   ;cent far
+;  matrix:set-row cog-map 4 [0 0 0 0 0 0 0] ;change cent/taxi
+;  matrix:set-row cog-map 5 [0 0 0 0 0 0 0] ;forage
+;  matrix:set-row cog-map 6 [0 0 0 0 0 0 0] ; cent attraction
+;   set cog-map matrix:copy base-fcm-caribou
+;
+;   let rand (random-float (mutate-amt * 2) - mutate-amt)
+;   matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
+;
+;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+;   matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
+;
+;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+;   matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
+;
+;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+;   matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
+;
+;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+;   matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
+;
+;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+;   matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
+;
+;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+;   matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
+;
+;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+;   matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
+
+   if(is-training?)
+   [
+     setxy -12 -27
+   ]
+
+  ]
+end
+
+to go-caribou
+  
+  ;Test migration state, and when to kick out of migration.
+  ; Use centroid attraction factor to control intensity of migration
+  ; Incorporate FCM for migration decisions.
+  
+  ;;;States;;;
+  ; 0 - intra-forage
+  ; 1 - taxi
+  ; 2 - interforage
+  
+  
+  
+  ;actVals
+  ;util-low
+  ;util-high
+  ;taxi-state
+  ;forage-state
+  ;cent-dist-close
+  ;cent-dist-far
+  
+  ;fcm-mat-sensor ;sensor values placed into a matrix representing the previous values
+  ;fcm-mat-conc-delta ; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
+  ;fcm-adja
+  
+  
+  let migrate-val 0.2
+  
+  ask caribou
+  [
+    set state 2
+    let other-state-found false
+    let avg-past 0
+    
+    
+    ;close-range ;  ex: 1.2
+    ;far-range ; ex: 1.8
+    ;fcm-sigmoid-scalar
+
+;wraps into the ternary function
+
+    let close-hunt (min-one-of hunters [distance myself] )
+    let hunt-dist distance close-hunt
+    matrix:set fcm-mat-sensor 0 0 (1 - (fcm-ternary 550 1100 hunt-dist)) ;Foe Close = 0 invert this valuse
+    matrix:set fcm-mat-sensor 1 0 (fcm-ternary 550 1100 hunt-dist) ;Foe Far = 1
+    
+    let high-food-near (max-one-of patches in-radius 3 [caribou-utility])
+    let high-food-dist distance high-food-near
+    
+    ;If there is no high quantity food nearby, set distance out of the ternary functions range. In this case world-size will do.
+    if([caribou-utility] of high-food-near < 0.5)
+    [
+      set high-food-dist 129
+    ]
+    matrix:set fcm-mat-sensor 2 0 (1 - (fcm-ternary 1 3 high-food-dist)) ;food Close = 0 invert this valuse
+    matrix:set fcm-mat-sensor 3 0 (fcm-ternary 1 3 high-food-dist) ;Food Far = 1
+
+    matrix:set fcm-mat-sensor 4 0 (1 - (fcm-ternary bioenergy-lower bioenergy-upper bioenergy ))
+    matrix:set fcm-mat-sensor 5 0 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy)
+     
+     let local-quantity mean [caribou-utility] of neighbors 
+    matrix:set fcm-mat-sensor 6 0 (1 - (fcm-ternary 0.50 1 local-quantity)) ;Foe Close = 0 invert this valuse
+    matrix:set fcm-mat-sensor 7 0 (fcm-ternary 0.50 1 local-quantity) ;Foe Far = 1
+
+    matrix:set fcm-mat-sensor 8 0 (1 - (disturb-dist xcor ycor)) ;Foe Close = 0 invert this valuse
+    matrix:set fcm-mat-sensor 9 0 (disturb-dist xcor ycor) ;Foe Far = 1
+
+    ;;Sensory Operations
+    ;this is the "splice" in the diagram from your notebook to multiply by the submatrix
+    ;let fcm-combined-sensor fcm-merge-sen-conc fcm-mat-sensor fcm-mat-conc-delta
+
+    ;multiply by sub adjacency list to calculate concepts
+    ;show matrix:dimensions matrix:transpose((matrix:submatrix fcm-adja 0 0 16 11))
+    ;show matrix:dimensions fcm-combined-sensor
+    
+      
+    
+    ;weights for internal concepts
+    let sens-adj matrix:transpose(matrix:submatrix fcm-adja 0 0 10 6)
+    ;
+    let internal matrix:times sens-adj fcm-mat-sensor
+    set internal matrix:map fcm-sigmoid-simple internal
+    ;weights for actions
+    let conc-adj matrix:transpose(matrix:submatrix fcm-adja 10 6 16 11) 
+    let final-states matrix:times conc-adj internal
+    set state fcm-index-max final-states
+;    
+;    let concept-calc matrix:times matrix:transpose(matrix:submatrix fcm-adja 0 0 16 11) fcm-combined-sensor  ;multiply by the adjacency list for sensors and concepts (internalizations)
+;    let concept-act fcm-sigmoid-concept-wrapper concept-calc fcm-mat-conc-delta
+;    let motor-calc matrix:times matrix:transpose(matrix:submatrix fcm-adja 10 0 21 11) concept-act
+;    let motor-act fcm-sigmoid-concept-wrapper motor-calc fcm-mat-conc-delta
+;    set fcm-mat-conc-delta motor-act
+;    set state fcm-index-max motor-act
+
+
+;
+;    let i 0
+;
+;    while [i < 45]
+;      [
+;        set avg-past (avg-past + array:item last-patches i)
+;
+;        set i (i + 1)
+;      ]
+;
+;      ;util high or low activation
+;      ifelse(avg-past < caribou-util-cutoff and ticks > 720)
+;      [
+;        set util-low 1
+;        set util-high 0
+;
+;        set taxi-state taxi-state + matrix:get cog-map 1 4
+;        set forage-state forage-state + matrix:get cog-map 1 3
+;      ]
+;      [
+;       set util-low 0
+;       set util-high 1
+;
+;       set taxi-state taxi-state + matrix:get cog-map 1 4
+;       set forage-state forage-state + matrix:get cog-map 1 3
+;      ]
+
+
+      ;increase taxi/migration based on high values util values
+
+
+
+      ;Centroid Attraction rate
+      set magic-centroid current-centroid
+      let cent-agents centroids with [cid = magic-centroid]
+      let cent-agent one-of cent-agents
+      let temp-dist (distance cent-agent)
+
+
+;      ifelse(temp-dist > caribou-cent-dist-cutoff)
+;      [
+;        set cent-dist-close 0
+;        set cent-dist-far 1
+;
+;        set centroid-attraction centroid-attraction-max
+;      ]
+;      [
+;        set cent-dist-close 1
+;        set cent-dist-far 0
+;
+;        set taxi-state taxi-state + matrix:get cog-map 1 4
+;        set forage-state forage-state + matrix:get cog-map 1 3
+;
+;        set centroid-attraction (temp-dist / caribou-cent-dist-cutoff) * centroid-attraction-max
+;        if(centroid-attraction < centroid-attraction-min)
+;        [
+;          set centroid-attraction centroid-attraction-min
+;        ]
+;
+;      ]
+;      if(taxi-state > 1)
+;      [
+;        set taxi-state 1
+;      ]
+;
+;      if(taxi-state < 0)
+;      [
+;        set taxi-state 0
+;      ]
+;
+;      ; based on percentages in Semeniuk et al
+;      ifelse(taxi-state > 0.8)
+;      [
+;        ifelse(forage-state > 0.5)
+;        [
+;          set state 2
+;        ]
+;        [
+;          set state 1
+;        ]
+;      ]
+;      [
+;        ifelse(forage-state > 0.5)
+;        [
+;          set state 0
+;        ]
+;        [
+;          set state 2
+;        ]
+;      ]
+;
+
+
+
+      ;other-state-found used to get around if-else limitations
+      if(state = 4) ;intra forage
+      [
+        set fd-amt fga-amt
+        set other-state-found true
+      ]
+
+      if(state = 2 and not other-state-found);taxi/migrate
+      [
+        set current-centroid (random 115 + 1)
+        ;set centroid-attraction (centroid-attraction * attraction-factor)
+        set fd-amt mg-amt-max
+        set other-state-found true
+      ]
+
+      if(state = 1 and not other-state-found);interforage
+      [
+        set fd-amt fge-amt
+      ]
+
+
+      ;Move according to state and centroid values
+      array:set last-patches last-patch-index [caribou-utility] of patch-here
+      set last-patch-index last-patch-index + 1
+
+      if(last-patch-index = 45)
+        [
+          set last-patch-index 0
+        ]
+
+      let p patch-list-caribou-wrapper xcor ycor centroid-attraction cent-agent
+
+
+      face p
+      set previous-patch p
+      ask patch-here
+      [
+        set caribou-modifier caribou-modifier + caribou-modify-amt
+      ]
+
+      ;look 1 patch ahead
+      ifelse([elevation] of patch-at-heading-and-distance heading 1 > [elevation] of patch-here)
+      [
+        ;uphill
+        ;0.4556 patch distance = 1km
+        set bioenergy bioenergy - (3.640 * weight * (fd-amt / 0.4556))
+      ]
+      [
+        set bioenergy bioenergy - (1.293 * weight * (fd-amt / 0.4556))
+      ]
+
+      ;Move the agent forward by determined amount
+      fd fd-amt
+
+      let acquired-energy caribou-veg-type-energy [vegetation-type] of patch-here * group-size
+      set bioenergy bioenergy + acquired-energy
+
+      ifelse(temp-dist > caribou-cent-dist-cutoff)
+      [
+        set centroid-attraction centroid-attraction-max
+      ]
+      [
+        set centroid-attraction (temp-dist / caribou-cent-dist-cutoff) * centroid-attraction-max
+        if(centroid-attraction < centroid-attraction-min)
+        [
+          set centroid-attraction centroid-attraction-min
+        ]
+      ]
+
+
+
+
+;      if(state = 0)
+;      [
+;
+;
+;        set test-migration (test-migration - 1)
+;
+;        set magic-centroid current-centroid
+;        let cent-agents centroids with [cid = magic-centroid]
+;        let cent-agent one-of cent-agents
+;
+;        ;patch memory
+;        let avg-past 0
+;        let i 0
+;        while [i < 45]
+;        [
+;          set avg-past (avg-past + array:item last-patches i)
+;
+;          set i (i + 1)
+;        ]
+;        ;Ticks used for testing
+;        let temp-cent current-centroid
+;        if(any? centroids in-radius 2 with [cid = temp-cent])
+;        [
+;
+;
+;          if(last-state-migrate = true)
+;          [
+;            set centroid-attraction (centroid-attraction / attraction-factor)
+;            set last-state-migrate false
+;            show "END TAXI"
+;          ]
+;
+;
+;          set avg-past avg-past / 45
+;          ; show avg-past
+;          if(avg-past < migrate-val)
+;          [
+;            show "TAXI"
+;            set state 1
+;          ]
+;        ]
+;        array:set last-patches last-patch-index [caribou-utility] of patch-here
+;        set last-patch-index last-patch-index + 1
+;
+;        if(last-patch-index = 45)
+;        [
+;          set last-patch-index 0
+;        ]
+;
+;        let p patch-list-caribou-wrapper xcor ycor centroid-attraction cent-agent
+;
+;
+;        face p
+;        set previous-patch p
+;        ask patch-here
+;        [
+;          set caribou-modifier caribou-modifier + caribou-modify-amt
+;        ]
+;        fd fd-amt
+;      ]
+;      ;; Migrate
+;     if (state = 1)
+;     [
+;        ;change centroid, used to test until proper centroids implemented
+;        set current-centroid (random 100 + 1)
+;        set centroid-attraction (centroid-attraction * attraction-factor)
+;        ;temporary values to test taxiing
+;        set test-migration 150
+;        set state 0
+;        set last-state-migrate true
+;
+;      ]
+
+
+
+    ]
+
