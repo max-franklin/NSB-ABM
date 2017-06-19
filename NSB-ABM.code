@@ -6,7 +6,8 @@
 ; -- I've created a new folder and moved the file to it to see if that resolves the issue.
 extensions [ gis array matrix table csv]
 
-__includes["insect.nls" "precip.nls" "NDVI.nls" "caribouPop.nls"]
+__includes["insect.nls" "precip.nls" "NDVI.nls" "caribouPop.nls"
+           "elevation.nls" vegetation-rank.nls" "moosePop.nls" ]
 
 breed [moose a-moose]
 breed [caribou a-caribou]
@@ -16,6 +17,7 @@ breed [whitefish a-whitefish]
 breed [centroids centroid]
 breed [deflectors deflector]
 breed [mem-markers mem-mark]
+breed [ hunters hunter ]
 
 
 globals
@@ -102,6 +104,29 @@ globals
   mosquito-mean
   oestrid-mean
   time-of-year
+  vegetation-CP-list
+  vegetation-CNP-list
+  vegetation-PC-list
+  vegetation-MH-list
+  vegetation-ML-list
+  vegetation-OH-list
+  vegetation-OL-list
+  vegetation-LS-list
+  kde-elevation-dataset
+  kde-insect-dataset
+  kde-NDVI-dataset
+  kde-precipitation-dataset
+  kde-vegrank-dataset
+  elev-max-k
+  elev-min-k
+  insect-max-k
+  insect-min-k
+  ndvi-max-k
+  ndvi-min-k
+  prec-max-k
+  prec-min-k
+  vegrank-max-k
+  vegrank-min-k
 
   ;;;; insect modifier
   insect-needs-reset
@@ -142,6 +167,14 @@ patches-own
   mosquito-scale
   oestrid-scale
   gray-scale
+  vegetation-beta
+  elev-paint
+  elevation-scale
+  kde-elevation-estimate
+  kde-insect-estimate
+  kde-NDVI-estimate
+  kde-precipitation-estimate
+  kde-vegrank-estimate
   ;water ;doesn't appear to be used atm, but playing it safe. (Max)
   coast
   ;needed?
@@ -253,6 +286,32 @@ mem-markers-own
 [
   caribou-id
 ]
+
+hunters-own [
+             ;concepts
+             prey-close      ;from 0:3/5 of hunter vision, activator of hunting
+             prey-far        ;from 2/5:5/5 of hunter vision, activator of exploring
+             stalking        ;level of internal concept
+             curiousity      ;level of internal concept
+             hunt            ;hunting function
+             explore         ;exploring function
+             ;FCM
+             hunter-fcm-matrix
+             hunter-fcm-internal
+             hunter-fcm-motor
+             hunter-fcm-sensory
+             hunter-fcm-raw-internal
+             hunter-fcm-act-internal
+             ;data
+             prey
+             distance-to-prey
+	     hunter-energy
+             home-patch
+             catch-probability
+             prey-caught
+             sensory-close
+             sensory-far
+            ]
 
 ;wraps to other setup functions
 to setup
