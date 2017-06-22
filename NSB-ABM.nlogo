@@ -6,7 +6,8 @@
 
 extensions [ gis array matrix table csv]
 
-__includes["insect.nls" "precip.nls" "NDVI.nls" "caribouPop.nls" "caribou.nls" "moose.nls" "fcm.nls" "patch-list.nls" "utilityfunctions.nls" "display.nls"]
+__includes["insect.nls" "precip.nls" "NDVI.nls" "caribouPop.nls" "caribou.nls" "moose.nls"
+  "fcm.nls" "patch-list.nls" "utility-functions.nls" "display.nls" "connectivityCorrection.nls" "vegetation-rank.nls"]
 
 breed [moose a-moose]
 breed [caribou a-caribou]
@@ -22,17 +23,30 @@ globals
 [
 
 ;GIS DATA
+
   patch-roughness-dataset
   patch-wetness-dataset
   patch-streams-dataset
   patch-elevation-dataset
   patch-ocean-dataset
+  patch-whitefish-dataset
 
   ;globals for the NDVI.nls module.
   ndvi-dataset
   vegetation-ndvi-list
   ;ndvi-matrix
   ndvi-max
+
+  vegetation-CP-list
+  vegetation-CNP-list
+  vegetation-PC-list
+  vegetation-MH-list
+  vegetation-ML-list
+  vegetation-OH-list
+  vegetation-OL-list
+  vegetation-LS-list
+
+  veg-selection-season
 
   patch-vegetation-dataset
   max-roughness
@@ -118,6 +132,7 @@ patches-own
   boundsTest
   vegetation-type
   ndvi-quality
+  whitefish? ;for whether or not a patch has been used for broad whitefish harvesting in last 10 yr. (Braund report)
 
   ;Patches Precipitation.nls
   precipitation-amt
@@ -126,6 +141,7 @@ patches-own
 
   ;;Utility Values
   ;caribou
+  connected? ;boolean for whether or not patches are connected by a stream. Setting to be true for all patches with streams > than 1/2 mean [streams] of patches.
   caribou-utility-max
   caribou-utility
   caribou-modifier ;modified based on caribou vists. Add decay?
@@ -136,7 +152,11 @@ patches-own
   ;all
   deflection
 
+  vegParRank ;vegetation ranking of patch for pregnant caribou
+  vegNonParRank ;vegetation ranking of patch for non-pregnant caribou
   ;;;;; HENRI PATCH VALUES ;;;;;
+  vegetation-beta
+
   prev-insect-val
   mosquito-density
   oestrid-density
@@ -212,14 +232,14 @@ caribou-own
   forage-state
   cent-dist-close
   cent-dist-far
-  
+
 
   ;--New FCM--
   ;FCM Control
   close-range ;  ex: 1.2
   far-range ; ex: 1.8
   fcm-sigmoid-scalar ; currently always set to 1
-  
+
   bioenergy-upper ;The upper limit for the FCM ternary calculation for energy
   bioenergy-lower ;The lower limit for the FCM Ternary calculation for energy
   ;--FCM Sensors--
@@ -298,7 +318,7 @@ to setup
   set-mosquito-mean
   set-oestrid-mean
   set-coastline
-  
+
   setup-hunters-temp
   setup-precipitation
   setup-terrain-layers
@@ -316,7 +336,7 @@ end
 to setup-hunters-temp
 create-hunters 1
 [
-  setxy 5 5 
+  setxy 5 5
 ]
 
 
@@ -339,7 +359,7 @@ to setup-centroids
       setxy (array:item arrdata 0) (array:item arrdata 1)
       set category (array:item arrdata 2)
     ]
-    show idCounter
+    ;show idCounter
     set idCounter (idCounter + 1)
   ]
 
@@ -373,6 +393,10 @@ to go
     set hour 0
     set day (day + 1)
     go-ndvi
+    if day > 151 and day < 258
+    [
+      go-veg-ranking
+    ]
     if(day > 365)
     [
       if caribouPopMod? = true
@@ -381,6 +405,7 @@ to go
       set day (day mod 365)
     ]
   ]
+
 
   go-deflectors
   go-insect
@@ -394,7 +419,7 @@ to go
   if(is-training? and day = 365)
   [
     update-caribou-fcm
-    export-fcm
+    ;export-fcm
   ]
 
 
@@ -460,6 +485,7 @@ to setup-terrain-layers
   set patch-ocean-dataset gis:load-dataset "data/patches/PatchOcean.asc"
   set patch-roughness-dataset gis:load-dataset "data/patches/PatchRoughness.asc"
   set patch-vegetation-dataset gis:load-dataset "data/patches/NorthSlopeVegetation.asc"
+  ;set patch-whitefish-dataset gis:load-dataset "data/ascBounds/whitefish10Y.asc"
 
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-wetness-dataset))
 
@@ -469,7 +495,18 @@ to setup-terrain-layers
   gis:apply-raster patch-elevation-dataset elevation
   gis:apply-raster patch-ocean-dataset ocean
   gis:apply-raster patch-vegetation-dataset vegetation-type
+
+  set patch-whitefish-dataset gis:load-dataset "data/ascBounds/whitefish10Y.asc"
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-whitefish-dataset))
+  gis:apply-raster patch-whitefish-dataset whitefish?
+
+  ask patches with [whitefish? > 0] [set whitefish? true]
+  set-vegetation-rank-lists
+  ask patches
+  [ set vegNonParRank 0
+    set vegParRank 0 ]
   correct-vegetation
+  set-streams ;sets connected patches based on patch streams value. Connects the gap present in the colville river. Connects Nuiqsut to the Colville.
 end
 
 
@@ -519,35 +556,7 @@ to-report caribou-veg-type-energy [val]
 end
 
 
-;;Correction Functions
-to correct-vegetation
-  ;Removes clouds and cloud shadows
-  ask patches
-[
-  while [(vegetation-type = 7) or (vegetation-type = 8)]
-  [
 
-    let rand random 3
-    let tempx (rand - 1)
-    set rand random 3
-    let tempy (rand - 1)
-;    show "x"
-;    show tempx + pxcor
-;    show "y"
-;    show tempy + pycor
-
-    if(tempx + pxcor <= 64) and (tempx + pxcor > -65) and (tempy + pycor <= 64) and (tempy + pycor > -65)
-    [
-      let veg-temp ([vegetation-type] of patch-at tempx tempy)
-      if (not(veg-temp = 7) and not(veg-temp = 8))
-      [
-        set vegetation-type veg-temp
-      ]
-    ]
-
-  ]
-]
-end
 ;Converts NAD27 Coordinates to Patches in the model
 to nad-to-patch-pos [x y]
   ;extents of the data used
@@ -754,8 +763,8 @@ GRAPHICS-WINDOW
 64
 -64
 64
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -989,7 +998,7 @@ CHOOSER
 BoundsFile
 BoundsFile
 "data/ascBounds/CharDolly10Y.asc" "data/ascBounds/CharDolly12M.asc" "data/ascBounds/Cisco10Y.asc" "data/ascBounds/Cisco12M.asc" "data/ascBounds/MooseBounds10Y.asc" "data/ascBounds/MooseBounds12M.asc" "data/ascBounds/whitefish12m.asc" "data/ascBounds/whitefish10Y.asc"
-4
+7
 
 BUTTON
 1012
@@ -1085,7 +1094,7 @@ elevation-limit
 elevation-limit
 0
 1000
-237.0
+236.0
 1
 1
 NIL
@@ -1899,7 +1908,7 @@ SWITCH
 538
 caribouPopMod?
 caribouPopMod?
-0
+1
 1
 -1000
 

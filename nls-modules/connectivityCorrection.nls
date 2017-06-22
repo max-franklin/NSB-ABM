@@ -1,0 +1,21 @@
+;Purpose of this module is to make corrections to stream definitions in the model for hunter travel purposes.
+
+to set-streams
+  let threshold (mean [ streams ] of patches ) / 2
+  ask patches with [ streams >= threshold ] [ set connected? true ]
+  ;now, manually correct the weird gap in the Colville River...
+  ask patch -5 -5 [ sprout 1 
+    [ 
+      face patch 2 -2
+      while [ not (patch-here = patch 2 -2) ]
+      [ ask patch-here [ set connected? true ]
+        fd 0.1 ]
+      move-to patch 2 1
+      face patch 0 5
+      while [not (patch-here = patch 0 5)]
+      [ ask patch-here [ set connected? true ]
+        fd 0.1 ]
+      die
+    ] 
+  ]
+end
