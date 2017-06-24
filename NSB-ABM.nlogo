@@ -307,7 +307,7 @@ to setup
   set time-of-year 0
   set max-roughness 442.442
   set hour 0
-  set day 0
+  set day 152
   set year 0
   setup-deflectors
   ;this must be called to apply first deflector values
@@ -330,6 +330,10 @@ to setup
   setup-patch-list
   setup-insect
   set-precipitation-data-list
+
+  setup-ndvi
+  go-veg-ranking
+
   reset-ticks
 end
 
