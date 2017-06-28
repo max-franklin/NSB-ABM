@@ -133,7 +133,7 @@ to display-precipitation
 end
 
 to display-caribou-utility
-  ask patches [set pcolor scale-color green caribou-utility 0 3 ]
+  ask patches [set pcolor scale-color green caribou-utility 0 1 ]
 end
 
 to display-moose-utility

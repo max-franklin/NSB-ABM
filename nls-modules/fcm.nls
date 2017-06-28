@@ -12,7 +12,7 @@ to-report fcm-index-max [mat]
 
     set i (i + 1)
   ]
-  show (max-index)
+ ; show (max-index)
   report (max-index)
 end
 
@@ -106,4 +106,11 @@ to-report mutate-nonzero [x]
   ]
 
   report 0
+end
+
+
+to export-fcm
+  file-open "FCM-List.txt"
+  file-write matrix:to-row-list base-fcm-caribou
+  file-close
 end

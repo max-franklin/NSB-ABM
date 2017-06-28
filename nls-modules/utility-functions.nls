@@ -1,9 +1,9 @@
 to setup-caribou-utility
   ;pseudo utility val for demonstration
-  ask patches [set caribou-utility (random 20 + 1)]
+  ;ask patches [set caribou-utility (random 20 + 1)]
 
 
-  ;;real utility
+  ;;base utility
   ask patches
   [
     ; Try to keep values [0,1]?
@@ -18,32 +18,12 @@ to setup-caribou-utility
     let insect-value 0
     set prev-insect-val 0
 
-    ;Load from GUI Veg-values
-    if(vegetation-type = 2)
-    [
-      set veg-value caribou-util-type-2
-    ]
-    if(vegetation-type = 3)
-    [
-      set veg-value caribou-util-type-3
-    ]
-    if(vegetation-type = 4)
-    [
-      set veg-value caribou-util-type-4
-    ]
-    if(vegetation-type = 5)
-    [
-      set veg-value caribou-util-type-5
-    ]
 
-    if(vegetation-type = 9)
-    [
-      set veg-value caribou-util-type-9
-    ]
-
-
+    
+    ;set veg-value vegetation-beta * (ndvi-quality / ndvi-all-max) 
     ;Utility follows form of (var * varFactor) + (var2 * var2Factor)
-    set caribou-utility ((caribou-veg-factor * veg-value) + (caribou-rough-factor * rough-value) + (caribou-insect-factor * insect-value) - (deflection * caribou-deflection-factor))
+    ;OLD LINE; set caribou-utility (veg-value + (caribou-rough-factor * rough-value) + (caribou-insect-factor * insect-value) - (deflection * caribou-deflection-factor))
+    set caribou-utility ((caribou-rough-factor * rough-value) + (caribou-insect-factor * insect-value) - (deflection * caribou-deflection-factor))
    ; show caribou-utility
     ;use this when performing update ;; + (modifier-factor * caribou-modifier)
     ;Prevent divide by 0. Rewrite this later to preven the error in new Function.
@@ -60,11 +40,19 @@ to setup-caribou-utility
   ]
 end
 
+to update-para-utility
 
 to update-caribou-utility
   ask patches
   [
-
+    ;calculate positive values
+   let veg-value vegetation-beta * (ndvi-quality / ndvi-all-max) 
+   let rough-value (roughness / max-roughness)
+   if(veg-value = 0)
+   [
+     set veg-value vegetation-beta * 0.05
+   ]
+   set caribou-utility veg-value
     if (ocean = 0)
     [
       ;reverse insect value from previous run
@@ -95,6 +83,10 @@ to update-caribou-utility
       [
         set caribou-utility (caribou-utility + (caribou-modifier-factor * caribou-modifier))
       ]
+      
+      set caribou-utility (caribou-utility - (precipitation-amt / precipitation-max) * caribou-precip-factor)
+      set caribou-utility (caribou-utility - (caribou-rough-factor * rough-value))
+      set caribou-utility (caribou-utility - (deflection * caribou-deflection-factor))
       ;Correct divide by 0 error in new function.
       if(caribou-utility  <= 0)
       [

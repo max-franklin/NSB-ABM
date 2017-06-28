@@ -26,20 +26,49 @@ to-report patch-list-caribou-wrapper [curr-x curr-y attraction target]
   setup-patch-list
   report p
 
-
 end
 
 to-report patch-list-moose-wrapper [curr-x curr-y]
 
   build-patch-list curr-x curr-y
   remove-nonwalkable-patches moose-max-elevation moose-max-wetness
-  patch-list-normal-caribou-util
+  patch-list-normal-moose-util
   patch-list-add-attraction 0 one-of centroids
 
   let p patch-list-probable
   ;clear the patch-list by calling setup
   setup-patch-list
   report p
+end
+
+to-report patch-list-caribou-para-wrapper [curr-x curr-y attraction target]
+ 
+
+  build-patch-list curr-x curr-y
+  remove-nonwalkable-patches caribou-max-elevation caribou-max-wetness
+  patch-list-normal-caribou-util-para
+  patch-list-add-attraction attraction target
+
+  let p patch-list-probable
+  ;clear the patch-list by calling setup
+  setup-patch-list
+  report p
+
+end
+
+to-report patch-list-caribou-non-para-wrapper [curr-x curr-y attraction target]
+ 
+
+  build-patch-list curr-x curr-y
+  remove-nonwalkable-patches caribou-max-elevation caribou-max-wetness
+  patch-list-normal-caribou-util-non-para
+  patch-list-add-attraction attraction target
+
+  let p patch-list-probable
+  ;clear the patch-list by calling setup
+  setup-patch-list
+  report p
+
 end
 
 ;Add patches to the patch list by coordinates and existence
@@ -150,7 +179,7 @@ to patch-list-normal-caribou-util
   set i 0
   while [i < 8]
   [
-    if(patch-list-get-exist i = 1)
+    if(patch-list-get-exist i = 1 and not (utotal = 0))
     [
       array:set patch-list-utility i (array:item patch-list-utility i / utotal)
     ]
@@ -158,6 +187,98 @@ to patch-list-normal-caribou-util
   ]
 
 end
+
+to patch-list-normal-caribou-util-para
+  let utotal 0
+
+  let i 0
+  ;get total number
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+      array:set patch-list-utility i ([caribou-utility-para] of p)
+      set utotal (utotal + array:item patch-list-utility i)
+    ]
+    set i (i + 1)
+  ]
+
+  ;as
+  set i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1 and not (utotal = 0))
+    [
+      array:set patch-list-utility i (array:item patch-list-utility i / utotal)
+    ]
+    set i (i + 1)
+  ]
+
+end
+
+to patch-list-normal-caribou-util-non-para
+  let utotal 0
+
+  let i 0
+  ;get total number
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+      array:set patch-list-utility i ([caribou-utility-non-para] of p)
+      set utotal (utotal + array:item patch-list-utility i)
+    ]
+    set i (i + 1)
+  ]
+
+  ;as
+  set i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1 and not (utotal = 0))
+    [
+      array:set patch-list-utility i (array:item patch-list-utility i / utotal)
+    ]
+    set i (i + 1)
+  ]
+
+end
+
+
+to patch-list-normal-moose-util
+  let utotal 0
+
+  let i 0
+  ;get total number
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+      array:set patch-list-utility i ([moose-utility] of p)
+      set utotal (utotal + array:item patch-list-utility i)
+    ]
+    set i (i + 1)
+  ]
+
+  ;as
+  set i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1 and not (utotal = 0))
+    [
+      array:set patch-list-utility i (array:item patch-list-utility i / utotal)
+    ]
+    set i (i + 1)
+  ]
+
+end
+
+
+
+
 ;Add an attraction to a target variable
 to patch-list-add-attraction [attraction target]
   ; this distances stored in a list in the event a diffuse function is needed

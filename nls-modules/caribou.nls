@@ -70,8 +70,24 @@ to setup-caribou
     set color blue + 2
     let rxcor random-xcor
     let rycor random-ycor
-
-
+    let gen-rand (random 100 + 1)
+    
+    ifelse(gen-rand < 42.5) ; average number bulls per 100 females
+    [
+      set caribou-class 0
+    ]
+    [
+      set caribou-class 1
+    ]
+    
+    if (caribou-class = 1)
+    [
+      set gen-rand (random 100 + 1)
+      if(gen-rand < (caribou-para * 100))
+      [
+        set caribou-class 2
+      ]
+    ]
     ;forage intra-patch
     set fga-amt 135 / 2195 ;SemeniukVal * 3 / patch width&height in meters
     ;forage inter-patch
@@ -228,14 +244,14 @@ to go-caribou
   ;fcm-adja
   
   
-  let migrate-val 0.2
+  
   
   ask caribou
   [
     set state 2
     let other-state-found false
     let avg-past 0
-    
+    let energy-loss 0
     
     ;close-range ;  ex: 1.2
     ;far-range ; ex: 1.8
@@ -411,6 +427,10 @@ to go-caribou
       if(state = 4) ;intra forage
       [
         set fd-amt fga-amt
+        
+        
+        set energy-loss  2.82 ; foraging expense
+  
         set other-state-found true
       ]
 
@@ -419,23 +439,57 @@ to go-caribou
         set current-centroid (random 115 + 1)
         ;set centroid-attraction (centroid-attraction * attraction-factor)
         set fd-amt mg-amt-max
+        
+                
+        if (season = 1 or season = 2)
+        [
+         set energy-loss 45  ; energy expense * km in Kj
+        ]
+        
+        if (season = 0 or season = 4)
+        [
+         set energy-loss 52.5 ; energy expense * km in Kj
+        ]
+        
         set other-state-found true
       ]
 
       if(state = 1 and not other-state-found);interforage
       [
         set fd-amt fge-amt
+        
+        if (season = 1 or season = 2)
+        [
+         set energy-loss 3.45 * fd-amt * 2.195  ; energy expense * km in Kj
+        ]
+        
+        if (season = 0 or season = 4)
+        [
+         set energy-loss 3.96 * fd-amt * 2.195 ; energy expense * km in Kj
+        ]
+        
         set other-state-found true
       ]
       
       if(state = 0 and not other-state-found) ;Evade
       [
         ;move away from the perceived threat
+        ; running distance
         set other-state-found true
       ]
       
       if(state = 3 and not other-state-found) ; rest
       [
+        if (season = 1 or season = 2)
+        [
+         set energy-loss 1.10894760598 ; kJ for a 1.5hour period, laying down
+        ]
+        
+        if (season = 0 or season = 4)
+        [
+          ;based on daily average resting of a 105kg caribou
+         set energy-loss 0.87458239028 ; kJ for 1.5h period, laying down
+        ]
         
       ]
 
@@ -459,22 +513,25 @@ to go-caribou
         set caribou-modifier caribou-modifier + caribou-modify-amt
       ]
 
-      ;look 1 patch ahead
-      ifelse([elevation] of patch-at-heading-and-distance heading 1 > [elevation] of patch-here)
-      [
-        ;uphill
-        ;0.4556 patch distance = 1km
-        set bioenergy bioenergy - (3.640 * weight * (fd-amt / 0.4556))
-      ]
-      [
-        set bioenergy bioenergy - (1.293 * weight * (fd-amt / 0.4556))
-      ]
+;      ;look 1 patch ahead
+;      ifelse([elevation] of patch-at-heading-and-distance heading 1 > [elevation] of patch-here)
+;      [
+;        ;uphill
+;        ;0.4556 patch distance = 1km
+;        set bioenergy bioenergy - (3.640 * weight * (fd-amt / 0.4556))
+;      ]
+;      [
+;        set bioenergy bioenergy - (1.293 * weight * (fd-amt / 0.4556))
+;      ]
+     
+      set bioenergy bioenergy - (energy-loss * group-size)
+
 
       ;Move the agent forward by determined amount
       fd fd-amt
 
-      let acquired-energy caribou-veg-type-energy [vegetation-type] of patch-here * group-size
-      set bioenergy bioenergy + acquired-energy
+     ; let acquired-energy caribou-veg-type-energy [vegetation-type] of patch-here * group-size
+     ; set bioenergy bioenergy + acquired-energy
 
       ifelse(temp-dist > caribou-cent-dist-cutoff)
       [

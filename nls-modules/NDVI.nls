@@ -1,12 +1,22 @@
 ;LOAD VEGETATION
 to load-gis-ndvi
   ;ndvi matrix updated every 10 days, from May 1 to Oct. 20
+  
   let ndvi-matrix floor ((day - 121) / 10)
+  if(ndvi-matrix > 16)
+  [
+    show "17"
+    set ndvi-matrix 0
+  ]
+  ;Fix out of bounds error by setting the ndvi data back to zero at the end of the year
+
+  
   let matrix (item ndvi-matrix vegetation-ndvi-list)
   set ndvi-dataset gis:load-dataset matrix
   set ndvi-max (gis:maximum-of ndvi-dataset)
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of ndvi-dataset))
   gis:apply-raster ndvi-dataset ndvi-quality
+  set ndvi-all-max 247
   correct-ndvi
 end
 
@@ -37,7 +47,10 @@ end
 
 to go-ndvi
   let ndvi-matrix floor ((day - 121) / 10)
+  
+
   if ndvi-matrix >= 0 and ((day - 121) mod 10 = 0) [ print "loading ndvi..." reset-timer load-gis-ndvi print "ndvi successfully loaded, time = " show timer]
+
   ;print "loading ndvi..." load-gis-ndvi
 end
 

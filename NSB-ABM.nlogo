@@ -47,6 +47,9 @@ globals
   vegetation-LS-list
 
   veg-selection-season
+  ndvi-all-max
+
+  season ;set to [0-3] corresponding to current season currently set to summer always
 
   patch-vegetation-dataset
   max-roughness
@@ -59,8 +62,8 @@ globals
   ;Globals Precipitation
   precipitation-dataset
 	precipitation-data-list
- 	precipitation-max
- precipitation-matrix-number
+	precipitation-max
+  precipitation-matrix-number
 
   ;;Bounds Data
   boundsTestData
@@ -144,6 +147,8 @@ patches-own
   connected? ;boolean for whether or not patches are connected by a stream. Setting to be true for all patches with streams > than 1/2 mean [streams] of patches.
   caribou-utility-max
   caribou-utility
+  caribou-utility-para
+  caribou-utility-non-para
   caribou-modifier ;modified based on caribou vists. Add decay?
 
   ;moose
@@ -222,6 +227,8 @@ caribou-own
   ;goal patch for foraging
   goal-patch
   goal-reached
+
+  caribou-class ; Caribou Class 0 - Male, 1 - Female,  2 - Female/Parturition
 
   ;FCM
   cog-map
@@ -309,9 +316,12 @@ to setup
   set hour 0
   set day 152
   set year 0
+  set season 1
   setup-deflectors
+  set ndvi-all-max 247
   ;this must be called to apply first deflector values
   go-deflectors
+
 
   set-mosquito-means-list
   set-oestrid-means-list
@@ -331,7 +341,7 @@ to setup
   setup-insect
   set-precipitation-data-list
 
-  setup-ndvi
+ ; setup-ndvi
   go-veg-ranking
 
   reset-ticks
@@ -1143,7 +1153,7 @@ caribou-group-amt
 caribou-group-amt
 0
 200
-30.0
+200.0
 1
 1
 NIL
@@ -1246,7 +1256,7 @@ INPUTBOX
 1415
 438
 caribou-rough-factor
--5.0
+2.0
 1
 0
 Number
@@ -1916,6 +1926,32 @@ caribouPopMod?
 1
 -1000
 
+INPUTBOX
+1643
+377
+1705
+437
+caribou-precip-factor
+0.1
+1
+0
+Number
+
+SLIDER
+801
+372
+992
+405
+caribou-para
+caribou-para
+0
+1
+0.8
+.01
+1
+NIL
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -2258,7 +2294,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.1
+NetLogo 6.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
