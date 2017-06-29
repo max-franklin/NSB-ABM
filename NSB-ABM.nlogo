@@ -247,6 +247,8 @@ caribou-own
   far-range ; ex: 1.8
   fcm-sigmoid-scalar ; currently always set to 1
 
+
+  bioenergy-saved
   bioenergy-upper ;The upper limit for the FCM ternary calculation for energy
   bioenergy-lower ;The lower limit for the FCM Ternary calculation for energy
   ;--FCM Sensors--
@@ -340,6 +342,10 @@ to setup
   setup-patch-list
   setup-insect
   set-precipitation-data-list
+  if(is-random?)
+  [
+   caribou-random-fcm
+  ]
 
  ; setup-ndvi
   go-veg-ranking
@@ -411,12 +417,14 @@ to go
     [
       go-veg-ranking
     ]
-    if(day > 365)
+    if(day > 258) ;old value is 365
     [
+
       if caribouPopMod? = true
       [ go-caribou-pop ]
       set year year + 1
-      set day (day mod 365)
+      ;set day (day mod 365)
+      set day 152
     ]
   ]
 
@@ -427,13 +435,15 @@ to go
   go-caribou
   go-precipitation
   update-caribou-utility
+  update-para-utility
+  update-non-para-utility
   update-moose-utility
   go-dynamic-display
 
-  if(is-training? and day = 365)
+  if(is-training? and day = 258)
   [
     update-caribou-fcm
-    ;export-fcm
+    export-fcm
   ]
 
 
@@ -474,6 +484,14 @@ to go-dynamic-display
   if (show-caribou-utility?)
   [
     display-caribou-utility
+  ]
+  if (show-caribou-utility-para?)
+  [
+    display-caribou-utility-para
+  ]
+    if (show-caribou-utility-non-para?)
+  [
+    display-caribou-utility-non-para
   ]
 
   if (show-moose-utility?)
@@ -1123,7 +1141,7 @@ caribou-amt
 caribou-amt
 0
 50000
-21000.0
+9000.0
 1000
 1
 NIL
@@ -1208,44 +1226,11 @@ HORIZONTAL
 
 INPUTBOX
 1271
-282
-1340
-342
-caribou-util-type-2
-0.25
-1
-0
-Number
-
-INPUTBOX
-1344
-282
-1414
-342
-caribou-util-type-3
-0.5
-1
-0
-Number
-
-INPUTBOX
-1418
-282
-1488
-342
-caribou-util-type-4
-0.66
-1
-0
-Number
-
-INPUTBOX
-1271
 378
 1341
 438
 caribou-veg-factor
-1.0
+0.1
 1
 0
 Number
@@ -1287,7 +1272,7 @@ INPUTBOX
 1490
 437
 caribou-insect-factor
-0.8
+0.4
 1
 0
 Number
@@ -1298,22 +1283,22 @@ INPUTBOX
 1564
 437
 caribou-modifier-factor
--1.0
+0.1
 1
 0
 Number
 
 SLIDER
-33
-516
-267
-549
+700
+743
+934
+776
 caribou-modify-amt
 caribou-modify-amt
 0
-3
-0.5
-0.1
+1
+0.05
+0.01
 1
 NIL
 HORIZONTAL
@@ -1409,7 +1394,7 @@ INPUTBOX
 805
 722
 decay-rate
-2.0E-4
+0.01
 1
 0
 Number
@@ -1420,7 +1405,7 @@ INPUTBOX
 880
 722
 caribou-reutility
-0.01
+1.0
 1
 0
 Number
@@ -1496,28 +1481,6 @@ INPUTBOX
 720
 elevation-scale
 0.0
-1
-0
-Number
-
-INPUTBOX
-1492
-282
-1564
-342
-caribou-util-type-5
-0.75
-1
-0
-Number
-
-INPUTBOX
-1567
-282
-1640
-342
-caribou-util-type-9
-0.75
 1
 0
 Number
@@ -1666,10 +1629,10 @@ day
 11
 
 SWITCH
-797
-466
-1000
-499
+804
+550
+1007
+583
 show-moose-utility?
 show-moose-utility?
 1
@@ -1872,17 +1835,6 @@ caribou-util-cutoff
 Number
 
 INPUTBOX
-1047
-660
-1123
-720
-learn-rate
-0.01
-1
-0
-Number
-
-INPUTBOX
 1046
 592
 1127
@@ -1900,7 +1852,7 @@ SWITCH
 587
 is-training?
 is-training?
-1
+0
 1
 -1000
 
@@ -1916,10 +1868,10 @@ year
 12
 
 SWITCH
-797
-505
-956
-538
+804
+585
+963
+618
 caribouPopMod?
 caribouPopMod?
 1
@@ -1932,7 +1884,7 @@ INPUTBOX
 1705
 437
 caribou-precip-factor
-0.1
+1.0
 1
 0
 Number
@@ -1951,6 +1903,65 @@ caribou-para
 1
 NIL
 HORIZONTAL
+
+SWITCH
+796
+466
+999
+499
+show-caribou-utility-para?
+show-caribou-utility-para?
+1
+1
+-1000
+
+SWITCH
+796
+500
+999
+533
+show-caribou-utility-non-para?
+show-caribou-utility-non-para?
+0
+1
+-1000
+
+SLIDER
+1274
+309
+1693
+342
+ndvi-weight
+ndvi-weight
+0
+1
+0.1
+0.01
+1
+NIL
+HORIZONTAL
+
+INPUTBOX
+1172
+727
+1241
+787
+energy-gain-factor
+1.3
+1
+0
+Number
+
+SWITCH
+1044
+509
+1179
+542
+is-random?
+is-random?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

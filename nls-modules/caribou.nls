@@ -307,7 +307,7 @@ to go-caribou
     ;weights for actions
     let conc-adj matrix:transpose(matrix:submatrix fcm-adja 10 6 16 11) 
     let final-states matrix:times conc-adj internal
-;    
+    
 ;    if(who = 148)
 ;    [
 ;      print "Initial Sense States"
@@ -436,7 +436,11 @@ to go-caribou
 
       if(state = 2 and not other-state-found);taxi/migrate
       [
-        set current-centroid (random 115 + 1)
+        
+        let closest-cent min-n-of 10 centroids [ distance myself ] 
+        set current-centroid one-of closest-cent
+       ; set current-centroid (random 115 + 1)
+        
         ;set centroid-attraction (centroid-attraction * attraction-factor)
         set fd-amt mg-amt-max
         
@@ -480,6 +484,7 @@ to go-caribou
       
       if(state = 3 and not other-state-found) ; rest
       [
+        set fd-amt 0
         if (season = 1 or season = 2)
         [
          set energy-loss 1.10894760598 ; kJ for a 1.5hour period, laying down
@@ -502,15 +507,36 @@ to go-caribou
         [
           set last-patch-index 0
         ]
-
-      let p patch-list-caribou-wrapper xcor ycor centroid-attraction cent-agent
-
-
+      
+      
+      ;let p patch-list-caribou-wrapper xcor ycor centroid-attraction cent-agent
+      let p patch-here
+      ;select vegetation based on type
+      
+      let state-centroid-attraction centroid-attraction
+      if(state = 2)
+      [
+        set state-centroid-attraction state-centroid-attraction * 5
+      ]
+      
+      ifelse(caribou-class = 2 and (day > 151 and day < 167))
+        [
+          set p patch-list-caribou-non-para-wrapper xcor ycor centroid-attraction cent-agent
+        ]
+        [
+          set p patch-list-caribou-para-wrapper xcor ycor centroid-attraction cent-agent
+        ]
       face p
       set previous-patch p
       ask patch-here
       [
         set caribou-modifier caribou-modifier + caribou-modify-amt
+        
+        ;Do not let caribou modifer exceed 1
+        if(caribou-modifier > 1)
+        [
+          set caribou-modifier 1
+        ]
       ]
 
 ;      ;look 1 patch ahead
@@ -524,11 +550,29 @@ to go-caribou
 ;        set bioenergy bioenergy - (1.293 * weight * (fd-amt / 0.4556))
 ;      ]
      
+      let energy-gain 0
       set bioenergy bioenergy - (energy-loss * group-size)
-
+      
 
       ;Move the agent forward by determined amount
       fd fd-amt
+      
+      ifelse(caribou-class = 2 and (day > 151 and day < 167))
+      [
+        if (not (state = 3))
+        [
+          set energy-gain [caribou-utility-para] of patch-here * energy-gain-factor * group-size
+        ]
+      ]
+      [
+        if (not (state = 3))
+        [
+          set energy-gain [caribou-utility-non-para] of patch-here * energy-gain-factor * group-size
+        ]
+      ]
+      
+      set bioenergy bioenergy + energy-gain
+
 
      ; let acquired-energy caribou-veg-type-energy [vegetation-type] of patch-here * group-size
      ; set bioenergy bioenergy + acquired-energy

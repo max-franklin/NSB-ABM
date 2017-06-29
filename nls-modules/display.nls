@@ -136,6 +136,18 @@ to display-caribou-utility
   ask patches [set pcolor scale-color green caribou-utility 0 1 ]
 end
 
+to display-caribou-utility-para
+  ask patches [set pcolor scale-color green caribou-utility-para 0 1 ]
+end
+
+to display-mosquito
+  ask patches [set pcolor scale-color green mosquito-density 0 1 ]
+end
+
+to display-caribou-utility-non-para
+  ask patches [set pcolor scale-color green caribou-utility-non-para 0 1 ]
+end
+
 to display-moose-utility
   ask patches [set pcolor scale-color green moose-utility 0 3 ]
 end

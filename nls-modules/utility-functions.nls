@@ -27,41 +27,82 @@ to setup-caribou-utility
    ; show caribou-utility
     ;use this when performing update ;; + (modifier-factor * caribou-modifier)
     ;Prevent divide by 0. Rewrite this later to preven the error in new Function.
-    if(caribou-utility  <= 0)
-    [
-
-      set caribou-utility 0.0000000001
-    ]
-    if(ocean = 1)
-    [
-     set caribou-utility 0.0000000001
-    ]
     set caribou-utility-max caribou-utility
   ]
 end
 
 to update-para-utility
+  ask patches
+  [
+    ;CARIBOU-UTILITY MUST ALWAYS BE CALCULATED FIRST! THIS IS DONE IN THE GO PROCEDURE!
+    set caribou-utility-para caribou-utility 
+    let ndvi-util ((ndvi-quality / ndvi-all-max) * ndvi-weight) + (1 - ndvi-weight)
+    let veg-value vegParRank * ndvi-util * caribou-veg-factor
+    set caribou-utility-para caribou-utility-para + veg-value
+    
+    
+        
+    if(caribou-utility-para  <= 0)
+    [
+
+      set caribou-utility-para 0.0000000001
+    ]
+    if(ocean = 1)
+    [
+     set caribou-utility-para 0.0000000001
+    ]
+    ;set caribou-utility-max caribou-utility-para  ;; Necessary???
+  ]
+end
+
+to update-non-para-utility
+  ask patches
+  [
+    ;CARIBOU-UTILITY MUST ALWAYS BE CALCULATED FIRST! THIS IS DONE IN THE GO PROCEDURE!
+    set caribou-utility-non-para caribou-utility 
+    
+    let ndvi-util ((ndvi-quality / ndvi-all-max) * ndvi-weight) + (1 - ndvi-weight)
+    let veg-value vegNonParRank * ndvi-util * caribou-veg-factor
+    set caribou-utility-non-para caribou-utility-non-para + veg-value
+    
+    
+        
+    if(caribou-utility-non-para  <= 0)
+    [
+
+      set caribou-utility-non-para 0.0000000001
+    ]
+    if(ocean = 1)
+    [
+     set caribou-utility-non-para 0.0000000001
+    ]
+    ;set caribou-utility-max caribou-utility-para  ;; Necessary???
+  ]
+end
 
 to update-caribou-utility
   ask patches
   [
     ;calculate positive values
-   let veg-value vegetation-beta * (ndvi-quality / ndvi-all-max) 
+ ;  let veg-value vegetation-beta * (ndvi-quality / ndvi-all-max) 
+    
+    ;reset caribou utility
+    set caribou-utility 0
    let rough-value (roughness / max-roughness)
-   if(veg-value = 0)
-   [
-     set veg-value vegetation-beta * 0.05
-   ]
-   set caribou-utility veg-value
+   ;   if(veg-value = 0)
+   ;   [
+   ;     set veg-value vegetation-beta * 0.05
+   ;   ]
+   ;  set caribou-utility veg-value
     if (ocean = 0)
     [
-      ;reverse insect value from previous run
-      set caribou-utility (caribou-utility + (prev-insect-val * caribou-insect-factor))
+      ;reverse insect value from previous run ;; Removed as of rewrite 6/27/17
+     ; set caribou-utility (caribou-utility + (prev-insect-val * caribou-insect-factor))
 
       ;combine fly and mosquito density, separate later.
-      let insect-val (mosquito-density + oestrid-density) / 2
-      set caribou-utility caribou-utility - (insect-val * caribou-insect-factor)
-      set prev-insect-val insect-val
+      
+      ;set caribou-utility caribou-utility - (insect-val * caribou-insect-factor)
+      ;set prev-insect-val insect-val
       ifelse (count caribou-here = 0)
       [
         if (caribou-modifier > 0)
@@ -73,26 +114,32 @@ to update-caribou-utility
         [
           set caribou-modifier 0
         ]
-
-        if (caribou-utility + caribou-reutility <= caribou-utility-max)
-        [
-          set caribou-utility caribou-utility + caribou-reutility
-        ]
+;;; Re-utilization can be replaced by a simple change to the update operation. 
+;        if (caribou-utility + caribou-reutility <= caribou-utility-max)
+;        [
+;          set caribou-utility caribou-utility + caribou-reutility
+;        ]
       ]
       ;Apply caribou-modifier
       [
-        set caribou-utility (caribou-utility + (caribou-modifier-factor * caribou-modifier))
+        set caribou-utility (caribou-utility - (caribou-modifier-factor * caribou-modifier))
       ]
       
       set caribou-utility (caribou-utility - (precipitation-amt / precipitation-max) * caribou-precip-factor)
       set caribou-utility (caribou-utility - (caribou-rough-factor * rough-value))
+      
+      let insect-val (mosquito-density + oestrid-density) / 2
+      set insect-val (insect-val * caribou-insect-factor)
+      set caribou-utility (caribou-utility - insect-val)
+      
       set caribou-utility (caribou-utility - (deflection * caribou-deflection-factor))
       ;Correct divide by 0 error in new function.
-      if(caribou-utility  <= 0)
-      [
-
-        set caribou-utility 0.00000001
-      ]
+      
+;      if(caribou-utility  <= 0)
+;      [
+;
+;        set caribou-utility 0.00000001
+;      ]
     ]
 
   ]

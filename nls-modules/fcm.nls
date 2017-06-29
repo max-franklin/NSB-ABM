@@ -4,7 +4,7 @@ to-report fcm-index-max [mat]
   let max-num 0
   while [i < 5]
   [
-    if (matrix:get mat i 0 > max-num)
+    if (matrix:get mat i 0 >= max-num)
     [
       set max-num matrix:get mat i 0
       set max-index i
@@ -39,6 +39,10 @@ to-report fcm-sigmoid-simple [rawVal]
   report (1 / (1 + e ^ (-1 * rawVal)))
 end
 
+to caribou-random-fcm
+  set fcm-adja-base matrix:map random-fcm fcm-adja-base ;randomize fcm
+end
+
 ;Breed Updates for FCMs
 to update-caribou-fcm
   ask caribou
@@ -64,6 +68,9 @@ to update-caribou-fcm
     [
       set fcm-adja matrix:copy fcm-adja-base ; Adj
       set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
+      
+      let caribou-group-number floor(caribou-amt / caribou-group-amt)
+      set bioenergy (27.5 * caribou-group-number * 1000) ; In kJ ;reset energy
 ;      set cog-map matrix:copy base-fcm-caribou
 ;
 ;      let rand (random-float (mutate-amt * 2) - mutate-amt)
@@ -108,9 +115,14 @@ to-report mutate-nonzero [x]
   report 0
 end
 
+to-report random-fcm [x]
+  report (random-float 10) - 5
+end
+
 
 to export-fcm
   file-open "FCM-List.txt"
   file-write matrix:to-row-list base-fcm-caribou
+  file-write "\n"
   file-close
 end
