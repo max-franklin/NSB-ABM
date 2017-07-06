@@ -6,8 +6,8 @@
 
 extensions [ gis array matrix table csv]
 
-__includes["insect.nls" "precip.nls" "NDVI.nls" "caribouPop.nls" "caribou.nls" "moose.nls"
-  "fcm.nls" "patch-list.nls" "utility-functions.nls" "display.nls" "connectivityCorrection.nls" "vegetation-rank.nls"]
+__includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls" "nls-modules/caribou.nls" "nls-modules/moose.nls"
+  "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"]
 
 breed [moose a-moose]
 breed [caribou a-caribou]
@@ -510,7 +510,7 @@ to setup-terrain-layers
                     ;(day 1 = Jan. 1)
   ask patches [ set ndvi-quality 0 ]
   set-ndvi-data-list ;setting up the NDVI list
-  if day >= 121 [ go-ndvi ]
+  if day >= 151 [ set day 151 go-ndvi set day 152 ] ;bug fix that maintains logic behind NDVI load in procedures.
   set patch-wetness-dataset gis:load-dataset "data/patches/PatchWetness.asc"
   set patch-streams-dataset gis:load-dataset "data/patches/PatchStreams.asc"
   set patch-elevation-dataset gis:load-dataset "data/patches/PatchElevation.asc"
@@ -1935,7 +1935,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.1
+0.33
 0.01
 1
 NIL
@@ -2305,7 +2305,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0
+NetLogo 6.0.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
