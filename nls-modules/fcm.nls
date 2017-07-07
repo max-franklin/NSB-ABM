@@ -45,6 +45,7 @@ end
 
 ;Breed Updates for FCMs
 to update-caribou-fcm
+  ;currently looks like there is no recombination of FCMs, only mutation. Check with Cory (Max)
   ask caribou
   [
     ;look for highest average energy
@@ -60,6 +61,7 @@ to update-caribou-fcm
     if([bioenergy] of best > best-caribou-val or best-caribou-val = 0)
     [
       set fcm-adja-base matrix:copy [fcm-adja] of best
+      set base-fcm-caribou matrix:copy [fcm-adja] of best
      ; set base-fcm-caribou matrix:copy [cog-map] of best
       set best-caribou-val [bioenergy] of best
     ]
@@ -105,14 +107,14 @@ to update-caribou-fcm
 end
 
 
-to-report mutate-nonzero [x]
-  if not(x = 0)
-  [
+to-report mutate-nonzero [x] 
+  ;if not(x = 0) ;why are we not mutating 0 values in the matrices?
+  ;[
     let rand (random-float (mutate-amt * 2) - mutate-amt)
     report (x + rand)
-  ]
+  ;]
 
-  report 0
+  ;report 0
 end
 
 to-report random-fcm [x]
@@ -121,7 +123,9 @@ end
 
 
 to export-fcm
-  file-open "FCM-List.txt"
+  let file-ex word "FCM-List:" date-and-time
+  set file-ex word file-ex ".txt"
+  file-open file-ex
   file-write matrix:to-row-list base-fcm-caribou
   file-write "\n"
   file-close

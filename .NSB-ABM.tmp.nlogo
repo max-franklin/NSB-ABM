@@ -424,11 +424,6 @@ to go
       [ go-caribou-pop ]
       set year year + 1
       ;set day (day mod 365)
-      if(is-training? and day >= 258)
-      [
-        update-caribou-fcm
-        export-fcm
-      ]
       set day 152
 
     ]
@@ -446,7 +441,11 @@ to go
   update-moose-utility
   go-dynamic-display
 
-
+  if(is-training? and day >= 258)
+  [
+    update-caribou-fcm
+    export-fcm
+  ]
 
 
   tick
