@@ -530,13 +530,13 @@ to go-caribou
         set fd-amt 0
         if (season = 1 or season = 2)
         [
-         set energy-loss 1.10894760598 * caribou-group-number; kJ for a 1.5hour period, laying down
+         set energy-loss 1.10894760598; kJ for a 1.5hour period, laying down
         ]
         
         if (season = 0 or season = 4)
         [
           ;based on daily average resting of a 105kg caribou
-         set energy-loss 0.87458239028 * caribou-group-number ; kJ for 1.5h period, laying down
+         set energy-loss 0.87458239028  ; kJ for 1.5h period, laying down
         ]
         
       ]
@@ -600,6 +600,7 @@ to go-caribou
 ;      ]
      
       let energy-gain 0
+      
       set bioenergy bioenergy - (energy-loss * caribou-group-number)
       
 

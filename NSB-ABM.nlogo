@@ -427,7 +427,7 @@ to go
       if(is-training? and day >= 258)
       [
         update-caribou-fcm
-        export-fcm
+        ;export-fcm
       ]
       set day 152
 
@@ -1143,8 +1143,8 @@ caribou-amt
 caribou-amt
 0
 50000
-9000.0
-1000
+2500.0
+500
 1
 NIL
 HORIZONTAL
@@ -1842,7 +1842,7 @@ INPUTBOX
 1127
 652
 mutate-amt
-0.2
+0.05
 1
 0
 Number
@@ -1937,7 +1937,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.33
+0.1
 0.01
 1
 NIL

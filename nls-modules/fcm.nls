@@ -56,14 +56,27 @@ to update-caribou-fcm
     ;use new base-map for all agents
     ; apply mutations
 
-
+    
+    ;;Adding in a recombination of FCM section. 
+    ;degrees of recombination? start off with only 1.
+    ;;Work in progress
     let best max-one-of caribou [bioenergy]
+    let next-best max-one-of caribou with [who != best] [bioenergy]
+    
+    let map1 matrix:copy [fcm-adja] of best
+    let map2 matrix:copy [fcm-adja] of next-best
+
+    
+    
+    
+    ;let best max-one-of caribou [bioenergy]
     if([bioenergy] of best > best-caribou-val or best-caribou-val = 0)
     [
       set fcm-adja-base matrix:copy [fcm-adja] of best
       set base-fcm-caribou matrix:copy [fcm-adja] of best
      ; set base-fcm-caribou matrix:copy [cog-map] of best
       set best-caribou-val [bioenergy] of best
+      export-fcm
     ]
 
     ask caribou
