@@ -46,18 +46,18 @@ to setup-caribou
 ;  matrix:set-row fcm-adja-base 19	[	0	0	0	0	0	0	0	0	0	0	0	]
 ;  matrix:set-row fcm-adja-base 20	[	0	0	0	0	0	0	0	0	0	0	0	]
 ;  
-  matrix:set-row fcm-adja-base 0	[	1.00	0.00	0.10	0.00	-1	  1.00	0.00	0.00	0.00	0.00	0.00	]
-  matrix:set-row fcm-adja-base 1	[	-1  	0.00	0.00	0.00	0.50	-0.5	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 0	[	4.00	0.00	0.10	0.00	-1	  1.00	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 1	[	-4  	0.00	0.00	0.00	0.50	-0.5	0.00	0.00	0.00	0.00	0.00	]
   matrix:set-row fcm-adja-base 2	[	0.00	0.50	-0.1	0.10	0.50	-0.5	0.00	0.00	0.00	0.00	0.00	]
   matrix:set-row fcm-adja-base 3	[	0.00	0.00	0.20	-0.2	-0.7	0.70	0.00	0.00	0.00	0.00	0.00	]
-  matrix:set-row fcm-adja-base 4	[	0.40	1.00	0.00	0.00	-2.2	2.20	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 4	[	0.40	4.00	0.00	0.00	-2.2	2.20	0.00	0.00	0.00	0.00	0.00	]
   matrix:set-row fcm-adja-base 5	[	0.00	-1	  0.20	-0.2	1.50	-1.5	0.00	0.00	0.00	0.00	0.00	]
   matrix:set-row fcm-adja-base 6	[	0.00	-0.2	-0.3	0.30	1.10	-1.1	0.00	0.00	0.00	0.00	0.00	]
-  matrix:set-row fcm-adja-base 7	[	0.00	0.20	1.00	-1  	-1.1	1.10	0.00	0.00	0.00	0.00	0.00	]
+  matrix:set-row fcm-adja-base 7	[	0.00	0.20	1.00	-1  	-1.1	1.10	0.00	0.00	0.00	0.00	0.00	] 
   matrix:set-row fcm-adja-base 8	[	2.00	0.00	0.00	0.00	-1.00	1.00	0.00	0.00	0.00	0.00	0.00	]
   matrix:set-row fcm-adja-base 9	[	-2.00	0.00	0.00	0.00	0.50	-0.50	0.00	0.00	0.00	0.00	0.00	]
-  matrix:set-row fcm-adja-base 10	[	0.00	0.00	0.00	0.00	0.00	0.00	1.50	-0.8	-1  	-1	    -1	]
-  matrix:set-row fcm-adja-base 11	[	0.00	0.00	0.00	0.00	0.00	0.00	-0.8	2.10	-0.5	1.00	-1.8	]
+  matrix:set-row fcm-adja-base 10	[	0.00	0.00	0.00	0.00	0.00	0.00	3.50	-0.8	-1  	-1	    -1	]
+  matrix:set-row fcm-adja-base 11	[	0.00	0.00	0.00	0.00	0.00	0.00	-0.8	2.10	-0.5	4.00	-1.8	]
   matrix:set-row fcm-adja-base 12	[	0.00	0.00	0.00	0.00	0.00	0.00	-0.1	0.50	-0.2	-0.3	-0.2	]
   matrix:set-row fcm-adja-base 13	[	0.00	0.00	0.00	0.00	0.00	0.00	0.00	-0.5	0.20	0.30	0.20	]
   matrix:set-row fcm-adja-base 14	[	0.00	0.00	0.00	0.00	0.00	0.00	-0.1	-0.8	1.50	0.80	0.70	]
@@ -294,7 +294,7 @@ to go-caribou
       matrix:set fcm-mat-sensor 5 0 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy) ;energy high? (Max)
       
       let local-quantity  [caribou-utility-para] of patch-here
-      matrix:set fcm-mat-sensor 6 0 (fcm-ternary 0.50 1 local-quantity) ;Foe Close = 0 invert this valuse
+      matrix:set fcm-mat-sensor 6 0 (fcm-ternary 0.50 1 local-quantity)) ;Foe Close = 0 invert this valuse
       matrix:set fcm-mat-sensor 7 0 (1 - (fcm-ternary 0.50 0 local-quantity)) ;Foe Far = 1
       
       let close-disturb (min-one-of hunters [distance myself] )

@@ -396,7 +396,7 @@ to setup-deflectors
   [
     setxy 0 0
     set area-outer 15
-    set area-inner 152
+    set area-inner 15
     set deflect-amt 1
     set has-applied false
   ]
@@ -1188,7 +1188,7 @@ caribou-radius
 caribou-radius
 0
 12
-3.0
+1.5
 0.5
 1
 NIL
@@ -1232,7 +1232,7 @@ INPUTBOX
 1341
 438
 caribou-veg-factor
-0.1
+0.08
 1
 0
 Number
@@ -1243,7 +1243,7 @@ INPUTBOX
 1415
 438
 caribou-rough-factor
-2.0
+2.3
 1
 0
 Number
@@ -1274,7 +1274,7 @@ INPUTBOX
 1490
 437
 caribou-insect-factor
-0.4
+0.7
 1
 0
 Number
@@ -1299,7 +1299,7 @@ caribou-modify-amt
 caribou-modify-amt
 0
 1
-0.05
+0.35
 0.01
 1
 NIL
@@ -1493,7 +1493,7 @@ INPUTBOX
 1638
 437
 caribou-deflection-factor
-1.0
+0.3
 1
 0
 Number
@@ -1937,7 +1937,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.1
+0.8
 0.01
 1
 NIL
@@ -1981,6 +1981,17 @@ NIL
 NIL
 NIL
 1
+
+SWITCH
+1044
+467
+1164
+500
+debug-fcm?
+debug-fcm?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
