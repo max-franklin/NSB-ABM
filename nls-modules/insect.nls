@@ -113,7 +113,7 @@ to set-mosquito-means-list   ;reads in max mosquito idexes file and loads them i
   let i 0
   let temp ""
   set mosquito-sigma 0.126148716416492
-  file-open "mosquito_means.txt"
+  file-open "data/mosquito_means.txt"
   while [file-at-end? = false]
   [
     set temp file-read-line
@@ -127,7 +127,7 @@ to set-oestrid-means-list   ;reads in max mosquito idexes file and loads them in
   set oestrid-means-list []
   let j 0
   let temp2 ""
-  file-open "oestrid_means.txt"
+  file-open "data/oestrid_means.txt"
   set oestrid-sigma 0.124657702160509
   while [file-at-end? = false]
   [

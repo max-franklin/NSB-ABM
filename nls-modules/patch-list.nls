@@ -1,0 +1,442 @@
+;;Patch List Management Function
+;   uses a list of coordinates and patch availability
+
+to setup-patch-list
+  ;set arrays to max number of available patches.
+  set patch-coord-x array:from-list n-values 8 [0]
+  set patch-coord-y array:from-list n-values 8 [0]
+  set patch-list-exists array:from-list n-values 8 [0]
+  set patch-list-utility array:from-list n-values 8 [0]
+  set patch-array-iterator 0
+end
+
+to-report patch-list-caribou-wrapper [curr-x curr-y attraction target]
+  ;build patches
+  ;remove bad patches
+  ;build/normalize utility values
+  ;increase target value
+
+  build-patch-list curr-x curr-y
+  remove-nonwalkable-patches caribou-max-elevation caribou-max-wetness
+  patch-list-normal-caribou-util
+  patch-list-add-attraction attraction target
+
+  let p patch-list-probable
+  ;clear the patch-list by calling setup
+  setup-patch-list
+  report p
+
+end
+
+to-report patch-list-moose-wrapper [curr-x curr-y]
+
+  build-patch-list curr-x curr-y
+  remove-nonwalkable-patches moose-max-elevation moose-max-wetness
+  patch-list-normal-moose-util
+  patch-list-add-attraction 0 one-of centroids
+
+  let p patch-list-probable
+  ;clear the patch-list by calling setup
+  setup-patch-list
+  report p
+end
+
+to-report patch-list-caribou-para-wrapper [curr-x curr-y attraction target]
+ 
+
+  build-patch-list curr-x curr-y
+  remove-nonwalkable-patches caribou-max-elevation caribou-max-wetness
+  patch-list-normal-caribou-util-para
+  patch-list-add-attraction attraction target
+
+  let p patch-list-probable
+  ;clear the patch-list by calling setup
+  setup-patch-list
+  report p
+
+end
+
+to-report patch-list-caribou-non-para-wrapper [curr-x curr-y attraction target]
+ 
+
+  build-patch-list curr-x curr-y
+  remove-nonwalkable-patches caribou-max-elevation caribou-max-wetness
+  patch-list-normal-caribou-util-non-para
+  patch-list-add-attraction attraction target
+
+  let p patch-list-probable
+  ;clear the patch-list by calling setup
+  setup-patch-list
+  report p
+
+end
+
+;Add patches to the patch list by coordinates and existence
+to add-patch-list [x y ex]
+  array:set patch-coord-x patch-array-iterator x
+  array:set patch-coord-y patch-array-iterator y
+  array:set patch-list-exists patch-array-iterator ex
+
+  set patch-array-iterator (patch-array-iterator + 1)
+
+  if(patch-array-iterator = 8)
+  [
+    set patch-array-iterator 0
+  ]
+
+; PROCESS -- Probablility? Find patch coordinates? Set Index Number?
+
+; SELECT
+end
+
+;Takes world patch coordinates and adds patches to the patch list to be evaluated
+to build-patch-list [curr-x curr-y]
+  let i -1
+  while [i <= 1]
+  [
+    let j -1
+    while [j <= 1]
+    [
+      if (not(i = 0 and j = 0))
+      [
+        let temp-x curr-x + i
+        let temp-y curr-y + j
+
+       ; show temp-x
+       ; show temp-y
+        ;If the patch is out of range, it does not exist, else it is in range and does exists
+        ifelse(temp-x > 64 or temp-x < -64 or temp-y > 64 or temp-y < -64)
+        [
+          add-patch-list temp-x temp-y 0
+        ]
+        [
+          add-patch-list temp-x temp-y 1
+        ]
+      ]
+        set j (j + 1)
+    ]
+    set i (i + 1)
+  ]
+
+end
+
+
+to remove-nonwalkable-patches [max-elevation max-wetness]
+  let i 0
+
+  ;Checks if a patch in the list exists and then checks to see it walkable
+  ;if the patch is not walkable we set its existence to 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+
+      ;Perform checks here
+      if ([ocean] of p = 1)
+      [
+        set-patch-exists i 0
+      ]
+
+      if ([wetness] of p > max-wetness)
+      [
+        set-patch-exists i 0
+      ]
+
+      if ([elevation] of p > max-elevation)
+      [
+        set-patch-exists i 0
+      ]
+
+      if([deflection] of p > 0.95)
+      [
+        set-patch-exists i 0
+      ]
+
+    ]
+
+    set i (i + 1)
+  ]
+end
+;Average the utilty function to be (0,1)
+to patch-list-normal-caribou-util
+  let utotal 0
+
+  let i 0
+  ;get total number
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+      array:set patch-list-utility i ([caribou-utility] of p)
+      set utotal (utotal + array:item patch-list-utility i)
+    ]
+    set i (i + 1)
+  ]
+
+  ;as
+  set i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1 and not (utotal = 0))
+    [
+      array:set patch-list-utility i (array:item patch-list-utility i / utotal)
+    ]
+    set i (i + 1)
+  ]
+
+end
+
+to patch-list-normal-caribou-util-para
+  let utotal 0
+
+  let i 0
+  ;get total number
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+      array:set patch-list-utility i ([caribou-utility-para] of p)
+      set utotal (utotal + array:item patch-list-utility i)
+    ]
+    set i (i + 1)
+  ]
+
+  ;as
+  set i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1 and not (utotal = 0))
+    [
+      array:set patch-list-utility i (array:item patch-list-utility i / utotal)
+    ]
+    set i (i + 1)
+  ]
+
+end
+
+to patch-list-normal-caribou-util-non-para
+  let utotal 0
+
+  let i 0
+  ;get total number
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+      array:set patch-list-utility i ([caribou-utility-non-para] of p)
+      set utotal (utotal + array:item patch-list-utility i)
+    ]
+    set i (i + 1)
+  ]
+
+  ;as
+  set i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1 and not (utotal = 0))
+    [
+      array:set patch-list-utility i (array:item patch-list-utility i / utotal)
+    ]
+    set i (i + 1)
+  ]
+
+end
+
+
+to patch-list-normal-moose-util
+  let utotal 0
+
+  let i 0
+  ;get total number
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+      array:set patch-list-utility i ([moose-utility] of p)
+      set utotal (utotal + array:item patch-list-utility i)
+    ]
+    set i (i + 1)
+  ]
+
+  ;as
+  set i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1 and not (utotal = 0))
+    [
+      array:set patch-list-utility i (array:item patch-list-utility i / utotal)
+    ]
+    set i (i + 1)
+  ]
+
+end
+
+
+
+
+;Add an attraction to a target variable
+to patch-list-add-attraction [attraction target]
+  ; this distances stored in a list in the event a diffuse function is needed
+  let dist-list array:from-list n-values 8 [0]
+
+  let short-index -1
+  let short-val -1
+
+
+  ; Find the minimum distance from available patches
+  let i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+      let temp-dist [distance p] of target
+      array:set dist-list i temp-dist
+
+      if(temp-dist < short-val or short-val = -1)
+      [
+        set short-index i
+        set short-val temp-dist
+      ]
+    ]
+    set i (i + 1)
+  ]
+
+  ; Add the attraction amount to the patch closes to the target
+  if (not(short-index = -1))
+  [
+    ;TODO: verify this corrected the error by changing i -> short-index
+    array:set patch-list-utility short-index (array:item patch-list-utility short-index + attraction)
+  ]
+  ; Renormalize the utility values
+  let utotal 0
+
+  set i 0
+  ;get total number
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      let p patch (patch-list-get-x i) (patch-list-get-y i)
+      set utotal (utotal + array:item patch-list-utility i)
+    ]
+    set i (i + 1)
+  ]
+
+  ;normalize data set
+  set i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      array:set patch-list-utility i (array:item patch-list-utility i / utotal)
+    ]
+    set i (i + 1)
+  ]
+
+
+end
+
+; Reports back a patch according to the utility values
+to-report patch-list-probable
+  let prob-list array:from-list n-values 8 [0]
+  ;prob-list-index contains the index of the values in the main patch list
+  let prob-list-index array:from-list n-values 8 [0]
+  let list-index 0
+
+  let i 0
+  while [i < 8]
+  [
+    if(patch-list-get-exist i = 1)
+    [
+      ifelse(list-index > 0)
+      [
+        ;if something is already in the list, add the current utility value to the previous probability
+        ;set the index to the current value in the utility list
+        let prev-value array:item prob-list (list-index - 1)
+        array:set prob-list list-index ((array:item patch-list-utility i) + prev-value)
+        array:set prob-list-index list-index i
+        set list-index (list-index + 1)
+      ]
+      [
+        ; For the first item, just the utility value as the probability
+        array:set prob-list list-index (array:item patch-list-utility i)
+        array:set prob-list-index list-index i
+        set list-index (list-index + 1)
+      ]
+    ]
+
+    set i (i + 1)
+  ]
+
+  ;List index now contains the size of the list which traversed
+  ;  smallest probability (first in list == (0.0, 1.0] ) to highes (last in list == 1.00)
+  let p-index 0
+  let selector ((random 1000 + 1 )/ 1000)
+
+  set i 0
+  while [i < list-index]
+  [
+    if(selector < array:item prob-list i)
+    [
+      ;set p-index to the index value of the master list
+      set p-index array:item prob-list-index i
+      ;Patch index found kick out of loop
+      set i list-index
+    ]
+    set i (i + 1)
+  ]
+
+  let p-return-x patch-list-get-x p-index
+  let p-return-y patch-list-get-y p-index
+
+  ;report back the selected patch
+  if(patch-list-get-exist p-index = 1)
+  [
+    ;show "---------"
+    ;show p-return-x
+    ;show p-return-y
+    report patch p-return-x p-return-y
+  ]
+
+  ;something is wrong report center patch as a failsafe
+  ;  this can occur during random placement of agents
+  report patch 0 0
+
+end
+
+to reset-patch-list
+
+end
+
+
+;Simple wrappers
+to-report patch-list-get-x [index]
+  report array:item patch-coord-x index
+end
+
+to-report patch-list-get-y [index]
+  report array:item patch-coord-y index
+end
+
+to-report patch-list-get-exist [index]
+  report array:item patch-list-exists index
+end
+
+to-report patch-list-get-util [index]
+  report array:item patch-list-utility index
+end
+
+to set-patch-exists [index value]
+  array:set patch-list-exists index value
+end
+
+to patch-iterator-override [x]
+  set patch-array-iterator x
+end
+

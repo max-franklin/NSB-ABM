@@ -1,9 +1,11 @@
 ;LOAD VEGETATION TYPE
 to load-veg-classification-gis
-  set vegetation-class-dataset gis:load-dataset "NorthSlopeVegetation.asc"
-  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of vegetation-class-dataset))
-  gis:apply-raster vegetation-class-dataset vegetation-type
+  set patch-vegetation-dataset gis:load-dataset "NorthSlopeVegetation.asc"
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-vegetation-dataset))
+  gis:apply-raster patch-vegetation-dataset vegetation-type
   correct-vegetation
+  set vegParRank 0
+  set vegNonParRank 0
 end
 
 to show-veg-type
@@ -34,18 +36,6 @@ to set-vegetation-rank-lists
   set vegetation-LS-list [10 10 7 10 1 1 1 1 7]
 end
 
-;SET VEG SELECTION SEASON
-to set-vegetation-selection-season
-  if veg-selection-season = 0 [ set-vegetation-betas-CP ]
-  if veg-selection-season = 1 [ set-vegetation-betas-CNP ]
-  if veg-selection-season = 2 [ set-vegetation-betas-PC ]
-  if veg-selection-season = 3 [ set-vegetation-betas-MH ]
-  if veg-selection-season = 4 [ set-vegetation-betas-ML ]
-  if veg-selection-season = 5 [ set-vegetation-betas-OH ]
-  if veg-selection-season = 6 [ set-vegetation-betas-OL ]
-  if veg-selection-season = 7 [ set-vegetation-betas-LS ]
-end
-
 ;COLOR POSITIVE BETA PATCHES
 to color-high-beta
   show-veg-type
@@ -55,122 +45,123 @@ end
 
 ;SET VEGETATION BETAS
 to set-vegetation-betas-CP
-  ask patches with [water = false]
+  ask patches with [ocean = 0]
   [
-    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-CP-list) ]
-    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-CP-list) ]
-    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-CP-list) ]
-    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-CP-list) ]
-    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-CP-list) ]
-    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-CP-list) ]
-    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-CP-list) ]
-    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-CP-list) ]
-    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-CP-list) ]
+    if vegetation-type = 1 [set vegParRank (item 0 vegetation-CP-list) ]
+    if vegetation-type = 2 [set vegParRank (item 1 vegetation-CP-list) ]
+    if vegetation-type = 3 [set vegParRank (item 2 vegetation-CP-list) ]
+    if vegetation-type = 4 [set vegParRank (item 3 vegetation-CP-list) ]
+    if vegetation-type = 5 [set vegParRank (item 4 vegetation-CP-list) ]
+    if vegetation-type = 6 [set vegParRank (item 5 vegetation-CP-list) ]
+    if vegetation-type = 7 [set vegParRank (item 6 vegetation-CP-list) ]
+    if vegetation-type = 8 [set vegParRank (item 7 vegetation-CP-list) ]
+    if vegetation-type = 9 [set vegParRank (item 8 vegetation-CP-list) ]
   ]
 end
 
 to set-vegetation-betas-CNP
-  ask patches with [water = false]
+  ask patches with [ocean = 0]
   [
-    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-CNP-list) ]
-    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-CNP-list) ]
-    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-CNP-list) ]
-    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-CNP-list) ]
-    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-CNP-list) ]
-    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-CNP-list) ]
-    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-CNP-list) ]
-    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-CNP-list) ]
-    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-CNP-list) ]
+    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-CNP-list) ]
+    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-CNP-list) ]
+    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-CNP-list) ]
+    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-CNP-list) ]
+    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-CNP-list) ]
+    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-CNP-list) ]
+    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-CNP-list) ]
+    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-CNP-list) ]
+    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-CNP-list) ]
   ]
 end
 
 to set-vegetation-betas-PC
-  ask patches with [water = false]
+  ask patches with [ocean = 0]
   [
-    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-PC-list) ]
-    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-PC-list) ]
-    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-PC-list) ]
-    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-PC-list) ]
-    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-PC-list) ]
-    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-PC-list) ]
-    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-PC-list) ]
-    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-PC-list) ]
-    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-PC-list) ]
+    set vegParRank 0
+    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-PC-list) ]
+    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-PC-list) ]
+    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-PC-list) ]
+    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-PC-list) ]
+    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-PC-list) ]
+    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-PC-list) ]
+    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-PC-list) ]
+    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-PC-list) ]
+    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-PC-list) ]
   ]
 end
 
 to set-vegetation-betas-MH
-  ask patches with [water = false]
+  ask patches with [ocean = 0 and mosquito-density > 0.5] ;definition of high mosquito activity.
   [
-    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-MH-list) ]
-    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-MH-list) ]
-    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-MH-list) ]
-    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-MH-list) ]
-    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-MH-list) ]
-    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-MH-list) ]
-    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-MH-list) ]
-    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-MH-list) ]
-    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-MH-list) ]
+    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-MH-list) ]
+    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-MH-list) ]
+    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-MH-list) ]
+    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-MH-list) ]
+    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-MH-list) ]
+    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-MH-list) ]
+    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-MH-list) ]
+    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-MH-list) ]
+    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-MH-list) ]
   ]
 end
 
 to set-vegetation-betas-ML
-  ask patches with [water = false]
+  ask patches with [ocean = 0 and mosquito-density <= 0.5] ;defintion of low mosquito activity.
   [
-    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-ML-list) ]
-    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-ML-list) ]
-    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-ML-list) ]
-    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-ML-list) ]
-    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-ML-list) ]
-    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-ML-list) ]
-    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-ML-list) ]
-    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-ML-list) ]
-    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-ML-list) ]
+    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-ML-list) ]
+    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-ML-list) ]
+    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-ML-list) ]
+    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-ML-list) ]
+    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-ML-list) ]
+    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-ML-list) ]
+    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-ML-list) ]
+    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-ML-list) ]
+    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-ML-list) ]
   ]
 end
 
 to set-vegetation-betas-OH
-  ask patches with [water = false]
+  ask patches with [ocean = 0 and oestrid-density > 0.5] ;definition of high oestrid activity.
   [
-    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-OH-list) ]
-    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-OH-list) ]
-    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-OH-list) ]
-    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-OH-list) ]
-    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-OH-list) ]
-    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-OH-list) ]
-    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-OH-list) ]
-    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-OH-list) ]
-    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-OH-list) ]
+    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-OH-list) ]
+    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-OH-list) ]
+    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-OH-list) ]
+    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-OH-list) ]
+    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-OH-list) ]
+    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-OH-list) ]
+    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-OH-list) ]
+    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-OH-list) ]
+    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-OH-list) ]
   ]
 end
 
 to set-vegetation-betas-OL
-  ask patches with [water = false]
+  ask patches with [ocean = 0 and oestrid-density <= 0.5] ;definition of low oestrid activity.
   [
-    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-OL-list) ]
-    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-OL-list) ]
-    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-OL-list) ]
-    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-OL-list) ]
-    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-OL-list) ]
-    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-OL-list) ]
-    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-OL-list) ]
-    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-OL-list) ]
-    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-OL-list) ]
+    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-OL-list) ]
+    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-OL-list) ]
+    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-OL-list) ]
+    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-OL-list) ]
+    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-OL-list) ]
+    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-OL-list) ]
+    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-OL-list) ]
+    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-OL-list) ]
+    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-OL-list) ]
   ]
 end
 
 to set-vegetation-betas-LS
-  ask patches with [water = false]
+  ask patches with [ocean = 0]
   [
-    if vegetation-type = 1 [set vegetation-beta (item 0 vegetation-LS-list) ]
-    if vegetation-type = 2 [set vegetation-beta (item 1 vegetation-LS-list) ]
-    if vegetation-type = 3 [set vegetation-beta (item 2 vegetation-LS-list) ]
-    if vegetation-type = 4 [set vegetation-beta (item 3 vegetation-LS-list) ]
-    if vegetation-type = 5 [set vegetation-beta (item 4 vegetation-LS-list) ]
-    if vegetation-type = 6 [set vegetation-beta (item 5 vegetation-LS-list) ]
-    if vegetation-type = 7 [set vegetation-beta (item 6 vegetation-LS-list) ]
-    if vegetation-type = 8 [set vegetation-beta (item 7 vegetation-LS-list) ]
-    if vegetation-type = 9 [set vegetation-beta (item 8 vegetation-LS-list) ]
+    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-LS-list) ]
+    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-LS-list) ]
+    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-LS-list) ]
+    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-LS-list) ]
+    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-LS-list) ]
+    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-LS-list) ]
+    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-LS-list) ]
+    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-LS-list) ]
+    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-LS-list) ]
   ]
 end
 
@@ -196,5 +187,31 @@ to correct-vegetation
        ]
      ]
    ]
+end
+
+to go-veg-ranking 
+  if day > 151 and day <= 166
+  [ 
+    set-vegetation-betas-CP
+    set-vegetation-betas-CNP
+  ]
+  if day > 166 and day <= 181
+  [ 
+    set-vegetation-betas-PC
+  ] 
+  if day > 181 and day <= 196
+  [ 
+    set-vegetation-betas-MH
+    set-vegetation-betas-ML
+  ] 
+  if day > 196 and day <= 219
+  [ 
+    set-vegetation-betas-OH
+    set-vegetation-betas-OL
+  ] 
+  if day >= 219 and day <= 258
+  [ 
+    set-vegetation-betas-LS
+  ] 
 end
 
