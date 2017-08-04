@@ -7,7 +7,7 @@
 extensions [ gis array matrix table csv]
 
 __includes["insect.nls" "precip.nls" "NDVI.nls" "caribouPop.nls"
-           "elevation.nls" vegetation-rank.nls" "moosePop.nls" ]
+           "elevation.nls" vegetation-rank.nls" "moosePop.nls" "hunters.nls"]
 
 breed [moose a-moose]
 breed [caribou a-caribou]

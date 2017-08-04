@@ -1,52 +1,60 @@
-to setup
+extensions [ matrix ]
+;GLOBAL
+globals [
+          global-fcm-matrix
+          global-fcm-internal
+          global-fcm-motor
+        ]
+
+;HUNTERS
+breed [ hunters hunter ]
+hunters-own [
+             ;concepts
+             prey-close      ;from 0:3/5 of hunter vision, activator of hunting
+             prey-far        ;from 2/5:5/5 of hunter vision, activator of exploring
+             stalking        ;level of internal concept
+             curiousity      ;level of internal concept
+             hunting          ;hunting function
+             exploring         ;exploring function
+             ;FCM
+             hunter-fcm-matrix
+             hunter-fcm-internal
+             hunter-fcm-motor
+             hunter-fcm-motor-results
+             hunter-fcm-sensory
+             hunter-fcm-raw-internal
+             hunter-fcm-act-internal
+             ;data
+             prey
+             distance-to-prey
+             hunter-energy
+             home-patch			;NUIQSUT?
+             catch-probability
+             prey-caught
+             sensory-close
+             sensory-far
+             motor-concept-index
+            ]
+
+to setup-hunters
   reset-ticks
-  kill-caribou
   kill-hunters
-  ask patches [ set pcolor green ]
-  ask patch 0 0 [ set pcolor black ]
-  kill-caribou
-  new-caribou
   new-hunters
-  ask hunters [ set home-patch ( patch 0 0 )]
-end
-
-to go
-  tick
-  go-caribou
   ask hunters
   [
-    ifelse ( hunter-energy > 0 )
-    [
-      ifelse (prey-caught = false)
-      [
-       hunt-funct
-       explore-funct
-       set hunter-energy (hunter-energy - 1)
-      ]
-      [return-home]
-    ]
-    [ return-home ]
-
+    set home-patch ( patch 0 0 )
+    set-FCM
   ]
+  set-FCM-matrices
 end
 
-to set-FCM
-  set global-fcm-matrix matrix:from-row-list [[ 0  0  1 -1  0  0 ]
-                                              [ 0  0 -1  1  0  0 ]
-                                              [ 0  0  0  0  1  0 ]
-                                              [ 0  0  0  0  0  1 ]
-                                              [ 0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0 ]]
-  set global-fcm-internal matrix:submatrix global-fcm-matrix 0 2 2 4
-  set global-fcm-motor matrix:submatrix global-fcm-matrix 2 4 4 6
-end
-
-to set-hunter-FCMs
+to run-hunters
   ask hunters
   [
-    set hunter-fcm-matrix global-fcm-matrix
-    set hunter-fcm-internal global-fcm-internal
-    set hunter-fcm-motor global-fcm-motor
+    go-hunters
+    ifelse prey-caught = false 
+    [ execute-FCM ]
+    [ return-home ] 
   ]
 end
 
@@ -56,60 +64,14 @@ to go-hunters
      [ straight-walk ]
 end
 
-to go-caribou-rand
-  ask caribou
-  [
-     ifelse ( ticks mod 2 = 0 )
-     [ random-walk ]
-     [ straight-walk ]
-  ]
-end
-
-to-report ternary-funct [ low high sense]
-  if ( sense < low )
-  [ report 0 ]
-  if ( sense > high )
-  [ report high ]
-  if ( sense >= low and sense <= high )
-  [ report (( sense - low ) / ( high - sense )) ]
-end
-
-to-report logistic-funct [ x ]
-  report ( 1 / ( 1 + e ^ ( -1 * x )))
-end
-
-;MAKE NEW CARIBOU POPULATION
-to new-caribou
-  reset-ticks
-  create-caribou caribou-population
-  [
-    set color white; - 2 + random 5  ;; random shades look nice
-    set size 1.25  ;; easier to see
-    let done false
-    let x 0
-    let y 0
-    while [done != true]
-    [
-       set x random-xcor
-       set y random-ycor
-       ask patch-at x y
-       [
-         if (patch x y != nobody)
-         [
-           set done true
-         ]
-       ]
-    ]
-    setxy x y
-  ]
-end
-
 to new-hunters
   create-hunters hunter-population
   [
     set color blue; - 2 + random 5  ;; random shades look nice
     set size 1.75  ;; easier to see
     set hunter-energy 1000
+    set prey-close (prey-close-constant * hunter-vision)
+    set prey-far (prey-far-constant * hunter-vision)
     set prey-caught false
     let done false
     let x 0
@@ -128,10 +90,6 @@ to new-hunters
     ]
     setxy x y
   ]
-end
-
-to kill-caribou
-  ask caribou [ die ]
 end
 
 to kill-hunters
@@ -182,20 +140,185 @@ to make-turn [rturn lturn]  ; turtle procedure
   [ lt lturn ]
 end
 
+to set-FCM
+  set global-fcm-matrix matrix:from-row-list [[ 0  0  1 -1  0  0 ]
+                                              [ 0  0 -1  1  0  0 ]
+                                              [ 0  0  0  0  1  0 ]
+                                              [ 0  0  0  0  0  1 ]
+                                              [ 0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0 ]]
+  set global-fcm-internal matrix:submatrix global-fcm-matrix 0 2 2 4
+  set global-fcm-motor matrix:submatrix global-fcm-matrix 2 4 4 6
+  set hunter-fcm-sensory matrix:from-row-list [[0][0]]
+end
+
+to set-hunter-FCMs
+  ask hunters
+  [
+    set hunter-fcm-matrix global-fcm-matrix
+    set hunter-fcm-internal global-fcm-internal
+    set hunter-fcm-motor global-fcm-motor
+  ]
+end
+
+to set-FCM-matrices 
+  ask hunters 
+  [ 
+   set hunter-fcm-sensory matrix:from-row-list [[0][0]]
+   set hunter-fcm-internal matrix:from-row-list [[1 -1][-1 1]]
+   set hunter-fcm-motor matrix:from-row-list [[1 0][0 1]]
+  ]
+end 
+
+to set-hunter-fcm-sensory
+
+  set sensory-close ternary-funct 0 prey-close distance-to-prey
+  set sensory-far ternary-funct prey-far hunter-vision distance-to-prey
+  matrix:set hunter-fcm-sensory 0 0 sensory-close
+  matrix:set hunter-fcm-sensory 1 0 sensory-far
+  let sensory-print matrix:pretty-print-text hunter-fcm-sensory
+  print "Sensory matrix: "
+  print sensory-print
+end
+
+to set-hunter-fcm-raw-internal
+  
+   set hunter-fcm-internal matrix:from-row-list [[1 -1][-1 1]]
+  ;set sensory-close ternary-funct 0 prey-close prey-dist
+  ;set sensory-far ternary-funct prey-far hunter-vision prey-dist
+  ;matrix:set hunter-fcm-sensory 0 0 sensory-close
+  ;matrix:set hunter-fcm-sensory 1 0 sensory-far
+
+  print "Prey distance: " 
+  print  prey-dist
+
+  let sensory-print matrix:pretty-print-text hunter-fcm-sensory
+  print "Sensory matrix: "
+  print sensory-print
+
+  let internal-print matrix:pretty-print-text hunter-fcm-internal
+  print "\nInternal matrix: "
+  print internal-print
+
+  set hunter-fcm-raw-internal matrix:times hunter-fcm-internal hunter-fcm-sensory
+  let raw-internal-print matrix:pretty-print-text hunter-fcm-raw-internal
+  print "\nRaw internal matrix: "
+  print raw-internal-print
+end
+
+to set-hunter-act-internal
+  set hunter-fcm-act-internal matrix:map logistic-funct hunter-fcm-raw-internal
+  let act-internal-print matrix:pretty-print-text hunter-fcm-act-internal
+  print "\nAct internal matrix: "
+  print act-internal-print
+
+  set hunter-fcm-internal hunter-fcm-act-internal
+  let internal-print matrix:pretty-print-text hunter-fcm-internal
+  print "\nNew internal matrix: "
+  print internal-print
+end
+
+to set-hunter-fcm-motor
+
+  set hunter-fcm-motor-results matrix:times hunter-fcm-motor hunter-fcm-internal
+
+  let motor-print matrix:pretty-print-text hunter-fcm-motor
+  print "\nMotor matrix:"
+  print motor-print
+
+  let motor-results-print matrix:pretty-print-text hunter-fcm-motor-results
+  print "\nMotor results matrix:"
+  print motor-results-print
+end
+
+to set-motor-concept 
+  let mat-dims matrix:dimensions hunter-fcm-motor-results
+  let num-rows item 0 mat-dims
+  let num-cols item 1 mat-dims
+  print "Number of rows: " 
+  print num-rows
+  print "Number of columns: "
+  print num-cols 
+  let i 0 
+  set motor-concept-index 0
+  let motor-max 0
+  let matrix-temp 0 
+  while [ i < num-rows ] 
+  [
+     set matrix-temp matrix:get hunter-fcm-motor-results i 0
+     if ( matrix-temp > motor-max )
+     [
+       set motor-max matrix-temp
+       set motor-concept-index i
+     ]
+     set i ( i + 1 )
+  ] 
+  print "Motor matrix max: " 
+  print motor-max
+  print "Concept index: " 
+  print motor-concept-index
+end
+
+to run-motor-function 
+  ifelse motor-concept-index = 0 
+  [ 
+    set hunting true
+    print "Hunting..." 
+    hunt-funct
+  ]
+  [ 
+    set exploring true 
+    print "Exploring..."
+    explore-funct
+  ]
+end
+
+to execute-FCM
+    find-prey
+    if prey != nobody 
+    [
+       set-distance-to-prey 
+       set-hunter-fcm-sensory
+       set-hunter-fcm-raw-internal
+       set-hunter-act-internal
+       set-hunter-fcm-motor
+       set-motor-concept 
+       run-motor-function 
+    ] 
+  
+end
+
+to find-prey
+   set prey one-of caribou in-radius hunter-vision
+end
+
+to head-towards-prey
+   set heading towards prey
+end
+
+to catch-prey
+   set catch-probability ( random-float 1 )
+   if catch-probability >= 0.7
+   [
+     ask prey [ die ]
+     set prey-caught true
+   ]
+end
+
+to move-forward
+   fd 1
+end
+
+to set-distance-to-prey
+   set distance-to-prey distance prey
+   print "Distance to prey: "
+   print distance-to-prey
+end
 
 to hunt-funct
-  set prey one-of caribou in-radius hunter-vision
-  if prey != nobody
-  [
-      set heading towards prey
-      set catch-probability ( random-float 1 )
-      if catch-probability >= 0.5
-      [ ask prey [ die ]
-        set prey-caught true
-      ]
-      fd 1
-
-  ]
+  head-towards-prey
+  catch-prey
+  move-forward
 end
 
 to explore-funct
@@ -207,4 +330,17 @@ to return-home
   set heading towards home-patch
   fd 1
   if ( patch-here = home-patch and hunter-energy = 0 ) [ die ]
+end
+
+to-report ternary-funct [ low high sense]
+  if ( sense < low )
+  [ report 0 ]
+  if ( sense > high )
+  [ report 1 ]
+  if ( sense >= low and sense <= high )
+  [ report (( sense - low ) / ( high - sense )) ]
+end
+
+to-report logistic-funct [ x ]
+  report ( 1 / ( 1 + e ^ ( -1 * x )))
 end
