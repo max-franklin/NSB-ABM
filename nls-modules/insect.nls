@@ -100,12 +100,35 @@ to diffuse-test
  ]
 end
 
+;******************** CORRECT INSECT INDICES LISTS AND SEASONS *******************
 ;SET DENSITIES
 to set-densities ;sets a random insect density with a max of the mean + 1 standard deviation and subtracts by an elevation scalar
    set mosquito-density ((random-float mosquito-max) - (mosquito-max-tenth)*(elevation-scale))
    set oestrid-density ((random-float oestrid-max) - (oestrid-max-tenth)*(elevation-scale))
 end
 
+to set-insect-indices
+  ;Time frames are early and late June, July, and August
+  set mosquito-means-list [0.17 0.45 0.58 0.61 0.56 0.30]
+  set oestrid-means-list [0.08 0.30 0.43 0.47 0.41 0.16]
+  set mosquito-sigma-list [0.133636  0.195714  0.179289  0.156692  0.191071  0.149130]
+  set oestrid-sigma-list [0.100017  0.212407  0.207147  0.176469  0.224342  0.132172]
+end
+
+;SET INSECT ACTIVITIES
+to set-mosquito-activity
+  set mosquito-mean (item insect-season mosquito-means-list)
+  set mosquito-sigma (item insect-season mosquito-sigma-list)
+  set mosquito-max (mosquito-mean + mosquito-sigma)
+  set mosquito-max-tenth (0.1 * mosquito-max)
+end
+
+to set-oestrid-activity
+  set oestrid-mean (item insect-season oestrid-means-list)
+  set oestrid-sigma (item insect-season oestrid-sigma-list)
+  set oestrid-max (oestrid-mean + oestrid-sigma)
+  set oestrid-max-tenth (0.1 * oestrid-max)
+end
 
 ;SET MOSQUITOS LIST
 to set-mosquito-means-list   ;reads in max mosquito idexes file and loads them into the mosquito-indexes-max array

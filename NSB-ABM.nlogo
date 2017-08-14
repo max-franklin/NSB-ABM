@@ -6,7 +6,8 @@
 
 extensions [ gis array matrix table csv]
 
-__includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls" "nls-modules/caribou.nls" "nls-modules/moose.nls"
+__includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
+           "nls-modules/caribou.nls" "nls-modules/moose.nls"
   "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"]
 
 breed [moose a-moose]
@@ -782,10 +783,10 @@ end
 GRAPHICS-WINDOW
 278
 10
-790
-523
--1
--1
+792
+545
+64
+64
 3.91
 1
 10
@@ -1131,7 +1132,7 @@ elevation-limit
 elevation-limit
 0
 1000
-236.0
+236
 1
 1
 NIL
@@ -1146,7 +1147,7 @@ caribou-amt
 caribou-amt
 0
 50000
-2500.0
+10500
 500
 1
 NIL
@@ -1161,7 +1162,7 @@ moose-amt
 moose-amt
 0
 150
-0.0
+0
 1
 1
 NIL
@@ -1176,7 +1177,7 @@ caribou-group-amt
 caribou-group-amt
 0
 200
-50.0
+1
 1
 1
 NIL
@@ -1191,7 +1192,7 @@ caribou-radius
 caribou-radius
 0
 12
-1.5
+0
 0.5
 1
 NIL
@@ -1302,7 +1303,7 @@ caribou-modify-amt
 caribou-modify-amt
 0
 1
-0.35
+1
 0.01
 1
 NIL
@@ -1410,7 +1411,7 @@ INPUTBOX
 880
 722
 caribou-reutility
-1.0
+1
 1
 0
 Number
@@ -1443,7 +1444,7 @@ INPUTBOX
 168
 722
 caribou-max-elevation
-700.0
+700
 1
 0
 Number
@@ -1474,7 +1475,7 @@ INPUTBOX
 546
 719
 diffuse-amt
-0.0
+0
 1
 0
 Number
@@ -1485,7 +1486,7 @@ INPUTBOX
 618
 720
 elevation-scale
-0.0
+0
 1
 0
 Number
@@ -1507,7 +1508,7 @@ INPUTBOX
 331
 721
 moose-max-elevation
-700.0
+700
 1
 0
 Number
@@ -1584,7 +1585,7 @@ INPUTBOX
 1345
 645
 moose-veg-factor
-1.0
+1
 1
 0
 Number
@@ -1595,7 +1596,7 @@ INPUTBOX
 1419
 645
 moose-rough-factor
--5.0
+-5
 1
 0
 Number
@@ -1617,7 +1618,7 @@ INPUTBOX
 1568
 645
 moose-deflection-factor
-1.0
+1
 1
 0
 Number
@@ -1823,7 +1824,7 @@ INPUTBOX
 201
 939
 caribou-cent-dist-cutoff
-20.0
+20
 1
 0
 Number
@@ -1879,7 +1880,7 @@ SWITCH
 618
 caribouPopMod?
 caribouPopMod?
-1
+0
 1
 -1000
 
@@ -1889,7 +1890,7 @@ INPUTBOX
 1705
 437
 caribou-precip-factor
-1.0
+1
 1
 0
 Number
@@ -1974,7 +1975,7 @@ BUTTON
 1133
 447
 test
-ask a-caribou 119 [\n\nprint \"Matrix sense state:\" \nprint (matrix:pretty-print-text fcm-mat-sensor)\n\nlet sens-adj matrix:transpose(matrix:submatrix fcm-adja 0 0 10 6)\n;\nlet internal matrix:times sens-adj fcm-mat-sensor\nset internal matrix:map fcm-sigmoid-simple internal\n    \n;weights for actions\nlet conc-adj matrix:transpose(matrix:submatrix fcm-adja 10 6 16 11) \nlet final-states matrix:times conc-adj internal\n\nprint \"Matrix final states:\" \nprint (matrix:pretty-print-text final-states)\n]\n    
+ask a-caribou 119 [\n\nprint \"Matrix sense state:\" \nprint (matrix:pretty-print-text fcm-mat-sensor)\n\nlet sens-adj matrix:transpose(matrix:submatrix fcm-adja 0 0 10 6)\n;\nlet internal matrix:times sens-adj fcm-mat-sensor\nset internal matrix:map fcm-sigmoid-simple internal\n    \n;weights for actions\nlet conc-adj matrix:transpose(matrix:submatrix fcm-adja 10 6 16 11) \nlet final-states matrix:times conc-adj internal\n\nprint \"Matrix final states:\" \nprint (matrix:pretty-print-text final-states)\n]\n
 NIL
 1
 T
@@ -2337,8 +2338,9 @@ false
 0
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
+
 @#$#@#$#@
-NetLogo 6.0.1
+NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
@@ -2354,6 +2356,7 @@ true
 0
 Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
+
 @#$#@#$#@
 0
 @#$#@#$#@
