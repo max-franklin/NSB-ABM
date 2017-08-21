@@ -7,7 +7,7 @@
 extensions [ gis array matrix table csv]
 
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
-           "nls-modules/caribou.nls" "nls-modules/moose.nls"
+           "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
   "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"]
 
 breed [moose a-moose]
@@ -110,6 +110,8 @@ globals
   oestrid-sigma
   mosquito-means-list
   oestrid-means-list
+  mosquito-sigma-list
+  oestrid-sigma-list
   mosquito-max-color
   oestrid-max-color
   mosquito-max-tenth-color
@@ -1948,10 +1950,10 @@ NIL
 HORIZONTAL
 
 INPUTBOX
-1172
-727
-1241
-787
+978
+719
+1047
+779
 energy-gain-factor
 1.3
 1
@@ -1996,6 +1998,121 @@ debug-fcm?
 1
 1
 -1000
+
+TEXTBOX
+1225
+699
+1293
+722
+HUNTERS
+11
+0.0
+1
+
+SLIDER
+1143
+727
+1366
+761
+hunter-population
+hunter-population
+0
+100
+1
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1143
+767
+1366
+801
+hunter-vision
+hunter-vision
+0
+20
+1
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1143
+807
+1366
+841
+initial-hunter-energy
+initial-hunter-energy
+0
+2000
+1000
+50
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1377
+727
+1600
+761
+prey-close-constant
+prey-close-constant
+0
+0.5
+0.4
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1377
+767
+1601
+801
+prey-far-constant
+prey-far-constant
+0.5
+1
+0.6
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1377
+808
+1600
+842
+energy-low-constant
+energy-low-constant
+0
+0.50
+0.4
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1378
+848
+1602
+882
+energy-high-constant
+energy-high-constant
+0.50
+1
+0.6
+0.05
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
