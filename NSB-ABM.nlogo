@@ -7,7 +7,7 @@
 extensions [ gis array matrix table csv]
 
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
-           "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
+           "nls-modules/caribou.nls" "nls-modules/moose.nls"; "nls-modules/hunters.nls"
   "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"]
 
 breed [moose a-moose]
@@ -74,6 +74,14 @@ globals
 
   adjacency-matrix
 
+  ;Caribou-Bank
+  caribou-bank-may22
+  caribou-bank-jul16
+  caribou-bank-sep16
+  caribou-bank-nov16
+  caribou-bank-jan1
+  caribou-bank-mar1
+
   ;Time Info
   year
   day
@@ -126,6 +134,7 @@ globals
 
   ;;;; insect modifier
   insect-needs-reset
+  insect-season
 ]
 
 patches-own
@@ -217,6 +226,12 @@ caribou-own
   weight
   fd-amt
 
+  ;Actions
+  bank-rest
+  bank-intra
+  bank-inter
+  bank-migrate
+
   ;;Movement Values in relation to Semeniuk et al
   ;;  differs by being 3x as long compared to Semeniuk. Currently 90 minutes instead of 30 minutes
   ;forage intra-patch
@@ -250,6 +265,17 @@ caribou-own
   far-range ; ex: 1.8
   fcm-sigmoid-scalar ; currently always set to 1
 
+
+  ;Q-Net
+  net-x
+  net-w1
+  net-s1
+  net-z1
+  net-w2
+  net-s2
+  net-z2
+  net-wout
+  net-sout
 
   bioenergy-saved
   bioenergy-upper ;The upper limit for the FCM ternary calculation for energy
@@ -326,6 +352,14 @@ to setup
   set ndvi-all-max 247
   ;this must be called to apply first deflector values
   go-deflectors
+
+
+  set caribou-bank-may22 [8 4 2 2]
+  set caribou-bank-jul16 [8 4 2 2]
+  set caribou-bank-sep16 [8 4 2 2]
+  set caribou-bank-nov16 [8 4 2 2]
+  set caribou-bank-jan1 [8 4 2 2]
+  set caribou-bank-mar1 [8 4 2 2]
 
 
   set-mosquito-means-list
@@ -2013,7 +2047,7 @@ SLIDER
 1143
 727
 1366
-761
+760
 hunter-population
 hunter-population
 0
@@ -2028,7 +2062,7 @@ SLIDER
 1143
 767
 1366
-801
+800
 hunter-vision
 hunter-vision
 0
@@ -2043,7 +2077,7 @@ SLIDER
 1143
 807
 1366
-841
+840
 initial-hunter-energy
 initial-hunter-energy
 0
@@ -2058,7 +2092,7 @@ SLIDER
 1377
 727
 1600
-761
+760
 prey-close-constant
 prey-close-constant
 0
@@ -2073,7 +2107,7 @@ SLIDER
 1377
 767
 1601
-801
+800
 prey-far-constant
 prey-far-constant
 0.5
@@ -2088,7 +2122,7 @@ SLIDER
 1377
 808
 1600
-842
+841
 energy-low-constant
 energy-low-constant
 0
@@ -2103,7 +2137,7 @@ SLIDER
 1378
 848
 1602
-882
+881
 energy-high-constant
 energy-high-constant
 0.50

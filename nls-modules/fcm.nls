@@ -25,7 +25,7 @@ to-report fcm-ternary [mind maxd currd]
   if (currd > maxd)
   [
     report 1
-  ]
+  ] 
 
   report (currd - mind) / (maxd - mind)
 end
@@ -35,6 +35,8 @@ to-report fcm-sigmoid-additional [scale initial altered]
   report ( 1 / (1 + e ^ (-1 * scale * (altered - initial))))
 end
 
+; WARNING: The Q-Net for Caribou is also dependent on this function, if this sigmoid function is altered, the Q-Net needs to
+;             be updated to use the standard format: (1 / (1 + e ^ (-1 * rawVal))) for its mapping
 to-report fcm-sigmoid-simple [rawVal]
   report (1 / (1 + e ^ (-1 * rawVal)))
 end
