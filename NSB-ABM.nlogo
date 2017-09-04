@@ -19,6 +19,7 @@ breed [centroids centroid]
 breed [deflectors deflector]
 breed [mem-markers mem-mark]
 breed [hunters hunter]
+breed [caribou-harvests caribou-harvest] ;centroids for caribou harvest
 
 globals
 [
@@ -31,6 +32,7 @@ globals
   patch-elevation-dataset
   patch-ocean-dataset
   patch-whitefish-dataset
+  patch-caribou-harvest-dataset
 
   ;globals for the NDVI.nls module.
   ndvi-dataset
@@ -148,6 +150,7 @@ patches-own
   vegetation-type
   ndvi-quality
   whitefish? ;for whether or not a patch has been used for broad whitefish harvesting in last 10 yr. (Braund report)
+  patch-caribou-harvest
 
   ;Patches Precipitation.nls
   precipitation-amt
@@ -186,6 +189,10 @@ patches-own
   ;bool-ocean
 ]
 
+caribou-harvests-own
+[
+ frequency-rank
+]
 centroids-own
 [
   avg-insect
@@ -398,6 +405,27 @@ create-hunters 1
 
 
 end
+to setup-caribou-harvests
+  ask patches
+  [
+    if (pxcor mod 2 = 0) and (pycor mod 2 = 0)
+    [
+      sprout-caribou-harvests 1 [set frequency-rank [patch-caribou-harvest] of patch-here]
+    ]
+  ]
+
+  ask caribou-harvests
+  [
+    if (frequency-rank = 21)
+    [
+      die
+    ]
+    set color scale-color red frequency-rank 20 0
+    set size 1.5
+    set shape "circle"
+  ]
+
+end
 
 to setup-centroids
   let data 0
@@ -560,6 +588,7 @@ to setup-terrain-layers
   set patch-roughness-dataset gis:load-dataset "data/patches/PatchRoughness.asc"
   set patch-vegetation-dataset gis:load-dataset "data/patches/NorthSlopeVegetation.asc"
   ;set patch-whitefish-dataset gis:load-dataset "data/ascBounds/whitefish10Y.asc"
+  set patch-caribou-harvest-dataset gis:load-dataset "data/ascBounds/caribou12m-scale.asc"
 
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-wetness-dataset))
 
@@ -569,6 +598,9 @@ to setup-terrain-layers
   gis:apply-raster patch-elevation-dataset elevation
   gis:apply-raster patch-ocean-dataset ocean
   gis:apply-raster patch-vegetation-dataset vegetation-type
+
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-caribou-harvest-dataset))
+  gis:apply-raster patch-caribou-harvest-dataset patch-caribou-harvest
 
   set patch-whitefish-dataset gis:load-dataset "data/ascBounds/whitefish10Y.asc"
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-whitefish-dataset))
