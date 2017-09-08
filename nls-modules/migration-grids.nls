@@ -1,0 +1,282 @@
+to build-migration-grid
+
+   ask patches with [ ocean = 0 ] [
+    set npid 0
+    set pid 0
+    set pcolor black
+    set cent-util-list-non-para mean cent-util-list-non-para
+    set cent-util-list-para mean cent-util-list-para
+    set cent-util-non-para (sum [ cent-util-list-non-para ] of neighbors with [ocean = 0]) + cent-util-list-non-para
+    set cent-util-para (sum [ cent-util-list-para ] of neighbors with [ocean = 0]) + cent-util-list-para
+ ]
+
+
+  let max-cnp max [cent-util-non-para] of patches
+  let min-cnp min [cent-util-non-para] of patches
+
+  let max-cp max [cent-util-para] of patches
+  let min-cp min [cent-util-para] of patches
+
+
+
+   ask patches with [ocean = 0] [
+  if (cent-util-non-para >= 0 * max-cnp and cent-util-non-para < .25 * max-cnp and cent-util-non-para > max [ cent-util-non-para ] of neighbors )
+    [ set pcolor red set npid 1]
+  if (cent-util-non-para >= 0.25 * max-cnp and cent-util-non-para < .5 * max-cnp and cent-util-non-para > max [ cent-util-non-para ] of neighbors )
+    [ set pcolor blue set npid 2]
+  if (cent-util-non-para >= 0.5 * max-cnp and cent-util-non-para < .75 * max-cnp and cent-util-non-para > max [ cent-util-non-para ] of neighbors )
+    [ set pcolor grey set npid 3]
+  if (cent-util-non-para >= 0.75 * max-cnp and cent-util-non-para < 1 * max-cnp and cent-util-non-para > max [ cent-util-non-para ] of neighbors )
+    [ set pcolor yellow set npid 4 ]
+
+  ]
+
+  if day <= 166 [
+  ask patches with [ocean = 0] [
+  if (cent-util-non-para >= 0 * max-cp and cent-util-para < .25 * max-cnp and cent-util-para > max [ cent-util-para ] of neighbors )
+    [ set pcolor red set pid 5]
+  if (cent-util-para >= 0.25 * max-cp and cent-util-para < .5 * max-cnp and cent-util-para > max [ cent-util-para ] of neighbors )
+    [ set pcolor blue set pid 6]
+  if (cent-util-para >= 0.5 * max-cp and cent-util-para < .75 * max-cnp and cent-util-para > max [ cent-util-para ] of neighbors )
+    [ set pcolor grey set pid 7]
+  if (cent-util-para >= 0.75 * max-cp and cent-util-para <= 1 * max-cnp and cent-util-para > max [ cent-util-para ] of neighbors )
+    [ set pcolor yellow set pid 8 ]
+
+  ] ]
+
+
+  let xc -64
+  let yc 63
+  let grid-size 8
+  let np-grid-avg 0
+  let p-grid-avg 0
+  let id-assign 1
+  let pcol random 136
+  while [ yc >= -57]
+  [
+    set np-grid-avg (sum [cent-util-non-para] of patches with [ pxcor >= xc and pxcor < xc + grid-size and pycor <= yc and pycor > yc - grid-size and npid > 0]) / 64
+    if day <= 166 [set p-grid-avg (sum [cent-util-para] of patches with [ pxcor >= xc and pxcor < xc + grid-size and pycor <= yc and pycor > yc - grid-size and pid > 0 ]) / 64]
+
+    ask patches with [ pxcor >= xc and pxcor < xc + grid-size and pycor <= yc and pycor > yc - grid-size]
+    [ ;set pcolor pcol
+      set np-grid-id id-assign
+      if day <= 166 [ set p-grid-id id-assign ]
+      set grid-util-non-para np-grid-avg
+      if day <= 166 [ set grid-util-para p-grid-avg ] ]
+
+
+    set id-assign id-assign + 1
+    set pcol random 136
+    set xc xc + 8
+    if xc >= 64
+    [ set yc yc - 8 set xc -64 ]
+  ]
+
+
+  let max-gnp max [grid-util-non-para] of patches
+  let min-gnp min [grid-util-non-para] of patches
+
+  let max-gp max [grid-util-para] of patches
+  let min-gp min [grid-util-para] of patches
+
+
+
+  ask patches with [ocean = 0] [
+  if (grid-util-non-para >= 0 * max-gnp and grid-util-non-para < .25 * max-gnp)
+    [ set pcolor red set gnpid 1]
+  if (grid-util-non-para >= 0.25 * max-gnp and grid-util-non-para < .5 * max-gnp)
+    [ set pcolor blue set gnpid 2]
+  if (grid-util-non-para >= 0.5 * max-gnp and grid-util-non-para < .75 * max-gnp)
+    [ set pcolor grey set gnpid 3]
+  if (grid-util-non-para >= 0.75 * max-gnp and grid-util-non-para <= 1 * max-gnp)
+    [ set pcolor yellow set gnpid 4 ]
+
+  ]
+
+
+
+  set cent-day-list lput day cent-day-list
+
+  ;this block is for writing non-para file
+  let grid-ids word "grids-ids-non-para-" item ((length cent-day-list) - 1) cent-day-list
+  set grid-ids word grid-ids ".txt"
+
+  file-open grid-ids;"patch-cids.txt"
+
+  set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [file-print np-grid-id] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
+  file-close-all
+
+
+  let grid-avgs word "grids-qaul-non-para-" item ((length cent-day-list) - 1) cent-day-list
+  set grid-avgs word grid-avgs ".txt"
+
+  file-open grid-avgs;"patch-cids.txt"
+
+  set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [file-print gnpid] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
+  file-close-all
+
+  ;this block is for writing non-para file
+
+  if day <= 166 [
+  ask patches with [ocean = 0] [
+  if (grid-util-para >= 0 * max-gp and grid-util-para < .25 * max-gp)
+    [ set pcolor red set gpid 1]
+  if (grid-util-para >= 0.25 * max-gp and grid-util-para < .5 * max-gp)
+    [ set pcolor blue set gpid 2]
+  if (grid-util-para >= 0.5 * max-gp and grid-util-para < .75 * max-gp)
+    [ set pcolor grey set gpid 3]
+  if (grid-util-para >= 0.75 * max-gp and grid-util-para <= 1 * max-gp)
+    [ set pcolor yellow set gpid 4 ]
+
+  ]
+
+
+  set grid-ids word "grids-ids-para-" item ((length cent-day-list) - 1) cent-day-list
+  set grid-ids word grid-ids ".txt"
+
+  file-open grid-ids;"patch-cids.txt"
+
+  set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [file-print np-grid-id] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
+  file-close-all
+
+
+  set grid-avgs word "grids-qaul-para-" item ((length cent-day-list) - 1) cent-day-list
+  set grid-avgs word grid-avgs ".txt"
+
+  file-open grid-avgs;"patch-cids.txt"
+
+  set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [file-print gpid] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
+    file-close-all ]
+
+  ask patches [
+    set cent-util-list-non-para [ ]
+    set cent-util-list-para [ ] ]
+
+end
+
+to grid-read
+  if day < 250 [
+    ;show day
+    ;show (day - 12) mod 14
+    let tday day + 14
+    let target-file word "data/migration-grids/grids-ids-non-para-" tday
+    set target-file word target-file ".txt"
+    ;show target-file
+    file-open target-file
+    ask patches [ set np-grid-id 0  set pcolor black ]
+    let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set np-grid-id file-read ] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+    ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
+    file-close-all
+
+    set tday day + 14
+    set target-file word "data/migration-grids/grids-qaul-non-para-" tday ;accidentally mispelled file name in file creation, can fix later.
+    set target-file word target-file ".txt"
+
+    ;show target-file
+    file-open target-file
+    ask patches [ set gnpid 0  set pcolor black ]
+    set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [set gnpid file-read ] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+    ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
+    file-close-all
+
+    if day < 166
+    [
+      ;show day
+      ;show (day - 12) mod 14
+      set tday day + 14
+      set target-file word "data/migration-grids/grids-ids-para-" tday
+      set target-file word target-file ".txt"
+      ;show target-file
+      file-open target-file
+      ask patches [ set p-grid-id 0  set pcolor black ]
+      set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [set p-grid-id file-read ] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+      ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
+      file-close-all
+
+      set tday day + 14
+      set target-file word "data/migration-grids/grids-qaul-para-" tday ;accidentally mispelled file name in file creation, can fix later.
+      set target-file word target-file ".txt"
+
+      ;show target-file
+      file-open target-file
+      ask patches [ set gpid 0  set pcolor black ]
+      set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [set gpid file-read ] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+      ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
+      file-close-all
+    ]
+
+    spawn-grid-centers
+    
+  ]
+
+  ifelse display-grids? = true [ display-npgrids ask grids [st]] [ask grids [ht] ]
+end
+
+to spawn-grid-centers
+  ;procedure adds about 5-8 s sim time (for one season), can export to data files and import to speed things up, if necessary.
+  ask grids [die]
+  let max-id max [np-grid-id] of patches
+  let x 1 ;ids of 0 correspond to non-grids
+  while [x <= max-id]
+  [
+    let min-x min [pxcor] of patches with [np-grid-id = x] 
+    let max-x max [pxcor] of patches with [np-grid-id = x] 
+    
+    let min-y min [pycor] of patches with [np-grid-id = x] 
+    let max-y max [pycor] of patches with [np-grid-id = x] 
+    
+    ask one-of patches with [pxcor >= min-x + 3 and pxcor <= max-x - 3 and pycor >= min-y + 3 and pycor <= max-y - 3 and np-grid-id = x]
+    [ sprout-grids 1 [ set size 3 set color black set grid-id x set np-qual-id [gnpid] of patch-here if day < 166 [ set p-qual-id [gpid] of patch-here ]] ]
+    set x x + 1
+  ]
+  ;ask grids [ if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color grey] if np-qual-id = 4 [set color yellow] ]
+end
+
+to display-npgrids
+  ask grids [ set color black ]
+  ask grids [if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color grey] if np-qual-id = 4 [set color yellow] ]
+end
+
+to display-pgrids
+  ask grids [ set color black ]
+  ask grids [if p-qual-id = 1 [set color red] if p-qual-id = 2 [set color blue] if p-qual-id = 3 [set color grey] if p-qual-id = 4 [set color yellow] ]
+end
+
+to select-grid
+  ;migration grids are selected at the same point that centroids were originally assigned (whenever state switches to 2, or when a centroid is reached and the state doesn't experience a
+  ;change.
+  ;This procedure needs to be paired with a shortest path algorithm.
+  ;Shortest path algorithm will utilize centroids, distances b/w centroids, and quality of centroids.
+  
+  
+  let max-np-qual max [np-qual-id] of grids in-radius 9 with [who != ([who] of [last-grid] of myself)]
+  let max-p-qual max [p-qual-id] of grids in-radius 9 with [who != ([who] of [last-grid] of myself)]
+  
+  
+  let np-grid-target grids in-radius 9 with [np-qual-id = max-np-qual and who != ([who] of [last-grid] of myself) ]
+  let p-grid-target grids in-radius 9 with [p-qual-id = max-p-qual and who != ([who] of [last-grid] of myself)]
+  
+  ;ifelse day > 151 and day < 167 and caribou-class = 2
+  ;  [ 
+  ;    set current-grid min-one-of p-grid-target with [p-qual-id > 0] [distance myself]
+  ;    set last-grid current-grid
+      ;ifelse count p-grid-target > 1 
+      ;[set current-grid min-one-of p-grid-target with [p-qual-id > 0] [distance myself]
+      ;  set last-grid current-grid]
+      ;[set current-grid p-grid-target
+      ;  set last-grid current-grid ]
+  ;] 
+  ;[ 
+    set current-grid min-one-of np-grid-target with [np-qual-id > 0] [distance myself]
+    set last-grid current-grid
+  ;]
+  ;ifelse count np-grid-target > 1 
+  ;[set current-grid min-one-of np-grid-target with [np-qual-id > 0] [distance myself]
+  ;  set last-grid current-grid ]
+  ;[set current-grid np-grid-target ]
+  ;set last-grid current-grid ]
+end

@@ -25,6 +25,14 @@ to go-insect
   ; Modification to match 1 day to 1 tick
   set-mosquito-mean
   set-oestrid-mean
+  
+  if day >= 151 and day <= 165 [ set insect-season 0 ]
+  if day >= 166 and day <= 180  [ set insect-season 1 ]
+  if day >= 181 and day <= 195 [ set insect-season 2 ]
+  if day >= 196 and day <= 211 [ set insect-season 3 ]
+  if day >= 212 and day <= 226 [ set insect-season 4 ]
+  if day >= 227 and day <= 242 [ set insect-season 5 ]
+  
   let insect-day day
   set insect-day (insect-day - 180)
   let mod-day 0

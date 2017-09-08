@@ -4,10 +4,9 @@ to load-veg-classification-gis
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-vegetation-dataset))
   gis:apply-raster patch-vegetation-dataset vegetation-type
   correct-vegetation
-  ask patches [ 
+  ask patches [
   set vegParRank 0
-  set vegNonParRank 0
-  ]
+  set vegNonParRank 0 ]
 end
 
 to show-veg-type

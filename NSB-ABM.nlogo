@@ -8,7 +8,9 @@ extensions [ gis array matrix table csv]
 
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
            "nls-modules/caribou.nls" "nls-modules/moose.nls"; "nls-modules/hunters.nls"
-  "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"]
+  "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"
+  "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls"]
+
 
 breed [moose a-moose]
 breed [caribou a-caribou]
@@ -16,15 +18,25 @@ breed [cisco a-cisco]
 breed [char a-char]
 breed [whitefish a-whitefish]
 breed [centroids centroid]
+breed [grids grid]
 breed [deflectors deflector]
 breed [mem-markers mem-mark]
 breed [hunters hunter]
 breed [caribou-harvests caribou-harvest] ;centroids for caribou harvest
+directed-link-breed [ cent-links cent-link ]
 
 globals
 [
 
 ;GIS DATA
+  np-centroid-network
+  p-centroid-network
+  cent-day-list ;for recording list of days where the centroids need to be reassigned in the simulation
+  avg-sim-time ;for reporting the average amount of time it takes to simulate each year.
+
+  fcm-adja-list
+  fcm-agentnum-list
+  fcm-success-list
 
   patch-roughness-dataset
   patch-wetness-dataset
@@ -103,6 +115,7 @@ globals
   ;;WORK AROUND NUMBERS;; These numbers are used to work around limitations with the
   ;    NetLogo language
 
+  caribou-bio-list
   caribou-pop
   caribou/agent
   r-caribou
@@ -141,6 +154,21 @@ globals
 
 patches-own
 [
+  np-network-id
+  p-network-id
+  cent-dist
+  gnpid
+  gpid
+  np-grid-id
+  p-grid-id
+  grid-util-non-para
+  grid-util-para
+  cent-util-list-non-para
+  cent-util-list-para
+  npid
+  pid
+  cent-util-para
+  cent-util-non-para
   wetness
   streams
   ocean
@@ -203,6 +231,13 @@ centroids-own
 
 ]
 
+grids-own
+[
+ grid-id
+ np-qual-id
+ p-qual-id
+]
+
 deflectors-own
 [
  ;boolean
@@ -227,11 +262,17 @@ moose-own
 
 caribou-own
 [
+
+  energy-gain
+  energy-loss
   group-size
   radius
   energy
   weight
   fd-amt
+
+  scaled-bio
+  changed-states?
 
   ;Actions
   bank-rest
@@ -322,6 +363,8 @@ caribou-own
   state
   ;;Last Centroid where the caribou came from
   last-centroid
+  current-grid
+  last-grid
 
 
   centroid-attraction
@@ -346,6 +389,11 @@ mem-markers-own
   caribou-id
 ]
 
+cent-links-own
+[
+  link-weight
+]
+
 ;wraps to other setup functions
 to setup
   clear-all
@@ -354,9 +402,24 @@ to setup
   set hour 0
   set day 152
   set year 0
+
+  set cent-day-list [ ]
+  ask patches
+  [ set cent-util-list-non-para [ ]
+    set cent-util-list-para [ ]
+    set np-grid-id 0
+    set p-grid-id 0 ]
+
+  centroid-read
+  grid-read
+  ;centroid-weight-io
+  centroid-weight-master-io
+
   set season 1
   setup-deflectors
   set ndvi-all-max 247
+  reset-timer
+  set avg-sim-time [ ]
   ;this must be called to apply first deflector values
   go-deflectors
 
@@ -381,8 +444,9 @@ to setup
   setup-caribou-utility
   setup-moose-utility
   setup-moose
-  setup-centroids
+  ;setup-centroids
   setup-caribou
+
   setup-patch-list
   setup-insect
   set-precipitation-data-list
@@ -391,8 +455,13 @@ to setup
    caribou-random-fcm
   ]
 
+  set fcm-adja-list [fcm-adja] of caribou
  ; setup-ndvi
   go-veg-ranking
+
+  ask patches
+  [ set grid-util-non-para 0
+    set grid-util-para 0 ]
 
   reset-ticks
 end
@@ -462,8 +531,8 @@ to setup-deflectors
   create-deflectors 1
   [
     setxy 0 0
-    set area-outer 15
-    set area-inner 8
+    set area-outer (3000 / 2195.35)
+    set area-inner 0
     set deflect-amt 1
     set has-applied false
     set size 0
@@ -490,21 +559,65 @@ to go
 
       if caribouPopMod? = true
       [ go-caribou-pop ]
-      set year year + 1
-      ;set day (day mod 365)
+
       if(is-training? and day >= 258)
       [
-        update-caribou-fcm
+        update-caribou-fcm ;commenting this out for purposes of centroid generation.
         ;export-fcm
       ]
-      set day 152
 
+      ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
+
+      set year year + 1
+      set day 152
+      ;if year = 20 [ stop ] ; can be deleted, just for network recording.
+      set avg-sim-time lput timer avg-sim-time
+      reset-timer
     ]
+
+
+
+  if day = 152 [ go-insect ]
+  if day = 166 [ go-insect ]
+  if day = 181 [ go-insect ]
+  if day = 196 [ go-insect ]
+  if day = 212 [ go-insect ]
+  if day = 227 [ go-insect ]
+
+
+  ;build-mean-utility-lists
+
+    if (day - 12) mod 14 = 0
+    ;if abs (mean [caribou-utility-non-para] of patches - non-para-check) > 0.000000001 ;mean [caribou-utility-para] of patches != para-check or
+    [
+      ;centroid-test
+      centroid-read
+      grid-read
+
+
+      ask caribou
+
+      [ ifelse day > 151 and day < 166 and caribou-class = 2
+      [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
+        set last-centroid current-centroid ]
+      [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
+        set last-centroid current-centroid ]
+      ;starting grid is closest grid
+      ifelse day > 151 and day < 166 and caribou-class = 2
+      [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
+        set last-grid current-grid ]
+      [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
+        set last-grid current-grid ]  ]
+
+      ;stop
+      ;build-migration-grid
+    ]
+
+    ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
   ]
 
-
   go-deflectors
-  go-insect
+  ;go-insect
   go-moose
   go-caribou
   go-precipitation
@@ -1104,7 +1217,7 @@ CHOOSER
 BoundsFile
 BoundsFile
 "data/ascBounds/CharDolly10Y.asc" "data/ascBounds/CharDolly12M.asc" "data/ascBounds/Cisco10Y.asc" "data/ascBounds/Cisco12M.asc" "data/ascBounds/MooseBounds10Y.asc" "data/ascBounds/MooseBounds12M.asc" "data/ascBounds/whitefish12m.asc" "data/ascBounds/whitefish10Y.asc"
-7
+4
 
 BUTTON
 1012
@@ -1142,9 +1255,9 @@ NIL
 
 BUTTON
 983
-65
+76
 1155
-98
+109
 Show Moose Nodes
 display-protograph
 NIL
@@ -1159,9 +1272,9 @@ NIL
 
 BUTTON
 983
-110
+121
 1157
-143
+154
 Hide Moose Nodes
 hide-protograph
 NIL
@@ -1215,7 +1328,7 @@ caribou-amt
 caribou-amt
 0
 50000
-10500
+2500
 500
 1
 NIL
@@ -1245,7 +1358,7 @@ caribou-group-amt
 caribou-group-amt
 0
 200
-1
+50
 1
 1
 NIL
@@ -1260,7 +1373,7 @@ caribou-radius
 caribou-radius
 0
 12
-0
+1.5
 0.5
 1
 NIL
@@ -1835,9 +1948,9 @@ Temp Commands
 
 TEXTBOX
 998
-48
+59
 1148
-66
+77
 Harvest Graph Nodes\n
 12
 0.0
@@ -1948,7 +2061,7 @@ SWITCH
 618
 caribouPopMod?
 caribouPopMod?
-0
+1
 1
 -1000
 
@@ -1972,7 +2085,7 @@ caribou-para
 caribou-para
 0
 1
-0.8
+0.71
 .01
 1
 NIL
@@ -2021,7 +2134,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-1.3
+75
 1
 0
 Number
@@ -2066,20 +2179,20 @@ debug-fcm?
 -1000
 
 TEXTBOX
-1225
-699
-1293
-722
+1271
+652
+1339
+675
 HUNTERS
 11
 0.0
 1
 
 SLIDER
-1143
-727
-1366
-760
+1189
+680
+1412
+713
 hunter-population
 hunter-population
 0
@@ -2091,10 +2204,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1143
-767
-1366
-800
+1189
+720
+1412
+753
 hunter-vision
 hunter-vision
 0
@@ -2106,10 +2219,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1143
-807
-1366
-840
+1189
+760
+1412
+793
 initial-hunter-energy
 initial-hunter-energy
 0
@@ -2121,10 +2234,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1377
-727
-1600
-760
+1423
+680
+1646
+713
 prey-close-constant
 prey-close-constant
 0
@@ -2136,49 +2249,151 @@ NIL
 HORIZONTAL
 
 SLIDER
-1377
+1423
+720
+1647
+753
+prey-far-constant
+prey-far-constant
+0.5
+1
+0.6
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1423
+761
+1646
+794
+energy-low-constant
+energy-low-constant
+0
+0.50
+0.4
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1424
+801
+1648
+834
+energy-high-constant
+energy-high-constant
+0.50
+1
+0.6
+0.05
+1
+NIL
+HORIZONTAL
+
+SWITCH
+982
+653
+1154
+686
+display-centroids?
+display-centroids?
+1
+1
+-1000
+
+SWITCH
+982
+685
+1128
+718
+display-grids?
+display-grids?
+1
+1
+-1000
+
+MONITOR
+975
+10
+1077
+55
+mean sim time
+mean avg-sim-time
+17
+1
+11
+
+MONITOR
+636
+608
 767
-1601
-800
-prey-far-constant
-prey-far-constant
-0.5
+653
+mean caribou state
+mean [state] of caribou
+17
 1
-0.6
-0.05
-1
-NIL
-HORIZONTAL
+11
 
-SLIDER
-1377
-808
-1600
-841
-energy-low-constant
-energy-low-constant
-0
-0.50
-0.4
-0.05
-1
+PLOT
+211
+802
+411
+952
+Number Unique Caribou FCMs
 NIL
-HORIZONTAL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plotxy (year) (length fcm-adja-list)"
 
-SLIDER
-1378
-848
-1602
-881
-energy-high-constant
-energy-high-constant
-0.50
-1
-0.6
-0.05
-1
+PLOT
+411
+802
+611
+952
+Mean Bioenergy of Caribou
 NIL
-HORIZONTAL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plotxy ticks mean [bioenergy] of caribou"
+
+PLOT
+625
+795
+1010
+990
+Caribou State Flux
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Evade" 1.0 0 -16777216 true "" "plotxy ticks count caribou with [state = 0]"
+"Interforage" 1.0 0 -7500403 true "" "plotxy ticks count caribou with [state = 1]"
+"Taxi/migrate" 1.0 0 -2674135 true "" "plotxy ticks count caribou with [state = 2]"
+"Rest" 1.0 0 -955883 true "" "plotxy ticks count caribou with [state = 3]"
+"Intraforage" 1.0 0 -6459832 true "" "plotxy ticks count caribou with [state = 4]"
 
 @#$#@#$#@
 ## WHAT IS IT?

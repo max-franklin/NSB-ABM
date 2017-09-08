@@ -1,0 +1,539 @@
+to build-mean-utility-lists
+  ask patches [set cent-util-list-non-para lput caribou-utility-non-para cent-util-list-non-para]
+  ask patches [set cent-util-list-para lput caribou-utility-para cent-util-list-para]
+end
+
+to centroid-test
+  set cent-day-list lput day cent-day-list
+
+
+
+   ask patches with [ocean = 0] [
+    set npid 0
+    set pid 0
+    set pcolor black
+    set cent-util-list-non-para mean cent-util-list-non-para
+    set cent-util-list-para mean cent-util-list-para
+    set cent-util-non-para (sum [ cent-util-list-non-para ] of neighbors with [ocean = 0]) + cent-util-list-non-para
+    set cent-util-para (sum [ cent-util-list-para ] of neighbors with [ocean = 0]) + cent-util-list-para
+ ]
+
+
+  let max-cnp max [cent-util-non-para] of patches
+  let min-cnp min [cent-util-non-para] of patches
+
+  let max-cp max [cent-util-para] of patches
+  let min-cp min [cent-util-para] of patches
+
+  ;this block is for writing non-para file
+  ask patches with [ocean = 0] [
+  if (cent-util-non-para >= 0 * max-cnp and cent-util-non-para < .25 * max-cnp and cent-util-non-para > max [ cent-util-non-para ] of neighbors )
+    [ set pcolor red set npid 1]
+  if (cent-util-non-para >= 0.25 * max-cnp and cent-util-non-para < .5 * max-cnp and cent-util-non-para > max [ cent-util-non-para ] of neighbors )
+    [ set pcolor blue set npid 2]
+  if (cent-util-non-para >= 0.5 * max-cnp and cent-util-non-para < .75 * max-cnp and cent-util-non-para > max [ cent-util-non-para ] of neighbors )
+    [ set pcolor grey set npid 3]
+  if (cent-util-non-para >= 0.75 * max-cnp and cent-util-non-para <= 1 * max-cnp and cent-util-non-para > max [ cent-util-non-para ] of neighbors )
+    [ set pcolor yellow set npid 4 ]
+
+  ]
+
+  let title word "patch-cids-non-para-" item ((length cent-day-list) - 1) cent-day-list
+  set title word title ".txt"
+
+  file-open title;"patch-cids.txt"
+
+
+  let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [file-print npid] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
+  file-close-all
+  ;this block is for writing non-para file
+
+  ;this block is for writing para file
+  if day <= 166 [
+  ask patches with [ocean = 0] [
+  if (cent-util-para >= 0 * max-cp and cent-util-para < .25 * max-cp and cent-util-para > max [ cent-util-para ] of neighbors )
+    [ set pcolor red set pid 5]
+  if (cent-util-para >= 0.25 * max-cp and cent-util-para < .5 * max-cp and cent-util-para > max [ cent-util-para ] of neighbors )
+    [ set pcolor blue set pid 6]
+  if (cent-util-para >= 0.5 * max-cp and cent-util-para < .75 * max-cp and cent-util-para > max [ cent-util-para ] of neighbors )
+    [ set pcolor grey set pid 7]
+  if (cent-util-para >= 0.75 * max-cp and cent-util-para <= 1 * max-cp and cent-util-para > max [ cent-util-para ] of neighbors )
+    [ set pcolor yellow set pid 8 ]
+
+  ]
+
+  set title word "patch-cids-para-" item ((length cent-day-list) - 1) cent-day-list
+  set title word title ".txt"
+
+  file-open title;"patch-cids.txt"
+
+
+  set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [file-print pid] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
+    file-close-all ]
+
+  ask patches [ set cent-util-list-non-para [ ] set cent-util-list-para [ ] ]
+
+  ;this block is for writing para file
+    ;let c-matrix matrix:from-row-list [id] of patches
+
+  ;ask patches with [ cent-util-non-para >= 0 * max-cnp and cent-util-non-para <= .24 * max-cnp] [ if cent-util-non-para > max [ cent-util-non-para ] of neighbors [ set pcolor red ]]
+  ;ask patches with [ cent-util-non-para >= .25 * max-cnp and cent-util-non-para <= .49 * max-cnp] [ if cent-util-non-para > max [ cent-util-non-para ] of neighbors [ set pcolor blue ]]
+  ;ask patches with [ cent-util-non-para >= .5 * max-cnp and cent-util-non-para <= .74 * max-cnp] [ if cent-util-non-para > max [ cent-util-non-para ] of neighbors [ set pcolor grey ]]
+  ;ask patches with [ cent-util-non-para >= .75 * max-cnp and cent-util-non-para <= 1 * max-cnp] [ if cent-util-non-para > max [ cent-util-non-para ] of neighbors [ set pcolor yellow ]]
+end
+
+to centroid-read
+  if day < 250 [
+    let cycler 1
+  ;show day
+  ;show (day - 12) mod 14
+  let tday day + 14
+  let target-file word "data/migration-centroids/patch-cids-non-para-" tday
+  set target-file word target-file ".txt"
+  ;;show target-file
+  file-open target-file
+  ask patches [ set npid 0 set np-network-id 0 set pcolor black ]
+  let xc -64 let yc 64 
+    while [ yc >= -64]  
+    [ ask patch xc yc 
+      [set npid file-read if npid > 0 [ set np-network-id cycler set cycler cycler + 1 ] ] 
+       set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] 
+    ]
+  ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
+    file-close-all
+    
+
+    if day < 166
+    [
+      set cycler 1
+      ;show day
+      ;show (day - 12) mod 14
+      
+      set target-file word "data/migration-centroids/patch-cids-para-" tday
+      set target-file word target-file ".txt"
+      ;show target-file
+      file-open target-file
+      ask patches [ set pid 0 set p-network-id 0 set pcolor black ]
+      set xc -64 set yc 64 
+      while [ yc >= -64]  
+      [ ask patch xc yc [set pid file-read if pid > 0 [ set p-network-id cycler set cycler cycler + 1 ] ]
+        set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+      
+      file-close-all
+    ]
+    
+
+  ]
+  
+  
+  ;setup-network
+
+  if display-centroids? = true [ display-npc ]
+end
+
+
+to display-npc
+  ask patches [ set pcolor black ]
+  ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
+end
+
+to display-pc
+  ask patches [ set pcolor black ]
+  ask patches [if pid = 5 [set pcolor red] if pid = 6 [set pcolor blue] if pid = 7 [set pcolor grey] if pid = 8 [set pcolor yellow] ]
+end
+
+to select-centroid 
+  ;let xg [pxcor] of current-grid
+  ;show xg
+  ;set xg item 0 xg
+  ;let yg [pycor] of current-grid
+  ;show yg
+  ;set yg item 0 yg
+  set last-centroid current-centroid
+  let grid-target current-grid
+  ;show grid-target
+  
+  ;let np-target-centroids patches with [ sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2)) < 8 and npid > 0]
+  let last-np-cent [np-network-id] of last-centroid
+  let np-target-centroids patches with [distance grid-target < 16 and npid > 0 and np-network-id != last-np-cent ] 
+  ;let np-target-centroids patches with [distance [current-grid] of myself < 8 and npid > 0]
+  let last-p-cent [p-network-id] of last-centroid
+  let p-target-centroids patches with [distance grid-target < 16 and pid > 0 and p-network-id != last-p-cent]
+  ;let p-target-centroids patches with [ sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2)) < 8 and pid > 0]
+  ;let p-target-centroids patches with [distance [current-grid] of myself < 8 and pid > 0]
+
+  let qual-list []
+  let patch-list []
+  
+  
+  ifelse (day > 151 and day < 167) and caribou-class = 2
+  [
+    ask p-target-centroids [ 
+      let caribou-dist distance myself
+      let grid-dist distance grid-target;sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2))
+      let qual-val pid / (caribou-dist + grid-dist)
+      set qual-list lput qual-val qual-list
+      if qual-val >= max qual-list
+      [ set patch-list lput self patch-list]
+      ;set np-cent-prob lput report-np-probs np-cent-prob
+    ]
+    
+    set current-centroid one-of patch-list
+    
+    mod-p-network
+  ]
+  [
+    ask np-target-centroids [ 
+      let caribou-dist distance myself
+      let grid-dist distance grid-target ;sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2))
+      let qual-val npid / (caribou-dist + grid-dist)
+      set qual-list lput qual-val qual-list
+      if qual-val >= max qual-list
+      [ set patch-list lput self patch-list]
+      ;set np-cent-prob lput report-np-probs np-cent-prob
+    ]
+    set current-centroid one-of patch-list
+    
+    mod-np-network
+  ]
+  
+  ;ifelse (day > 151 and day < 167) and caribou-class = 2
+  ;[
+  ;  ask p-target-centroids [ 
+  ;    let caribou-dist distance myself
+  ;    let grid-dist distance [ current-grid ] of myself
+  ;    let qual-val pid / (caribou-dist + grid-dist)
+  ;    set qual-list lput qual-val qual-list
+  ;    if qual-val >= max qual-list
+  ;    [ set patch-list lput self patch-list]
+  ;    ;set np-cent-prob lput report-np-probs np-cent-prob
+  ;  ]
+  ;]
+  ;[
+  ;  ask np-target-centroids [ 
+  ;    let caribou-dist distance myself
+  ;    let grid-dist distance [ current-grid ] of myself
+  ;    let qual-val npid / (caribou-dist + grid-dist)
+  ;    set qual-list lput qual-val qual-list
+  ;    if qual-val >= max qual-list
+  ;    [ set patch-list lput self patch-list]
+  ;    ;set np-cent-prob lput report-np-probs np-cent-prob
+  ;  ]
+  ;]
+  
+  ;show patch-list
+  
+  
+  
+  ;show current-centroid
+  
+end
+
+
+to setup-network
+  let output word "np-master-matrix-" day
+  set output word output ".csv"
+  file-open output
+  set np-centroid-network matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0
+  file-write matrix:to-row-list np-centroid-network
+  file-close-all
+  
+  set output word "p-master-matrix-" day
+  set output word output ".csv"
+  file-open output
+  set p-centroid-network matrix:make-constant (max [p-network-id] of patches) (max [p-network-id] of patches) 0
+  file-write matrix:to-row-list p-centroid-network
+  file-close-all
+
+   print "done!"
+end
+
+to mod-np-network
+  let row [np-network-id] of last-centroid
+  let col [np-network-id] of current-centroid
+ ; show row 
+ ; show col
+ ; show ((matrix:get np-centroid-network row col) + 1) 
+  ifelse (row = col)
+  [ print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
+    ;inspect self ]
+    stop ] 
+  [ set np-centroid-network matrix:set-and-report np-centroid-network row col ((matrix:get np-centroid-network row col) + 1) ]
+end
+
+to mod-p-network
+  let row [p-network-id] of last-centroid
+  let col [p-network-id] of current-centroid
+  
+  ifelse (row = col)
+  [ print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
+    ;inspect self ]
+    stop ]
+  [ set p-centroid-network matrix:set-and-report p-centroid-network row col ((matrix:get p-centroid-network row col) + 1) ]
+end
+
+to centroid-weight-io
+  ifelse day >= 258
+  [ ;for final export.
+    let output word "data/centroid-network-working-files/np-master-matrix-" 250
+    set output word output ".csv"
+    file-delete output
+    file-open output
+    file-print matrix:to-row-list np-centroid-network
+    file-close-all 
+    ;print "the final centroid weighting successfully exported."
+  ]
+  [
+    if (day - 12) mod 14 = 0
+    [
+      ifelse day = 152
+      [;beginning import
+        
+        let input word "data/centroid-network-working-files/np-master-matrix-" day
+        set input word input ".csv"
+        let matrix-list []
+        let sub-list []
+        let cycler 1
+        let row-length max [np-network-id] of patches
+        file-open input
+        
+        while [not file-at-end?]
+        [
+          set np-centroid-network matrix:from-row-list file-read
+        ]
+        
+        file-close-all
+        
+        ;file-delete input
+        
+        set input word "data/centroid-network-working-files/p-master-matrix-" day
+        set input word input ".csv"
+        set matrix-list []
+        set sub-list []
+        set cycler 1
+        set row-length max [p-network-id] of patches
+        file-open input
+        
+        while [not file-at-end?]
+        [
+          set p-centroid-network matrix:from-row-list file-read
+        ]
+        
+        file-close-all
+        ;file-delete input
+      ] 
+      [;export then inport
+        
+        let output word "data/centroid-network-working-files/np-master-matrix-" (day - 14)
+        set output word output ".csv"
+        file-delete output
+        file-open output
+        file-print matrix:to-row-list np-centroid-network
+        file-close-all 
+        
+        if day <= 166 ;export para weights.
+        [
+          set output word "data/centroid-network-working-files/p-master-matrix-" (day - 14)
+          set output word output ".csv"
+          file-delete output
+          file-open output
+          file-print matrix:to-row-list p-centroid-network
+          file-close-all
+        ]
+        
+        let input word "data/centroid-network-working-files/np-master-matrix-" day
+        set input word input ".csv"
+        let matrix-list []
+        let sub-list []
+        let cycler 1
+        let row-length max [np-network-id] of patches
+        file-open input
+        
+        while [not file-at-end?]
+        [
+          set np-centroid-network matrix:from-row-list file-read
+        ]
+        
+        file-close-all
+        
+        ;file-delete input
+        
+        ;don't need to bother importing para weighting after the first initial import
+        
+      ] 
+    ]
+  ]
+end
+
+to centroid-weight-master-io
+   ifelse day >= 258
+  [ ;for final export.
+    let output word "data/centroid-network-working-files/np-master-matrix-" 250
+    set output word output ".csv"
+    file-delete output
+    file-open output
+    file-print matrix:to-row-list np-centroid-network
+    file-close-all 
+    ;print "the final centroid weighting successfully exported."
+  ]
+  [
+    if (day - 12) mod 14 = 0
+    [
+      ifelse day = 152
+      [;beginning import
+        
+        let input word "data/centroid-network-master-files/np-master-matrix-" day
+        set input word input ".csv"
+        let matrix-list []
+        let sub-list []
+        let cycler 1
+        let row-length max [np-network-id] of patches
+        file-open input
+        
+        while [not file-at-end?]
+        [
+          set np-centroid-network matrix:from-row-list file-read
+        ]
+        
+        file-close-all
+        
+        ;file-delete input
+        
+        set input word "data/centroid-network-master-files/p-master-matrix-" day
+        set input word input ".csv"
+        set matrix-list []
+        set sub-list []
+        set cycler 1
+        set row-length max [p-network-id] of patches
+        file-open input
+        
+        while [not file-at-end?]
+        [
+          set p-centroid-network matrix:from-row-list file-read
+        ]
+        
+        file-close-all
+        ;file-delete input
+      ] 
+      [;export then inport
+        
+        let output word "data/centroid-network-working-files/np-master-matrix-" (day - 14)
+        set output word output ".csv"
+        file-delete output
+        file-open output
+        file-print matrix:to-row-list np-centroid-network
+        file-close-all 
+        
+        if day <= 166 ;export para weights.
+        [
+          set output word "data/centroid-network-working-files/p-master-matrix-" (day - 14)
+          set output word output ".csv"
+          file-delete output
+          file-open output
+          file-print matrix:to-row-list p-centroid-network
+          file-close-all
+        ]
+        
+        let input word "data/centroid-network-master-files/np-master-matrix-" day
+        set input word input ".csv"
+        let matrix-list []
+        let sub-list []
+        let cycler 1
+        let row-length max [np-network-id] of patches
+        file-open input
+        
+        while [not file-at-end?]
+        [
+          set np-centroid-network matrix:from-row-list file-read
+        ]
+        
+        file-close-all
+        
+        ;file-delete input
+        
+        ;don't need to bother importing para weighting after the first initial import
+        
+      ] 
+    ]
+  ]
+end
+
+
+to display-weighting
+  if any? centroids [ask centroids [die]]
+  if any? cent-links [ask cent-links [die]]
+  ask patches with [np-network-id > 0]
+  [
+    sprout-centroids 1
+    [
+      set cid np-network-id
+      set color pcolor
+    ]
+  ]
+  
+  print "stop check 1"
+  
+  let x 1
+  let num-rows item 0 matrix:dimensions np-centroid-network 
+  
+  while [x <= num-rows]
+  [
+    
+    let cent-list matrix:get-row np-centroid-network (x - 1)
+    
+    if sum cent-list > 0
+    [
+      let y 1
+      while [ y <= length cent-list ]
+      [
+        if item (y - 1) cent-list > 0
+        [
+          ask centroids with [ cid = x ] 
+          [ 
+            carefully 
+            [ create-cent-links-to centroids with [ cid = y ] [ set link-weight item (y - 1) cent-list ] ]
+            [ set size 4 set color red ]
+          ]
+        ]
+        set y y + 1
+      ]
+    ]
+    set x x + 1
+  ]
+  
+  print "stop check 2"
+  
+end
+
+to exp-f
+  let output word "np-master-matrix-" day
+  set output word output ".csv"
+  file-open output
+  file-print matrix:to-row-list np-centroid-network
+  file-close-all
+  
+  set output word "p-master-matrix-" day
+  set output word output ".csv"
+  file-open output
+  file-print matrix:to-row-list p-centroid-network
+  file-close-all
+end
+
+to in-f
+  let input word "np-master-matrix-" 152
+  set input word input ".csv"
+  let matrix-list []
+  let sub-list []
+  let cycler 1
+  let row-length max [np-network-id] of patches
+  file-open input
+  
+  while [not file-at-end?]
+  [
+    set np-centroid-network matrix:from-row-list file-read
+  ]
+  
+  file-close-all
+end

@@ -34,6 +34,7 @@ end
 to update-para-utility
   ask patches
   [
+    ;set caribou-utility 0 ;void this line after calculating centroids for each layer.
     ;CARIBOU-UTILITY MUST ALWAYS BE CALCULATED FIRST! THIS IS DONE IN THE GO PROCEDURE!
     set caribou-utility-para caribou-utility 
     let ndvi-util ((ndvi-quality / ndvi-all-max) * ndvi-weight) + (1 - ndvi-weight)
@@ -45,7 +46,7 @@ to update-para-utility
     if(caribou-utility-para  <= 0)
     [
 
-      set caribou-utility-para 0.0000000001
+      set caribou-utility-para 0.0000000001 
     ]
     if(ocean = 1)
     [
@@ -58,6 +59,7 @@ end
 to update-non-para-utility
   ask patches
   [
+    ;set caribou-utility 0 ;void this line after calculating centroids for each layer.
     ;CARIBOU-UTILITY MUST ALWAYS BE CALCULATED FIRST! THIS IS DONE IN THE GO PROCEDURE!
     set caribou-utility-non-para caribou-utility 
     
@@ -142,6 +144,8 @@ to update-caribou-utility
 ;      ]
     ]
 
+    ;set caribou-utility-para caribou-utility
+    ;set caribou-utility-non-para caribou-utility
   ]
 end
 

@@ -68,7 +68,7 @@ to setup-caribou
   matrix:set-row fcm-adja-base 20  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
 
 
- ; set fcm-adja-base matrix:make-constant 21 11 0 ;For making a random map to mutate.
+ set fcm-adja-base matrix:make-constant 21 11 0 ;For making a random map to mutate.
   
   
   create-caribou caribou-group-amt
@@ -111,8 +111,12 @@ to setup-caribou
 
     set fcm-mat-sensor matrix:make-constant 10 1 0
     set fcm-mat-conc-delta matrix:make-constant 11 1 0; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
+    caribou-random-fcm
     set fcm-adja matrix:copy fcm-adja-base ; Adj
-    set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
+    
+    ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
+    
+    mutate-genome
 
     ;TODO Evaluate real values
     set close-range 1.0;  ex: 1.2
@@ -150,7 +154,7 @@ to setup-caribou
     set shape "circle 2"
     set size radius
 
-    set current-centroid one-of centroids
+    ;set current-centroid one-of centroids
 
     set centroid-attraction set-centroid-attraction
 
@@ -165,9 +169,9 @@ to setup-caribou
 
     ;set by group population
     set weight (132 * caribou-group-number)
-    set bioenergy (27.5 * caribou-group-number * 1000) ; In kJ
-    set bioenergy-upper (33 * caribou-group-number * 1000) ; kJ
-    set bioenergy-lower (22 * caribou-group-number) * 1000; kJ
+    set bioenergy (27.5 * 1000);* caribou-group-number * 1000) ; In kJ
+    set bioenergy-upper (33 * 1000) ;caribou-group-number * 1000) ; kJ
+    set bioenergy-lower (22 * 1000) ;caribou-group-number) * 1000; kJ
 
       ;;Edges
   ;array:set graph-edges 0 1.0
@@ -220,16 +224,29 @@ to setup-caribou
 ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
 ;   matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
 
-   if(is-training?)
-   [
-     setxy -12 -27
-   ]
+;if(is-training?)
+;[
+;  setxy -12 -27
+;]
+;starting centroid is closest centroid
+    ifelse day > 151 and day < 167 and caribou-class = 2
+    [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
+      set last-centroid current-centroid ]
+    [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
+      set last-centroid current-centroid ]
+    ;starting grid is closest grid
+    ifelse day > 151 and day < 167 and caribou-class = 2
+    [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
+      set last-grid current-grid ]
+    [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
+      set last-grid current-grid ]
 
   ]
 end
 
 to go-caribou
   let caribou-group-number floor(caribou-amt / caribou-group-amt)
+  
   ;Test migration state, and when to kick out of migration.
   ; Use centroid attraction factor to control intensity of migration
   ; Incorporate FCM for migration decisions.
@@ -254,21 +271,25 @@ to go-caribou
   ;fcm-adja
   
   
-  
-  
+  let high-food-para 0.5 * max [caribou-utility-para] of patches
+  let high-food-non-para 0.5 * max [caribou-utility-non-para] of patches
   ask caribou
-  [
+  [ ;if day = 166 [stop]
+    let dist-cent distance current-centroid
+    let dist-grid distance current-grid
+    
+    
     set state 2
     let other-state-found false
     let avg-past 0
-    let energy-loss 0
-    
+    ;let energy-loss 0
+    set energy-loss 0
     ;close-range ;  ex: 1.2
     ;far-range ; ex: 1.8
     ;fcm-sigmoid-scalar
-
-;wraps into the ternary function
-
+    
+    ;wraps into the ternary function
+    
     let close-hunt (min-one-of hunters [distance myself] )
     let hunt-dist distance close-hunt
     matrix:set fcm-mat-sensor 0 0  (1 - (fcm-ternary 0.25 0.75 hunt-dist)) ;Foe Close = 0 invert this valuse
@@ -278,19 +299,19 @@ to go-caribou
     
     ifelse(caribou-class = 2 and (day > 151 and day < 167))
     [
-      let high-food-near (max-one-of patches in-radius 3 [caribou-utility-para])
+      let high-food-near (max-one-of patches in-radius 3 [caribou-utility-para]) 
       let high-food-dist distance high-food-near
-      
+      ;let high-food-threshold 0.5 * max [caribou-utility-para] of patches
       ;If there is no high quantity food nearby, set distance out of the ternary functions range. In this case world-size will do.
-      if([caribou-utility-para] of high-food-near < 0.5)
+      if([caribou-utility-para] of high-food-near < high-food-para)
       [
         set high-food-dist 129
       ]
       matrix:set fcm-mat-sensor 2 0 (1 - (fcm-ternary 0 3 high-food-dist)) ;food Close = 0 invert this valuse
       matrix:set fcm-mat-sensor 3 0 (fcm-ternary 0 3 high-food-dist) ;Food Far = 1
       
-      matrix:set fcm-mat-sensor 4 0 (1 - (fcm-ternary bioenergy-lower bioenergy-upper bioenergy )) ;energy low? (Max)
-      matrix:set fcm-mat-sensor 5 0 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy) ;energy high? (Max)
+      matrix:set fcm-mat-sensor 4 0 (1 - (fcm-ternary bioenergy-lower bioenergy-upper bioenergy )) 
+      matrix:set fcm-mat-sensor 5 0 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy) 
       
       let local-quantity  [caribou-utility-para] of patch-here
       matrix:set fcm-mat-sensor 6 0 (fcm-ternary 0.50 1 local-quantity) ;Foe Close = 0 invert this valuse
@@ -304,9 +325,9 @@ to go-caribou
     [
       let high-food-near (max-one-of patches in-radius 3 [caribou-utility-non-para])
       let high-food-dist distance high-food-near
-      
+      ;let high-food-threshold 0.5 * max [caribou-utility-non-para] of patches
       ;If there is no high quantity food nearby, set distance out of the ternary functions range. In this case world-size will do.
-      if([caribou-utility-non-para] of high-food-near < 0.5)
+      if([caribou-utility-non-para] of high-food-near < high-food-non-para)
       [
         set high-food-dist 129
       ]
@@ -328,16 +349,16 @@ to go-caribou
     
     
     
-
+    
     ;;Sensory Operations
     ;this is the "splice" in the diagram from your notebook to multiply by the submatrix
     ;let fcm-combined-sensor fcm-merge-sen-conc fcm-mat-sensor fcm-mat-conc-delta
-
+    
     ;multiply by sub adjacency list to calculate concepts
     ;show matrix:dimensions matrix:transpose((matrix:submatrix fcm-adja 0 0 16 11))
     ;show matrix:dimensions fcm-combined-sensor
     
-      
+    
     
     ;weights for internal concepts
     ;;let sens-adj matrix:transpose(matrix:submatrix fcm-adja 0 0 10 6)
@@ -375,361 +396,394 @@ to go-caribou
     ]
     
     set state fcm-index-max final-states
-;    
-;    let concept-calc matrix:times matrix:transpose(matrix:submatrix fcm-adja 0 0 16 11) fcm-combined-sensor  ;multiply by the adjacency list for sensors and concepts (internalizations)
-;    let concept-act fcm-sigmoid-concept-wrapper concept-calc fcm-mat-conc-delta
-;    let motor-calc matrix:times matrix:transpose(matrix:submatrix fcm-adja 10 0 21 11) concept-act
-;    let motor-act fcm-sigmoid-concept-wrapper motor-calc fcm-mat-conc-delta
-;    set fcm-mat-conc-delta motor-act
-;    set state fcm-index-max motor-act
-
-
-;
-;    let i 0
-;
-;    while [i < 45]
-;      [
-;        set avg-past (avg-past + array:item last-patches i)
-;
-;        set i (i + 1)
-;      ]
-;
-;      ;util high or low activation
-;      ifelse(avg-past < caribou-util-cutoff and ticks > 720)
-;      [
-;        set util-low 1
-;        set util-high 0
-;
-;        set taxi-state taxi-state + matrix:get cog-map 1 4
-;        set forage-state forage-state + matrix:get cog-map 1 3
-;      ]
-;      [
-;       set util-low 0
-;       set util-high 1
-;
-;       set taxi-state taxi-state + matrix:get cog-map 1 4
-;       set forage-state forage-state + matrix:get cog-map 1 3
-;      ]
-
-
-      ;increase taxi/migration based on high values util values
-
-
-
-      ;Centroid Attraction rate
-      set magic-centroid current-centroid
+    ;    
+    ;    let concept-calc matrix:times matrix:transpose(matrix:submatrix fcm-adja 0 0 16 11) fcm-combined-sensor  ;multiply by the adjacency list for sensors and concepts (internalizations)
+    ;    let concept-act fcm-sigmoid-concept-wrapper concept-calc fcm-mat-conc-delta
+    ;    let motor-calc matrix:times matrix:transpose(matrix:submatrix fcm-adja 10 0 21 11) concept-act
+    ;    let motor-act fcm-sigmoid-concept-wrapper motor-calc fcm-mat-conc-delta
+    ;    set fcm-mat-conc-delta motor-act
+    ;    set state fcm-index-max motor-act
     
-      let cent-agents centroids with [cid = magic-centroid]
-      let cent-agent one-of cent-agents
-      let temp-dist (distance current-centroid)
-
-;      ifelse(temp-dist > caribou-cent-dist-cutoff)
-;      [
-;        set cent-dist-close 0
-;        set cent-dist-far 1
-;
-;        set centroid-attraction centroid-attraction-max
-;      ]
-;      [
-;        set cent-dist-close 1
-;        set cent-dist-far 0
-;
-;        set taxi-state taxi-state + matrix:get cog-map 1 4
-;        set forage-state forage-state + matrix:get cog-map 1 3
-;
-;        set centroid-attraction (temp-dist / caribou-cent-dist-cutoff) * centroid-attraction-max
-;        if(centroid-attraction < centroid-attraction-min)
-;        [
-;          set centroid-attraction centroid-attraction-min
-;        ]
-;
-;      ]
-;      if(taxi-state > 1)
-;      [
-;        set taxi-state 1
-;      ]
-;
-;      if(taxi-state < 0)
-;      [
-;        set taxi-state 0
-;      ]
-;
-;      ; based on percentages in Semeniuk et al
-;      ifelse(taxi-state > 0.8)
-;      [
-;        ifelse(forage-state > 0.5)
-;        [
-;          set state 2
-;        ]
-;        [
-;          set state 1
-;        ]
-;      ]
-;      [
-;        ifelse(forage-state > 0.5)
-;        [
-;          set state 0
-;        ]
-;        [
-;          set state 2
-;        ]
-;      ]
-;
-
-
-
-      ;other-state-found used to get around if-else limitations
-      if(state = 4) ;intra forage
+    
+    ;
+    ;    let i 0
+    ;
+    ;    while [i < 45]
+    ;      [
+    ;        set avg-past (avg-past + array:item last-patches i)
+    ;
+    ;        set i (i + 1)
+    ;      ]
+    ;
+    ;      ;util high or low activation
+    ;      ifelse(avg-past < caribou-util-cutoff and ticks > 720)
+    ;      [
+    ;        set util-low 1
+    ;        set util-high 0
+    ;
+    ;        set taxi-state taxi-state + matrix:get cog-map 1 4
+    ;        set forage-state forage-state + matrix:get cog-map 1 3
+    ;      ]
+    ;      [
+    ;       set util-low 0
+    ;       set util-high 1
+    ;
+    ;       set taxi-state taxi-state + matrix:get cog-map 1 4
+    ;       set forage-state forage-state + matrix:get cog-map 1 3
+    ;      ]
+    
+    
+    ;increase taxi/migration based on high values util values
+    
+    
+    
+    ;Centroid Attraction rate
+    set magic-centroid current-centroid
+    
+    let cent-agents centroids with [cid = magic-centroid]
+    let cent-agent one-of cent-agents
+    let temp-dist (distance current-centroid)
+    
+    ;      ifelse(temp-dist > caribou-cent-dist-cutoff)
+    ;      [
+    ;        set cent-dist-close 0
+    ;        set cent-dist-far 1
+    ;
+    ;        set centroid-attraction centroid-attraction-max
+    ;      ]
+    ;      [
+    ;        set cent-dist-close 1
+    ;        set cent-dist-far 0
+    ;
+    ;        set taxi-state taxi-state + matrix:get cog-map 1 4
+    ;        set forage-state forage-state + matrix:get cog-map 1 3
+    ;
+    ;        set centroid-attraction (temp-dist / caribou-cent-dist-cutoff) * centroid-attraction-max
+    ;        if(centroid-attraction < centroid-attraction-min)
+    ;        [
+    ;          set centroid-attraction centroid-attraction-min
+    ;        ]
+    ;
+    ;      ]
+    ;      if(taxi-state > 1)
+    ;      [
+    ;        set taxi-state 1
+    ;      ]
+    ;
+    ;      if(taxi-state < 0)
+    ;      [
+    ;        set taxi-state 0
+    ;      ]
+    ;
+    ;      ; based on percentages in Semeniuk et al
+    ;      ifelse(taxi-state > 0.8)
+    ;      [
+    ;        ifelse(forage-state > 0.5)
+    ;        [
+    ;          set state 2
+    ;        ]
+    ;        [
+    ;          set state 1
+    ;        ]
+    ;      ]
+    ;      [
+    ;        ifelse(forage-state > 0.5)
+    ;        [
+    ;          set state 0
+    ;        ]
+    ;        [
+    ;          set state 2
+    ;        ]
+    ;      ]
+    ;
+    
+    
+    
+    ;other-state-found used to get around if-else limitations
+    if(state = 4) ;intra forage
+    [
+      set fd-amt fga-amt
+      
+      set energy-loss  296.1 ; foraging expense (Boertje 1985, 105 kg caribou for 1.5 hr)
+      ;set energy-loss  2.82 ; foraging expense
+      
+      set other-state-found true
+    ]
+    
+    if(state = 2 and not other-state-found);taxi/migrate
+    [
+      
+      ifelse dist-grid <= 1
+      [ select-grid 
+        select-centroid ]
+      [ if dist-cent <= 1
+        [select-centroid ]]
+      
+      
+      
+      
+      ;set centroid-attraction (centroid-attraction * attraction-factor)
+      set fd-amt mg-amt-max
+      
+      
+      if (season = 1 or season = 2)
       [
-        set fd-amt fga-amt
-        
-        
-        set energy-loss  2.82 ; foraging expense
-  
-        set other-state-found true
-      ]
-
-      if(state = 2 and not other-state-found);taxi/migrate
-      [
-        
-        let closest-cent min-n-of 10 centroids [ distance myself ] 
-        set current-centroid one-of closest-cent
-       ; set current-centroid (random 115 + 1)
-        
-        ;set centroid-attraction (centroid-attraction * attraction-factor)
-        set fd-amt mg-amt-max
-        
-                
-        if (season = 1 or season = 2)
-        [
-         set energy-loss 45  ; energy expense * km in Kj
-        ]
-        
-        if (season = 0 or season = 4)
-        [
-         set energy-loss 52.5 ; energy expense * km in Kj
-        ]
-        
-        set other-state-found true
-      ]
-
-      if(state = 1 and not other-state-found);interforage
-      [
-        set fd-amt fge-amt
-        
-        if (season = 1 or season = 2)
-        [
-         set energy-loss 3.45 * fd-amt * 2.195  ; energy expense * km in Kj
-        ]
-        
-        if (season = 0 or season = 4)
-        [
-         set energy-loss 3.96 * fd-amt * 2.195 ; energy expense * km in Kj
-        ]
-        
-        set other-state-found true
+        set energy-loss 4725  ; energy expense * km in Kj
+                              ;set energy-loss 45  ; energy expense * km in Kj
       ]
       
-      if(state = 0 and not other-state-found) ;Evade
+      if (season = 0 or season = 4)
       [
-        ;move away from the perceived threat
-        ; running distance
-        set other-state-found true
+        set energy-loss 5512.5  ; energy expense * km in Kj
+                                ;set energy-loss 52.5 ; energy expense * km in Kj
       ]
       
-      if(state = 3 and not other-state-found) ; rest
+      set other-state-found true
+    ]
+    
+    if(state = 1 and not other-state-found);interforage
+    [
+      set fd-amt fge-amt
+      
+      if (season = 1 or season = 2)
       [
-        set fd-amt 0
-        if (season = 1 or season = 2)
-        [
-         set energy-loss 1.10894760598 ; kJ for a 1.5hour period, laying down
-        ]
-        
-        if (season = 0 or season = 4)
-        [
-          ;based on daily average resting of a 105kg caribou
-         set energy-loss 0.87458239028 ; kJ for 1.5h period, laying down
-        ]
-        
+        set energy-loss 326.025 ;kJ
+        ;set energy-loss 3.45 * fd-amt ;* 2.195  ; energy expense * km in Kj
       ]
-
-
-      ;Move according to state and centroid values
+      
+      if (season = 0 or season = 4)
+      [
+        set energy-loss 374.22 ;kJ
+        ;set energy-loss 3.96 * fd-amt ;* 2.195 ; energy expense * km in Kj
+      ]
+      
+      set other-state-found true
+    ]
+    
+    if(state = 0 and not other-state-found) ;Evade
+    [
+      ;move away from the perceived threat
+      ; running distance
+      set fd-amt mg-amt-max 
+      if (season = 1 or season = 2)
+      [
+          set energy-loss 4725  ; energy expense * km in Kj
+                                ;set energy-loss 45  ; energy expense * km in Kj
+      ]
+      
+      if (season = 0 or season = 4)
+      [
+        set energy-loss 5512.5  ; energy expense * km in Kj
+                                ;set energy-loss 52.5 ; energy expense * km in Kj
+      ]
+      
+      ;;insert code telling caribou to adjust heading away from the disturbance.
+      set heading heading + ((random 181) - 270) ;temporary code, randomly adjusts heading anywhere from -90:180
+      
+      set other-state-found true
+    ]
+    
+    if(state = 3 and not other-state-found) ; rest
+    [
+      set fd-amt 0
+      if (season = 1 or season = 2)
+      [
+        set energy-loss 205.625 ;kJ, incremental cost relative to intra-forage cost.
+        ;set energy-loss 1193.15 ; kJ for a 1.5hour period, laying down (Boertje 1985, 105 kg caribou for 1.5 hrs)
+                                ;set energy-loss 1.10894760598 ; kJ for a 1.5hour period, laying down
+      ]
+      
+      if (season = 0 or season = 4)
+      [
+        set energy-loss 205.625 ;kJ, incremental cost relative to intra-forage cost.
+        ;set energy-loss 940.99 ; kJ for a 1.5hour period, laying down (Boertje 1985, 105 kg caribou for 1.5 hrs)
+                               ;based on daily average resting of a 105kg caribou
+                               ;set energy-loss 0.87458239028 ; kJ for 1.5h period, laying down
+      ]
+      
+    ]
+    
+    
+    ;Move according to state and centroid values
     ifelse(caribou-class = 2 and (day > 151 and day < 167))
     [ array:set last-patches last-patch-index [caribou-utility-para] of patch-here ]
     [ array:set last-patches last-patch-index [caribou-utility-non-para] of patch-here ]
     
-      
     
-      set last-patch-index last-patch-index + 1
-
-      if(last-patch-index = 45)
-        [
-          set last-patch-index 0
-        ]
-      
-      
-      ;let p patch-list-caribou-wrapper xcor ycor centroid-attraction cent-agent
-      let p patch-here
-      ;select vegetation based on type
-      
-      let state-centroid-attraction centroid-attraction
-      if(state = 2)
+    
+    set last-patch-index last-patch-index + 1
+    
+    if(last-patch-index = 45)
       [
-        set state-centroid-attraction state-centroid-attraction * 5
-      ]
-      
-      ifelse(caribou-class = 2 and (day > 151 and day < 167))
-        [
-          set p patch-list-caribou-non-para-wrapper xcor ycor centroid-attraction current-centroid
-        ]
-        [
-          set p patch-list-caribou-para-wrapper xcor ycor centroid-attraction current-centroid
-        ]
-      face p
-      set previous-patch p
-      ask patch-here
-      [
-        set caribou-modifier caribou-modifier + caribou-modify-amt
-        
-        ;Do not let caribou modifer exceed 1
-        if(caribou-modifier > 1)
-        [
-          set caribou-modifier 1
-        ]
-      ]
-
-;      ;look 1 patch ahead
-;      ifelse([elevation] of patch-at-heading-and-distance heading 1 > [elevation] of patch-here)
-;      [
-;        ;uphill
-;        ;0.4556 patch distance = 1km
-;        set bioenergy bioenergy - (3.640 * weight * (fd-amt / 0.4556))
-;      ]
-;      [
-;        set bioenergy bioenergy - (1.293 * weight * (fd-amt / 0.4556))
-;      ]
-     
-      let energy-gain 0
-      
-      set bioenergy bioenergy - (energy-loss * caribou-group-number)
-      
-
-      ;Move the agent forward by determined amount
-      fd fd-amt
-      
-      ifelse(caribou-class = 2 and (day > 151 and day < 167))
-      [
-        if (not (state = 3))
-        [
-          set energy-gain [caribou-utility-para] of patch-here * energy-gain-factor * caribou-group-number
-        ]
-      ]
-      [
-        if (not (state = 3))
-        [
-          set energy-gain [caribou-utility-non-para] of patch-here * energy-gain-factor * caribou-group-number
-        ]
-      ]
-      
-      set bioenergy bioenergy + energy-gain
-
-
-     ; let acquired-energy caribou-veg-type-energy [vegetation-type] of patch-here * group-size
-     ; set bioenergy bioenergy + acquired-energy
-
-      ifelse(temp-dist > caribou-cent-dist-cutoff)
-      [
-        set centroid-attraction centroid-attraction-max
-      ]
-      [
-        set centroid-attraction (temp-dist / caribou-cent-dist-cutoff) * centroid-attraction-max
-        if(centroid-attraction < centroid-attraction-min)
-        [
-          set centroid-attraction centroid-attraction-min
-        ]
-      ]
-
-
-
-
-;      if(state = 0)
-;      [
-;
-;
-;        set test-migration (test-migration - 1)
-;
-;        set magic-centroid current-centroid
-;        let cent-agents centroids with [cid = magic-centroid]
-;        let cent-agent one-of cent-agents
-;
-;        ;patch memory
-;        let avg-past 0
-;        let i 0
-;        while [i < 45]
-;        [
-;          set avg-past (avg-past + array:item last-patches i)
-;
-;          set i (i + 1)
-;        ]
-;        ;Ticks used for testing
-;        let temp-cent current-centroid
-;        if(any? centroids in-radius 2 with [cid = temp-cent])
-;        [
-;
-;
-;          if(last-state-migrate = true)
-;          [
-;            set centroid-attraction (centroid-attraction / attraction-factor)
-;            set last-state-migrate false
-;            show "END TAXI"
-;          ]
-;
-;
-;          set avg-past avg-past / 45
-;          ; show avg-past
-;          if(avg-past < migrate-val)
-;          [
-;            show "TAXI"
-;            set state 1
-;          ]
-;        ]
-;        array:set last-patches last-patch-index [caribou-utility] of patch-here
-;        set last-patch-index last-patch-index + 1
-;
-;        if(last-patch-index = 45)
-;        [
-;          set last-patch-index 0
-;        ]
-;
-;        let p patch-list-caribou-wrapper xcor ycor centroid-attraction cent-agent
-;
-;
-;        face p
-;        set previous-patch p
-;        ask patch-here
-;        [
-;          set caribou-modifier caribou-modifier + caribou-modify-amt
-;        ]
-;        fd fd-amt
-;      ]
-;      ;; Migrate
-;     if (state = 1)
-;     [
-;        ;change centroid, used to test until proper centroids implemented
-;        set current-centroid (random 100 + 1)
-;        set centroid-attraction (centroid-attraction * attraction-factor)
-;        ;temporary values to test taxiing
-;        set test-migration 150
-;        set state 0
-;        set last-state-migrate true
-;
-;      ]
-
-
-
+        set last-patch-index 0
     ]
-
+    
+    
+    ;let p patch-list-caribou-wrapper xcor ycor centroid-attraction cent-agent
+    let p patch-here
+    ;select vegetation based on type
+    
+    let state-centroid-attraction centroid-attraction
+    if(state = 2)
+    [
+      set state-centroid-attraction state-centroid-attraction * 5 
+    ]
+    
+    ifelse(caribou-class = 2 and (day > 151 and day < 167))
+    [
+      set p patch-list-caribou-para-wrapper xcor ycor centroid-attraction current-centroid
+    ]
+    [
+      set p patch-list-caribou-non-para-wrapper xcor ycor centroid-attraction current-centroid
+    ]
+    
+    face p
+    set previous-patch p
+    ask patch-here
+    [
+      set caribou-modifier caribou-modifier + caribou-modify-amt
+      
+      ;Do not let caribou modifer exceed 1
+      if(caribou-modifier > 1)
+      [
+        set caribou-modifier 1
+      ]
+    ]
+    
+    ;      ;look 1 patch ahead
+    ;      ifelse([elevation] of patch-at-heading-and-distance heading 1 > [elevation] of patch-here)
+    ;      [
+    ;        ;uphill
+    ;        ;0.4556 patch distance = 1km
+    ;        set bioenergy bioenergy - (3.640 * weight * (fd-amt / 0.4556))
+    ;      ]
+    ;      [
+    ;        set bioenergy bioenergy - (1.293 * weight * (fd-amt / 0.4556))
+    ;      ]
+    
+    ;let energy-gain 0
+    set energy-gain 0
+    
+    set bioenergy bioenergy - energy-loss ;* caribou-group-number)
+    
+    
+    ;Move the agent forward by determined amount
+    fd fd-amt
+    
+    ifelse(caribou-class = 2 and (day > 151 and day < 167))
+    [
+      if (not (state = 3))
+      [
+        set energy-gain [caribou-utility-para] of patch-here * energy-gain-factor * caribou-group-number
+      ]
+    ]
+    [
+      if (not (state = 3))
+      [
+        set energy-gain [caribou-utility-non-para] of patch-here * energy-gain-factor * caribou-group-number
+      ]
+    ]
+    
+    set bioenergy bioenergy + energy-gain
+    
+    
+    ; let acquired-energy caribou-veg-type-energy [vegetation-type] of patch-here * group-size
+    ; set bioenergy bioenergy + acquired-energy
+    
+    
+    ;attraction to the current centroid decreases as caribou agents get closer to the centroid.
+    ifelse(temp-dist > caribou-cent-dist-cutoff)
+    [
+      set centroid-attraction centroid-attraction-max
+    ]
+    [
+      set centroid-attraction (temp-dist / caribou-cent-dist-cutoff) * centroid-attraction-max
+      if(centroid-attraction < centroid-attraction-min)
+      [
+        set centroid-attraction centroid-attraction-min
+      ]
+    ]
+    
+    
+    
+    
+    ;      if(state = 0)
+    ;      [
+    ;
+    ;
+    ;        set test-migration (test-migration - 1)
+    ;
+    ;        set magic-centroid current-centroid
+    ;        let cent-agents centroids with [cid = magic-centroid]
+    ;        let cent-agent one-of cent-agents
+    ;
+    ;        ;patch memory
+    ;        let avg-past 0
+    ;        let i 0
+    ;        while [i < 45]
+    ;        [
+    ;          set avg-past (avg-past + array:item last-patches i)
+    ;
+    ;          set i (i + 1)
+    ;        ]
+    ;        ;Ticks used for testing
+    ;        let temp-cent current-centroid
+    ;        if(any? centroids in-radius 2 with [cid = temp-cent])
+    ;        [
+    ;
+    ;
+    ;          if(last-state-migrate = true)
+    ;          [
+    ;            set centroid-attraction (centroid-attraction / attraction-factor)
+    ;            set last-state-migrate false
+    ;            show "END TAXI"
+    ;          ]
+    ;
+    ;
+    ;          set avg-past avg-past / 45
+    ;          ; show avg-past
+    ;          if(avg-past < migrate-val)
+    ;          [
+    ;            show "TAXI"
+    ;            set state 1
+    ;          ]
+    ;        ]
+    ;        array:set last-patches last-patch-index [caribou-utility] of patch-here
+    ;        set last-patch-index last-patch-index + 1
+    ;
+    ;        if(last-patch-index = 45)
+    ;        [
+    ;          set last-patch-index 0
+    ;        ]
+    ;
+    ;        let p patch-list-caribou-wrapper xcor ycor centroid-attraction cent-agent
+    ;
+    ;
+    ;        face p
+    ;        set previous-patch p
+    ;        ask patch-here
+    ;        [
+    ;          set caribou-modifier caribou-modifier + caribou-modify-amt
+    ;        ]
+    ;        fd fd-amt
+    ;      ]
+    ;      ;; Migrate
+    ;     if (state = 1)
+    ;     [
+    ;        ;change centroid, used to test until proper centroids implemented
+    ;        set current-centroid (random 100 + 1)
+    ;        set centroid-attraction (centroid-attraction * attraction-factor)
+    ;        ;temporary values to test taxiing
+    ;        set test-migration 150
+    ;        set state 0
+    ;        set last-state-migrate true
+    ;
+    ;      ]
+    
+    
+    
+  ]
+  
 end
 
 to go-caribou-q
@@ -749,7 +803,7 @@ to go-caribou-q
     set state 2
     let other-state-found false
     let avg-past 0
-    let energy-loss 0
+    let energy-l 0
     
     ;close-range ;  ex: 1.2
     ;far-range ; ex: 1.8
@@ -989,7 +1043,7 @@ to go-caribou-q
       ]
 
 
-      let energy-gain 0
+      let energy-g 0
       
       set bioenergy bioenergy - (energy-loss * caribou-group-number)
       

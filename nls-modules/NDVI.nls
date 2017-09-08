@@ -49,7 +49,12 @@ to go-ndvi
   let ndvi-matrix floor ((day - 121) / 10)
   
 
-  if ndvi-matrix >= 0 and ((day - 121) mod 10 = 0) [ print "loading ndvi..." reset-timer load-gis-ndvi print "ndvi successfully loaded, time = " show timer]
+  if ndvi-matrix >= 0 and ((day - 121) mod 10 = 0) 
+  [ ;print "loading ndvi..." 
+    ;reset-timer 
+    load-gis-ndvi ]
+    ;print "ndvi successfully loaded."] 
+    ;show timer]
 
   ;print "loading ndvi..." load-gis-ndvi
 end

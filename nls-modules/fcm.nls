@@ -42,83 +42,283 @@ to-report fcm-sigmoid-simple [rawVal]
 end
 
 to caribou-random-fcm
-  set fcm-adja-base matrix:map random-fcm fcm-adja-base ;randomize fcm
+  ;different procedures are for the type of random FCM that is desired (binary, pentavalent logic, fuzzy logic).
+  ;set fcm-adja-base matrix:map random-fcm fcm-adja-base ;randomize fcm
+  ;set fcm-adja-base matrix:map random-fcm-binary fcm-adja-base ;randomize fcm
+  ;set fcm-adja-base matrix:map random-fcm-pentav fcm-adja-base ;randomize fcm
+  set fcm-adja-base matrix:map random-fcm-fuzzy fcm-adja-base ;randomize fcm
 end
+
+to-report test-diff [diff]
+  ;let test matrix:minus ([fcm-adja] of one-of caribou) fcm-adja-base
+  
+  ;let test matrix:to-row-list fcm-adja-base
+  set diff matrix:to-row-list diff
+  let x 0
+  let sum-vals 0
+  while [ x + 1 <= length diff ]
+  [
+   set diff replace-item x diff (map abs (item x diff))
+   set sum-vals sum-vals + sum (item x diff)
+    
+   set x x + 1 
+  ]
+  let out "num diffs: "
+  set out word out sum-vals
+  ;print out
+
+  report sum-vals
+end
+
+
+to select-fcms
+  ;procedure for selecting an FCM for all caribou to use.
+  ;FCM is selected randomly from the weights of caribou bioenergy success. 
+  let min-bio min [bioenergy] of caribou
+  let max-bio max [bioenergy] of caribou
+  
+  
+  set fcm-adja-list [fcm-adja] of caribou
+  
+  set fcm-agentnum-list [ ]
+
+  set fcm-success-list [ ]
+
+  let x 0
+  let y (x + 1)
+  
+  
+  while [x < length fcm-adja-list]
+  [
+    let counter 1
+    let current-fcm item x fcm-adja-list
+    ;set counter-list lput 1 counter-list
+    let avg-success mean [ bioenergy ] of caribou with [ fcm-adja = current-fcm ]
+    set y x + 1
+    
+    if y >= length fcm-adja-list
+    [ set fcm-agentnum-list lput counter fcm-agentnum-list
+      set fcm-success-list lput avg-success fcm-success-list ]
+    
+    while [y < length fcm-adja-list]
+    [
+      let comp matrix:minus current-fcm (item y fcm-adja-list)
+      
+      ifelse test-diff comp = 0
+      [
+        set counter counter + 1
+        set fcm-adja-list remove-item y fcm-adja-list
+        ;set counter-list replace-item x counter-list (item x counter-list + 1)
+      ]
+      [
+        set y y + 1
+      ]
+      
+      if (y + 1) > length fcm-adja-list
+      [ set fcm-agentnum-list lput counter fcm-agentnum-list
+        set fcm-success-list lput avg-success fcm-success-list ] 
+      
+    ]
+    
+    
+    ;show counter-list show fcm-adja-list
+    set x x + 1
+    ;show fcm-adja-list
+    ;if (x + 1) > length fcm-adja-list [ show fcm-adja-list ]
+  ] 
+
+  ;set fcm-success-list map [ i -> (i - min-bio)/(max-bio - min-bio) ]  fcm-success-list 
+  ;set fcm-agentnum-list map [ i -> i / (count caribou)]  fcm-agentnum-list
+  set fcm-success-list map [ (? - min-bio)/(max-bio - min-bio) ]  fcm-success-list 
+  set fcm-agentnum-list map [ ? / (count caribou)]  fcm-agentnum-list
+  
+  let weighted-list (map * fcm-success-list fcm-agentnum-list)
+  
+  ;show weighted-list
+  
+  set x 0
+  let prob-num 0
+  ;let mini-list [ ]
+  let prob-list [ ]
+  
+  while [x < length weighted-list ]
+  [
+    set y 0
+    set prob-num 0
+    ;set mini-list 
+    ;set prob-num sum 
+    while [y <= x ]
+    [
+      set prob-num prob-num + item y weighted-list
+      set y y + 1
+    ]
+    
+    set prob-list lput prob-num prob-list
+    set x x + 1
+  ]
+  
+  ;show prob-list
+  let min-prob min prob-list
+  let max-prob max prob-list
+  
+  
+  ;set prob-list map [ i -> (i - min-prob)/(max-prob - min-prob) ]  prob-list
+  ;set prob-list map [ i -> i / max-prob ]  prob-list
+  set prob-list map [ ? / max-prob ]  prob-list
+  ;print word "length probability list: " (length prob-list)
+  ;show prob-list
+  
+  ask caribou
+  [
+   ;print word "previous fcm: " fcm-adja
+   let random-prob (1 + random 1000) / 1000
+   let diff-list map [ abs(? - random-prob) ] prob-list
+   ;let diff-list map [ i -> abs(i - random-prob) ] prob-list
+    ;show diff-list
+   let pos position (min diff-list) diff-list
+   ifelse random-prob >= item pos prob-list
+    [ carefully [set fcm-adja item (pos + 1) fcm-adja-list]
+                [set fcm-adja item (pos) fcm-adja-list] ] ;carefully is for in-case max probability = random-prob, causing caribou to search 1 farther than the list.
+    [ set fcm-adja item (pos) fcm-adja-list ]
+
+   ;print word "new fcm: " fcm-adja
+  ]
+  
+  
+end
+
+
+to test-prob
+  let x 0
+  let y 0
+  let weighted-list [ 0.25 0.15 0.5 ]
+  let prob-num 0
+  let prob-list [ ]
+   while [x < length weighted-list ]
+  [
+    set y 0
+    set prob-num 0
+    ;set mini-list 
+    ;set prob-num sum 
+    while [y <= x ]
+    [
+      set prob-num prob-num + item y weighted-list
+      set y y + 1
+    ]
+    
+    set prob-list lput prob-num prob-list
+    set x x + 1
+  ]
+  
+  show prob-list
+end
+
 
 ;Breed Updates for FCMs
 to update-caribou-fcm
   ;currently looks like there is no recombination of FCMs, only mutation. Check with Cory (Max)
+  ;ask caribou
+  ;[
+  ;look for highest average energy
+  ;if this.highest > last.highest
+  ;  set last.highest this.highest
+  ;change base to this.cog-map
+  ;update/reset all agents
+  ;use new base-map for all agents
+  ; apply mutations
+  
+  
+  ;;Adding in a recombination of FCM section. 
+  ;degrees of recombination? start off with only 1.
+  ;;Work in progress
+  ;let best max-one-of caribou [bioenergy]
+  ;let next-best max-one-of caribou with [who != best] [bioenergy]
+  
+  ;let map1 matrix:copy [fcm-adja] of best
+  ;let map2 matrix:copy [fcm-adja] of next-best
+  
+  
+  
+  
+  ;let best max-one-of caribou [bioenergy]
+  ;if([bioenergy] of best > best-caribou-val or best-caribou-val = 0)
+  ;[
+  ;  set fcm-adja-base matrix:copy [fcm-adja] of best
+  ;  set base-fcm-caribou matrix:copy [fcm-adja] of best
+  ; set base-fcm-caribou matrix:copy [cog-map] of best
+  ;  set best-caribou-val [bioenergy] of best
+  ;  export-fcm
+  ;select-fcms
+  
+  ;]
+  
+  select-fcms
+  
   ask caribou
-  [
-    ;look for highest average energy
-    ;if this.highest > last.highest
-    ;  set last.highest this.highest
-    ;change base to this.cog-map
-    ;update/reset all agents
-    ;use new base-map for all agents
-    ; apply mutations
-
-    
-    ;;Adding in a recombination of FCM section. 
-    ;degrees of recombination? start off with only 1.
-    ;;Work in progress
-    let best max-one-of caribou [bioenergy]
-    let next-best max-one-of caribou with [who != best] [bioenergy]
-    
-    let map1 matrix:copy [fcm-adja] of best
-    let map2 matrix:copy [fcm-adja] of next-best
-
-    
-    
-    
-    ;let best max-one-of caribou [bioenergy]
-    if([bioenergy] of best > best-caribou-val or best-caribou-val = 0)
     [
-      set fcm-adja-base matrix:copy [fcm-adja] of best
-      set base-fcm-caribou matrix:copy [fcm-adja] of best
-     ; set base-fcm-caribou matrix:copy [cog-map] of best
-      set best-caribou-val [bioenergy] of best
-      export-fcm
-    ]
-
-    ask caribou
-    [
-      set fcm-adja matrix:copy fcm-adja-base ; Adj
-      set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
+      ;set fcm-adja matrix:copy fcm-adja-base ; Adj
+      ;removing this procedure for the time being.
+      ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
+      mutate-genome
+      
       
       let caribou-group-number floor(caribou-amt / caribou-group-amt)
-      set bioenergy (27.5 * caribou-group-number * 1000) ; In kJ ;reset energy
-;      set cog-map matrix:copy base-fcm-caribou
-;
-;      let rand (random-float (mutate-amt * 2) - mutate-amt)
-;      matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
-;
-;      set rand (random-float (mutate-amt * 2) - mutate-amt)
-;      matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
-;
-;      set rand (random-float (mutate-amt * 2) - mutate-amt)
-;      matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
-;
-;      set rand (random-float (mutate-amt * 2) - mutate-amt)
-;      matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
-;
-;      set rand (random-float (mutate-amt * 2) - mutate-amt)
-;      matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
-;
-;      set rand (random-float (mutate-amt * 2) - mutate-amt)
-;      matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
-;
-;      set rand (random-float (mutate-amt * 2) - mutate-amt)
-;      matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
-;
-;      set rand (random-float (mutate-amt * 2) - mutate-amt)
-;      matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
-;
-      setxy -12 -27
+      set bioenergy (27.5 * 1000); caribou-group-number * 1000) ; In kJ ;reset energy
+                                 ;      set cog-map matrix:copy base-fcm-caribou
+                                 ;
+                                 ;      let rand (random-float (mutate-amt * 2) - mutate-amt)
+                                 ;      matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
+                                 ;
+                                 ;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                 ;      matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
+                                 ;
+                                 ;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                 ;      matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
+                                 ;
+                                 ;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                 ;      matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
+                                 ;
+                                 ;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                 ;      matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
+                                 ;
+                                 ;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                 ;      matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
+                                 ;
+                                 ;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                 ;      matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
+                                 ;
+                                 ;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                 ;      matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
+                                 ;
+                                 ;setxy -12 -27
+      
+      let rxcor random-xcor
+      let rycor random-ycor
+      
+      while[rxcor < -63 or rxcor > 63]
+      [
+        set rxcor random-xcor
+      ]
+      
+      while[rycor < -63 or rycor > 63]
+      [
+        set rycor random-ycor
+      ]
+      
+      set current-centroid one-of centroids
+      
+      set centroid-attraction set-centroid-attraction
+      
+      while [not check-location rxcor rycor]
+      [
+        set rxcor random-xcor
+        set rycor random-ycor
+      ]
+      setxy rxcor rycor
     ]
-
-
-  ]
+  
+  
+  ;]
 end
 
 
@@ -132,10 +332,57 @@ to-report mutate-nonzero [x]
   ;report 0
 end
 
+to mutate-genome 
+  
+  let point-mut-prob 0.05 ;probability of the genome undergoing a point mutation.
+  let random-roll (1 + random 100) / 100
+  if random-roll < point-mut-prob
+  [
+    ;find a random location in the genome to mutate.
+    ;first, select a random row.
+    let ran-row random (item 0 (matrix:dimensions fcm-adja))
+    ;now select a random column
+    let ran-col random (item 1 (matrix:dimensions fcm-adja))
+    
+    ;the mutation amount varies based on mutation method.
+    ;let rand (random-float (mutate-amt * 2) - mutate-amt) ;original
+    
+    ;let rand (- 1 + random 3) ;trivalent system
+    
+    ;let rand 0
+    ;let roll random 2
+    ;ifelse roll = 0
+    ;[ set rand (- 1 + random 3) ]
+    ;[ set rand ((- 1 + random 3) / 2) ] ;pentavalent system
+    
+    let rand (-1 + ((1 + random 2000) / 1000 ) ) ;fuzzy logic system
+    
+    ;set fcm-adja matrix:set-and-report fcm-adja ran-row ran-col ((matrix:get fcm-adja ran-row ran-col) + rand) ;original
+    
+    set fcm-adja matrix:set-and-report fcm-adja ran-row ran-col rand ;for use w/ trivalent or pentavalent. This literally point mutation changes the value, instead of adding it to the 
+    ;previous value.
+  ]
+
+end
+
 to-report random-fcm [x]
   report (random-float 10) - 5
 end
 
+to-report random-fcm-binary [x]
+  report (-1 + random 3)
+end
+
+to-report random-fcm-pentav [x]
+  let rand random 2
+  ifelse rand = 0
+  [ report (-1 + random 3) ]
+  [ report ((-1 + random 3) / 2) ]
+end
+
+to-report random-fcm-fuzzy [x]
+  report (-1 + ((1 + random 2000) / 1000 ) )
+end
 
 to export-fcm
   let file-ex word "FCM-List:" date-and-time
