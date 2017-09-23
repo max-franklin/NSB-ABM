@@ -27,6 +27,10 @@ directed-link-breed [ cent-links cent-link ]
 
 globals
 [
+  years-store
+  fcm-store
+  ticks-store
+  bio-en-store
 
 ;GIS DATA
   np-centroid-network
@@ -154,6 +158,8 @@ globals
 
 patches-own
 [
+  river-set
+  river-id
   np-network-id
   p-network-id
   cent-dist
@@ -262,6 +268,8 @@ moose-own
 
 caribou-own
 [
+
+  bioenergy-success ;acknowledges that it's impossible for a caribou to acquire hundreds of thousands of MJ. Serves to limit inputs to FCM
 
   energy-gain
   energy-loss
@@ -403,6 +411,7 @@ to setup
   set day 152
   set year 0
 
+
   set cent-day-list [ ]
   ask patches
   [ set cent-util-list-non-para [ ]
@@ -458,12 +467,26 @@ to setup
   set fcm-adja-list [fcm-adja] of caribou
  ; setup-ndvi
   go-veg-ranking
+  set-streams
 
   ask patches
   [ set grid-util-non-para 0
     set grid-util-para 0 ]
 
   reset-ticks
+
+  set ticks-store [ ]
+  set bio-en-store [ ]
+
+  set ticks-store lput ticks ticks-store
+  set bio-en-store lput mean [bioenergy] of caribou bio-en-store
+
+  set years-store [ ]
+  set fcm-store [ ]
+
+  set years-store lput year years-store
+  set fcm-store lput (length fcm-adja-list) fcm-store
+
 end
 
 to setup-hunters-temp
@@ -568,7 +591,13 @@ to go
 
       ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
+      centroid-export
+
       set year year + 1
+
+      set years-store lput year years-store
+      set fcm-store lput (length fcm-adja-list) fcm-store
+
       set day 152
       ;if year = 20 [ stop ] ; can be deleted, just for network recording.
       set avg-sim-time lput timer avg-sim-time
@@ -614,6 +643,8 @@ to go
     ]
 
     ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
+
+    centroid-export
   ]
 
   go-deflectors
@@ -631,6 +662,10 @@ to go
 
 
   tick
+
+
+  set ticks-store lput ticks ticks-store
+  set bio-en-store lput mean [bioenergy] of caribou bio-en-store
 end
 
 
@@ -959,6 +994,48 @@ to reduce-coast
         ;set a coast reduce variable to just check before distributions are made
     ]
   ]
+end
+
+to test-flow
+  ;Assign patch sets river ids (build river patch sets)
+  ask patches [ set river-set [] ]
+  let river-cords [-30 -28 1 -64 -7 -63 -14 -64 -22 -32 -50 -55 12 -64 22 -64]
+  ;let river-cords [-30 -28 1 -64 -7 -63 -14 -52 -20 -30 -50 -55 12 -64 22 -64]
+  let x 0
+
+  while [x < length river-cords]
+  [
+    ask patch (item x river-cords) (item (x + 1) river-cords)
+    [
+      set river-id ((x / 2) + 1)
+      set pcolor yellow
+      sprout 1
+      [
+       ;let random-color 10 + random 10
+       let flow-id [river-id] of patch-here
+
+       repeat 1000
+       [
+         ask patch-here [set river-set lput [flow-id] of myself river-set set pcolor red]
+         let target neighbors with [connected? = true and not member? ([flow-id] of myself) river-set ]
+         set target min-one-of target [elevation]
+         carefully [ move-to target ]
+         [
+           move-to max-one-of (patches with [member? [flow-id] of myself river-set]) [pycor]
+           set target neighbors with [connected? = true and not member? ([flow-id] of myself) river-set ]
+           set target min-one-of target [elevation]
+           ifelse target = NOBODY
+           [ die ]
+           [ move-to target ]
+         ]
+         ;ask patch-here []
+       ]
+      ]
+    ]
+
+    set x x + 2
+  ]
+
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -2061,7 +2138,7 @@ SWITCH
 618
 caribouPopMod?
 caribouPopMod?
-1
+0
 1
 -1000
 
@@ -2109,7 +2186,7 @@ SWITCH
 533
 show-caribou-utility-non-para?
 show-caribou-utility-non-para?
-0
+1
 1
 -1000
 
@@ -2122,7 +2199,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.8
+0.81
 0.01
 1
 NIL
@@ -2134,7 +2211,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-75
+50
 1
 0
 Number
@@ -2146,7 +2223,7 @@ SWITCH
 542
 is-random?
 is-random?
-1
+0
 1
 -1000
 
@@ -2371,7 +2448,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plotxy ticks mean [bioenergy] of caribou"
+"default" 1.0 0 -16777216 true "" "plotxy ticks mean [bioenergy-success] of caribou"
 
 PLOT
 625

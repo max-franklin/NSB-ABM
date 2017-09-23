@@ -169,6 +169,7 @@ to setup-caribou
 
     ;set by group population
     set weight (132 * caribou-group-number)
+    set bioenergy-success (27.5 * 1000)
     set bioenergy (27.5 * 1000);* caribou-group-number * 1000) ; In kJ
     set bioenergy-upper (33 * 1000) ;caribou-group-number * 1000) ; kJ
     set bioenergy-lower (22 * 1000) ;caribou-group-number) * 1000; kJ
@@ -665,6 +666,7 @@ to go-caribou
     set energy-gain 0
     
     set bioenergy bioenergy - energy-loss ;* caribou-group-number)
+    set bioenergy-success bioenergy-success - energy-loss ;* caribou-group-number)
     
     
     ;Move the agent forward by determined amount
@@ -685,6 +687,7 @@ to go-caribou
     ]
     
     set bioenergy bioenergy + energy-gain
+    set bioenergy-success bioenergy-success + energy-gain
     
     
     ; let acquired-energy caribou-veg-type-energy [vegetation-type] of patch-here * group-size
@@ -780,6 +783,10 @@ to go-caribou
     ;
     ;      ]
     
+    
+    if bioenergy > bioenergy-upper [ set bioenergy bioenergy-upper ]
+    if bioenergy < bioenergy-lower [ set bioenergy bioenergy-lower ]  ;adjust working bioenergy values to reasonable limit values. This is to prevent emergence of "super" caribou agents
+    ;that have excessive stores of bioenergy.
     
     
   ]

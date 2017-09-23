@@ -213,7 +213,7 @@ to grid-read
     
   ]
 
-  ifelse display-grids? = true [ display-npgrids ask grids [st]] [ask grids [ht] ]
+  ifelse display-grids? = true [ display-npgrids] [ask grids [ht] ]
 end
 
 to spawn-grid-centers
@@ -233,12 +233,14 @@ to spawn-grid-centers
     [ sprout-grids 1 [ set size 3 set color black set grid-id x set np-qual-id [gnpid] of patch-here if day < 166 [ set p-qual-id [gpid] of patch-here ]] ]
     set x x + 1
   ]
+  ask grids with [np-qual-id = 0] [die]
   ;ask grids [ if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color grey] if np-qual-id = 4 [set color yellow] ]
 end
 
 to display-npgrids
-  ask grids [ set color black ]
-  ask grids [if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color grey] if np-qual-id = 4 [set color yellow] ]
+  ;ask grids [ set color black  st]
+  ask grids [st]
+  ask grids [if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color green] if np-qual-id = 4 [set color yellow] ]
 end
 
 to display-pgrids

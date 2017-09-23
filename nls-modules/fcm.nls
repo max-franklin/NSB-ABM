@@ -74,8 +74,8 @@ end
 to select-fcms
   ;procedure for selecting an FCM for all caribou to use.
   ;FCM is selected randomly from the weights of caribou bioenergy success. 
-  let min-bio min [bioenergy] of caribou
-  let max-bio max [bioenergy] of caribou
+  let min-bio min [bioenergy-success] of caribou
+  let max-bio max [bioenergy-success] of caribou
   
   
   set fcm-adja-list [fcm-adja] of caribou
@@ -93,7 +93,7 @@ to select-fcms
     let counter 1
     let current-fcm item x fcm-adja-list
     ;set counter-list lput 1 counter-list
-    let avg-success mean [ bioenergy ] of caribou with [ fcm-adja = current-fcm ]
+    let avg-success mean [ bioenergy-success ] of caribou with [ fcm-adja = current-fcm ]
     set y x + 1
     
     if y >= length fcm-adja-list
@@ -263,6 +263,7 @@ to update-caribou-fcm
       
       
       let caribou-group-number floor(caribou-amt / caribou-group-amt)
+      set bioenergy-success (27.5 * 1000)
       set bioenergy (27.5 * 1000); caribou-group-number * 1000) ; In kJ ;reset energy
                                  ;      set cog-map matrix:copy base-fcm-caribou
                                  ;

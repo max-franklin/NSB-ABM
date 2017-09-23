@@ -135,8 +135,8 @@ end
 
 
 to display-npc
-  ask patches [ set pcolor black ]
-  ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
+  ;ask patches [ set pcolor black ]
+  ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor green] if npid = 4 [set pcolor yellow] ]
 end
 
 to display-pc
@@ -157,7 +157,7 @@ to select-centroid
   
   ;let np-target-centroids patches with [ sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2)) < 8 and npid > 0]
   let last-np-cent [np-network-id] of last-centroid
-  let np-target-centroids patches with [distance grid-target < 16 and npid > 0 and np-network-id != last-np-cent ] 
+  let np-target-centroids patches with [distance grid-target < 16 and npid > 0 and np-network-id != last-np-cent ] ;distance grid-target *bug* where agents cannot find any target centroids.
   ;let np-target-centroids patches with [distance [current-grid] of myself < 8 and npid > 0]
   let last-p-cent [p-network-id] of last-centroid
   let p-target-centroids patches with [distance grid-target < 16 and pid > 0 and p-network-id != last-p-cent]
@@ -460,6 +460,65 @@ to centroid-weight-master-io
   ]
 end
 
+to centroid-inport
+  centroid-read ;only works if the appropriate day is selected. 
+  let input word "data/centroid-exports/np-master-matrix-" day
+  set input word input "-"
+  set input word input year
+  set input word input ".csv"
+  
+  let matrix-list []
+  let sub-list []
+  let cycler 1
+  let row-length max [np-network-id] of patches
+  file-open input
+  
+  while [not file-at-end?]
+    [
+      set np-centroid-network matrix:from-row-list file-read
+    ]
+  
+  file-close-all
+end
+
+to centroid-export
+  ifelse day >= 258
+  [ ;for final export.
+    let output word "data/centroid-exports/np-master-matrix-" 250
+    set output word output "-"
+    set output word output year
+    set output word output ".csv"
+    file-open output
+    file-print matrix:to-row-list np-centroid-network
+    file-close-all 
+    ;print "the final centroid weighting successfully exported."
+  ]
+  [
+    if (day - 12) mod 14 = 0 and day > 152
+    [
+      
+      ;export 
+      
+      let output word "data/centroid-exports/np-master-matrix-" (day - 14)
+      set output word output "-"
+      set output word output year
+      set output word output ".csv"
+      file-open output
+      file-print matrix:to-row-list np-centroid-network
+      file-close-all 
+      
+      if day <= 166 ;export para weights.
+        [
+          set output word "data/centroid-exports/p-master-matrix-" (day - 14)
+          set output word output ".csv"
+          file-open output
+          file-print matrix:to-row-list p-centroid-network
+          file-close-all
+        ]
+      
+    ]
+  ]
+end
 
 to display-weighting
   if any? centroids [ask centroids [die]]
@@ -493,7 +552,7 @@ to display-weighting
           ask centroids with [ cid = x ] 
           [ 
             carefully 
-            [ create-cent-links-to centroids with [ cid = y ] [ set link-weight item (y - 1) cent-list ] ]
+            [ create-cent-links-to centroids with [ cid = y ] [ set link-weight item (y - 1) cent-list set thickness 0.6 set color black ] ]
             [ set size 4 set color red ]
           ]
         ]
