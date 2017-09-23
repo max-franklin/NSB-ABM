@@ -333,6 +333,8 @@ caribou-own
   net-wout
   net-sout
 
+
+
   bioenergy-saved
   bioenergy-upper ;The upper limit for the FCM ternary calculation for energy
   bioenergy-lower ;The lower limit for the FCM Ternary calculation for energy
@@ -455,6 +457,7 @@ to setup
   setup-moose
   ;setup-centroids
   setup-caribou
+  setup-caribou-q
 
   setup-patch-list
   setup-insect
@@ -500,7 +503,7 @@ end
 to setup-caribou-harvests
   ask patches
   [
-    if (pxcor mod 2 = 0) and (pycor mod 2 = 0)
+    if (pxcor mod 1 = 0) and (pycor mod 1 = 0)
     [
       sprout-caribou-harvests 1 [set frequency-rank [patch-caribou-harvest] of patch-here]
     ]
@@ -512,7 +515,7 @@ to setup-caribou-harvests
     [
       die
     ]
-    set color scale-color red frequency-rank 20 0
+    set color scale-color red frequency-rank 0 20
     set size 1.5
     set shape "circle"
   ]
@@ -650,7 +653,13 @@ to go
   go-deflectors
   ;go-insect
   go-moose
-  go-caribou
+  ifelse(use-q = true)
+  [
+    go-caribou-q
+  ]
+  [
+    go-caribou
+  ]
   go-precipitation
   update-caribou-utility
   update-para-utility
@@ -1435,7 +1444,7 @@ caribou-group-amt
 caribou-group-amt
 0
 200
-50
+1
 1
 1
 NIL
@@ -2116,7 +2125,7 @@ SWITCH
 587
 is-training?
 is-training?
-0
+1
 1
 -1000
 
@@ -2471,6 +2480,39 @@ PENS
 "Taxi/migrate" 1.0 0 -2674135 true "" "plotxy ticks count caribou with [state = 2]"
 "Rest" 1.0 0 -955883 true "" "plotxy ticks count caribou with [state = 3]"
 "Intraforage" 1.0 0 -6459832 true "" "plotxy ticks count caribou with [state = 4]"
+
+INPUTBOX
+1044
+900
+1101
+960
+Q-Gamma
+0.999
+1
+0
+Number
+
+INPUTBOX
+1102
+900
+1161
+960
+Q-rate
+0.001
+1
+0
+Number
+
+SWITCH
+1044
+863
+1160
+896
+use-q
+use-q
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
