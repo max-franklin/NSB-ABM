@@ -490,6 +490,7 @@ to setup
   set years-store lput year years-store
   set fcm-store lput (length fcm-adja-list) fcm-store
 
+  test-flow
 end
 
 to setup-hunters-temp
@@ -1017,7 +1018,7 @@ to test-flow
     ask patch (item x river-cords) (item (x + 1) river-cords)
     [
       set river-id ((x / 2) + 1)
-      set pcolor yellow
+      ;set pcolor yellow
       sprout 1
       [
        ;let random-color 10 + random 10
@@ -1025,7 +1026,7 @@ to test-flow
 
        repeat 1000
        [
-         ask patch-here [set river-set lput [flow-id] of myself river-set set pcolor red]
+         ask patch-here [set river-set lput [flow-id] of myself river-set ];set pcolor red]
          let target neighbors with [connected? = true and not member? ([flow-id] of myself) river-set ]
          set target min-one-of target [elevation]
          carefully [ move-to target ]
@@ -1045,6 +1046,17 @@ to test-flow
     set x x + 2
   ]
 
+end
+
+to visualize-rivers
+  let x 0
+  while [ x < 8 ]
+  [
+    let rand-col (2 + random 6)  + ((x + 1) * 10)
+    ask patches with [ member? (x + 1) river-set ]
+    [ set pcolor rand-col] ;(2 + random 6)  + ((x + 1) * 10) ]
+    set x x + 1
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
