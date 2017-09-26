@@ -8,6 +8,8 @@
 
 to setup-caribou
 
+  
+  
   let caribou-group-number floor(caribou-amt / caribou-group-amt)
 
 ;  ;set base fcm
@@ -73,6 +75,8 @@ to setup-caribou
   
   create-caribou caribou-group-amt
   [
+    ;set grid-memory [ ]
+    ;repeat 20 [ set grid-memory lput 0 cent-memory ]
     ;State management
     set last-state-migrate false
     set allowed-to-remember false
@@ -230,17 +234,33 @@ to setup-caribou
 ;  setxy -12 -27
 ;]
 ;starting centroid is closest centroid
-    ifelse day > 151 and day < 167 and caribou-class = 2
-    [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
-      set last-centroid current-centroid ]
-    [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
-      set last-centroid current-centroid ]
-    ;starting grid is closest grid
-    ifelse day > 151 and day < 167 and caribou-class = 2
-    [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
-      set last-grid current-grid ]
-    [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
-      set last-grid current-grid ]
+    ;ifelse day > 151 and day < 167 and caribou-class = 2
+    ;[ set current-centroid min-one-of patches with [pid > 0] [distance myself]
+    ;  set last-centroid current-centroid ]
+    ;[ set current-centroid min-one-of patches with [npid > 0] [distance myself]
+    ;  set last-centroid current-centroid ]
+    ;;starting grid is closest grid
+    ;ifelse day > 151 and day < 167 and caribou-class = 2
+    ;[ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
+    ;  set last-grid current-grid ]
+    ;[ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
+    ;  set last-grid current-grid ]
+    
+    
+    ifelse day > 151 and day < 166 and caribou-class = 2
+      [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
+        set last-centroid patch -64 64 ];current-centroid ]
+      [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
+        set last-centroid patch -64 64 ];current-centroid ] ]
+                                        ;starting grid is closest grid
+    ifelse day > 151 and day < 166 and caribou-class = 2
+      [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
+        set current-grid [who] of current-grid
+        set last-grid 0 ]
+      [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
+        set current-grid [who] of current-grid
+        set last-grid 0 ]  
+
 
   ]
 end
@@ -277,7 +297,7 @@ to go-caribou
   ask caribou
   [ ;if day = 166 [stop]
     let dist-cent distance current-centroid
-    let dist-grid distance current-grid
+    let dist-grid distance grid current-grid
     
     
     set state 2

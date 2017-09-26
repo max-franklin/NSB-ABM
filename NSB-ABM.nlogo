@@ -268,7 +268,7 @@ moose-own
 
 caribou-own
 [
-
+  cent-memory ;try length 20 - value from Semenuik?
   bioenergy-success ;acknowledges that it's impossible for a caribou to acquire hundreds of thousands of MJ. Serves to limit inputs to FCM
 
   energy-gain
@@ -452,7 +452,10 @@ to setup
   setup-hunters-temp
   setup-precipitation
   setup-terrain-layers
-  setup-caribou-utility
+  setup-caribou-utility ;setup caribou utility code requires a fix, semantics of it don't make sense.
+  ;update-caribou-utility
+  ;update-para-utility
+  ;update-non-para-utility
   setup-moose-utility
   setup-moose
   ;setup-centroids
@@ -589,7 +592,7 @@ to go
 
       if(is-training? and day >= 258)
       [
-        update-caribou-fcm ;commenting this out for purposes of centroid generation.
+        update-caribou-fcm
         ;export-fcm
       ]
 
@@ -629,18 +632,19 @@ to go
 
 
       ask caribou
-
       [ ifelse day > 151 and day < 166 and caribou-class = 2
       [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
-        set last-centroid current-centroid ]
+        set last-centroid patch -64 64 ];current-centroid ]
       [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
-        set last-centroid current-centroid ]
+        set last-centroid patch -64 64 ];current-centroid ] ]
       ;starting grid is closest grid
       ifelse day > 151 and day < 166 and caribou-class = 2
       [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
-        set last-grid current-grid ]
+        set current-grid [who] of current-grid
+        set last-grid 0 ]
       [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
-        set last-grid current-grid ]  ]
+        set current-grid [who] of current-grid
+        set last-grid 0 ]  ]
 
       ;stop
       ;build-migration-grid
@@ -648,7 +652,7 @@ to go
 
     ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
-    centroid-export
+    ;centroid-export
   ]
 
   go-deflectors
@@ -1054,7 +1058,7 @@ to visualize-rivers
   [
     let rand-col (2 + random 6)  + ((x + 1) * 10)
     ask patches with [ member? (x + 1) river-set ]
-    [ set pcolor rand-col] ;(2 + random 6)  + ((x + 1) * 10) ]
+    [ set pcolor rand-col ] ;(2 + random 6)  + ((x + 1) * 10) ]
     set x x + 1
   ]
 end
@@ -1315,7 +1319,7 @@ CHOOSER
 BoundsFile
 BoundsFile
 "data/ascBounds/CharDolly10Y.asc" "data/ascBounds/CharDolly12M.asc" "data/ascBounds/Cisco10Y.asc" "data/ascBounds/Cisco12M.asc" "data/ascBounds/MooseBounds10Y.asc" "data/ascBounds/MooseBounds12M.asc" "data/ascBounds/whitefish12m.asc" "data/ascBounds/whitefish10Y.asc"
-4
+0
 
 BUTTON
 1012
@@ -1456,7 +1460,7 @@ caribou-group-amt
 caribou-group-amt
 0
 200
-1
+50
 1
 1
 NIL
@@ -1515,7 +1519,7 @@ INPUTBOX
 1341
 438
 caribou-veg-factor
-0.08
+0.12
 1
 0
 Number
@@ -1568,7 +1572,7 @@ INPUTBOX
 1564
 437
 caribou-modifier-factor
-0.1
+1
 1
 0
 Number
@@ -2125,7 +2129,7 @@ INPUTBOX
 1127
 652
 mutate-amt
-0.05
+0.1
 1
 0
 Number
@@ -2137,7 +2141,7 @@ SWITCH
 587
 is-training?
 is-training?
-1
+0
 1
 -1000
 
@@ -2159,7 +2163,7 @@ SWITCH
 618
 caribouPopMod?
 caribouPopMod?
-0
+1
 1
 -1000
 
@@ -2207,7 +2211,7 @@ SWITCH
 533
 show-caribou-utility-non-para?
 show-caribou-utility-non-para?
-1
+0
 1
 -1000
 
@@ -2220,7 +2224,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.81
+0.89
 0.01
 1
 NIL

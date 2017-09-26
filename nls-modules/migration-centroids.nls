@@ -151,16 +151,23 @@ to select-centroid
   ;let yg [pycor] of current-grid
   ;show yg
   ;set yg item 0 yg
+  
+  ;try implementing larger length of caribou centroid memory before modifying too much centroid selection code.
+  ;after memory attempt, could try short term patch memory approach where caribous remember previous 'success' they had in a general area --> modify prob
+  ;of selecting centroids in that area --> gets around the problem of centroid layer switching.
+  
   set last-centroid current-centroid
-  let grid-target current-grid
+  let grid-target grid current-grid
   ;show grid-target
   
   ;let np-target-centroids patches with [ sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2)) < 8 and npid > 0]
   let last-np-cent [np-network-id] of last-centroid
-  let np-target-centroids patches with [distance grid-target < 16 and npid > 0 and np-network-id != last-np-cent ] ;distance grid-target *bug* where agents cannot find any target centroids.
+  let current-np-cent [np-network-id] of current-centroid
+  let np-target-centroids patches with [distance grid-target < 16 and npid > 0 and np-network-id != last-np-cent and np-network-id != current-np-cent ] ;distance grid-target *bug* where agents cannot find any target centroids.
   ;let np-target-centroids patches with [distance [current-grid] of myself < 8 and npid > 0]
   let last-p-cent [p-network-id] of last-centroid
-  let p-target-centroids patches with [distance grid-target < 16 and pid > 0 and p-network-id != last-p-cent]
+  let current-p-cent [p-network-id] of current-centroid
+  let p-target-centroids patches with [distance grid-target < 16 and pid > 0 and p-network-id != last-p-cent and p-network-id != current-p-cent]
   ;let p-target-centroids patches with [ sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2)) < 8 and pid > 0]
   ;let p-target-centroids patches with [distance [current-grid] of myself < 8 and pid > 0]
 
@@ -180,12 +187,14 @@ to select-centroid
       ;set np-cent-prob lput report-np-probs np-cent-prob
     ]
     
+    set last-centroid current-centroid
     set current-centroid one-of patch-list
     
     mod-p-network
   ]
   [
     ask np-target-centroids [ 
+      ;let avg-util ((sum [ caribou-utility-non-para ] of neighbors) + caribou-utility-non-para ) / 9
       let caribou-dist distance myself
       let grid-dist distance grid-target ;sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2))
       let qual-val npid / (caribou-dist + grid-dist)
@@ -194,6 +203,8 @@ to select-centroid
       [ set patch-list lput self patch-list]
       ;set np-cent-prob lput report-np-probs np-cent-prob
     ]
+    
+    set last-centroid current-centroid
     set current-centroid one-of patch-list
     
     mod-np-network
@@ -368,7 +379,7 @@ to centroid-weight-io
 end
 
 to centroid-weight-master-io
-   ifelse day >= 258
+  ifelse day >= 258
   [ ;for final export.
     let output word "data/centroid-network-working-files/np-master-matrix-" 250
     set output word output ".csv"
@@ -510,6 +521,8 @@ to centroid-export
       if day <= 166 ;export para weights.
         [
           set output word "data/centroid-exports/p-master-matrix-" (day - 14)
+          set output word output "-"
+          set output word output year
           set output word output ".csv"
           file-open output
           file-print matrix:to-row-list p-centroid-network
@@ -540,19 +553,19 @@ to display-weighting
   while [x <= num-rows]
   [
     
-    let cent-list matrix:get-row np-centroid-network (x - 1)
+    let cent-list matrix:get-row np-centroid-network (x - 1) ;x represents last centroid row
     
     if sum cent-list > 0
     [
       let y 1
-      while [ y <= length cent-list ]
+      while [ y <= length cent-list ] ;y represents current centroid col
       [
         if item (y - 1) cent-list > 0
         [
-          ask centroids with [ cid = x ] 
+          ask centroids with [ cid = (x - 1) ] 
           [ 
             carefully 
-            [ create-cent-links-to centroids with [ cid = y ] [ set link-weight item (y - 1) cent-list set thickness 0.6 set color black ] ]
+            [ create-cent-links-to centroids with [ cid = (y - 1) ] [ set link-weight item (y - 1) cent-list set thickness 0.6 set color grey ] ]
             [ set size 4 set color red ]
           ]
         ]

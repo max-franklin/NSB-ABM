@@ -23,6 +23,7 @@ to setup-caribou-utility
     ;set veg-value vegetation-beta * (ndvi-quality / ndvi-all-max) 
     ;Utility follows form of (var * varFactor) + (var2 * var2Factor)
     ;OLD LINE; set caribou-utility (veg-value + (caribou-rough-factor * rough-value) + (caribou-insect-factor * insect-value) - (deflection * caribou-deflection-factor))
+    ;check w/ Cory over semantics of following line.
     set caribou-utility ((caribou-rough-factor * rough-value) + (caribou-insect-factor * insect-value) - (deflection * caribou-deflection-factor))
    ; show caribou-utility
     ;use this when performing update ;; + (modifier-factor * caribou-modifier)
@@ -90,7 +91,7 @@ to update-caribou-utility
     
     ;reset caribou utility
     set caribou-utility 0
-   let rough-value (roughness / max-roughness)
+    let rough-value (roughness / max-roughness)
    ;   if(veg-value = 0)
    ;   [
    ;     set veg-value vegetation-beta * 0.05
