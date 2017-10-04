@@ -8,6 +8,8 @@
 
 to setup-caribou
 
+  
+  
   let caribou-group-number floor(caribou-amt / caribou-group-amt)
 
 ;  ;set base fcm
@@ -73,6 +75,8 @@ to setup-caribou
   
   create-caribou caribou-group-amt
   [
+    ;set grid-memory [ ]
+    ;repeat 20 [ set grid-memory lput 0 cent-memory ]
     ;State management
     set last-state-migrate false
     set allowed-to-remember false
@@ -169,6 +173,7 @@ to setup-caribou
 
     ;set by group population
     set weight (132 * caribou-group-number)
+    set bioenergy-success (27.5 * 1000)
     set bioenergy (27.5 * 1000);* caribou-group-number * 1000) ; In kJ
     set bioenergy-upper (33 * 1000) ;caribou-group-number * 1000) ; kJ
     set bioenergy-lower (22 * 1000) ;caribou-group-number) * 1000; kJ
@@ -229,17 +234,33 @@ to setup-caribou
 ;  setxy -12 -27
 ;]
 ;starting centroid is closest centroid
-    ifelse day > 151 and day < 167 and caribou-class = 2
-    [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
-      set last-centroid current-centroid ]
-    [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
-      set last-centroid current-centroid ]
-    ;starting grid is closest grid
-    ifelse day > 151 and day < 167 and caribou-class = 2
-    [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
-      set last-grid current-grid ]
-    [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
-      set last-grid current-grid ]
+    ;ifelse day > 151 and day < 167 and caribou-class = 2
+    ;[ set current-centroid min-one-of patches with [pid > 0] [distance myself]
+    ;  set last-centroid current-centroid ]
+    ;[ set current-centroid min-one-of patches with [npid > 0] [distance myself]
+    ;  set last-centroid current-centroid ]
+    ;;starting grid is closest grid
+    ;ifelse day > 151 and day < 167 and caribou-class = 2
+    ;[ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
+    ;  set last-grid current-grid ]
+    ;[ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
+    ;  set last-grid current-grid ]
+    
+    
+    ifelse day > 151 and day < 166 and caribou-class = 2
+      [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
+        set last-centroid patch -64 64 ];current-centroid ]
+      [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
+        set last-centroid patch -64 64 ];current-centroid ] ]
+                                        ;starting grid is closest grid
+    ifelse day > 151 and day < 166 and caribou-class = 2
+      [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
+        set current-grid [who] of current-grid
+        set last-grid 0 ]
+      [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
+        set current-grid [who] of current-grid
+        set last-grid 0 ]  
+
 
   ]
 end
@@ -276,7 +297,7 @@ to go-caribou
   ask caribou
   [ ;if day = 166 [stop]
     let dist-cent distance current-centroid
-    let dist-grid distance current-grid
+    let dist-grid distance grid current-grid
     
     
     set state 2
@@ -665,6 +686,7 @@ to go-caribou
     set energy-gain 0
     
     set bioenergy bioenergy - energy-loss ;* caribou-group-number)
+    set bioenergy-success bioenergy-success - energy-loss ;* caribou-group-number)
     
     
     ;Move the agent forward by determined amount
@@ -685,6 +707,7 @@ to go-caribou
     ]
     
     set bioenergy bioenergy + energy-gain
+    set bioenergy-success bioenergy-success + energy-gain
     
     
     ; let acquired-energy caribou-veg-type-energy [vegetation-type] of patch-here * group-size
@@ -780,6 +803,10 @@ to go-caribou
     ;
     ;      ]
     
+    
+    if bioenergy > bioenergy-upper [ set bioenergy bioenergy-upper ]
+    if bioenergy < bioenergy-lower [ set bioenergy bioenergy-lower ]  ;adjust working bioenergy values to reasonable limit values. This is to prevent emergence of "super" caribou agents
+    ;that have excessive stores of bioenergy.
     
     
   ]

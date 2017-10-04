@@ -632,7 +632,6 @@ to go
 
 
       ask caribou
-
       [ ifelse day > 151 and day < 166 and caribou-class = 2
       [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
         set last-centroid patch -64 64 ];current-centroid ]
@@ -1476,7 +1475,7 @@ caribou-radius
 caribou-radius
 0
 12
-1.5
+6
 0.5
 1
 NIL
@@ -2225,7 +2224,11 @@ ndvi-weight
 ndvi-weight
 0
 1
+<<<<<<< HEAD
+1
+=======
 0.89
+>>>>>>> 0adbe77a5831e55475725465767d5ba57ffdc036
 0.01
 1
 NIL
@@ -2504,7 +2507,7 @@ INPUTBOX
 1101
 960
 Q-Gamma
-0.999
+0.3
 1
 0
 Number
@@ -2527,7 +2530,7 @@ SWITCH
 896
 use-q
 use-q
-1
+0
 1
 -1000
 

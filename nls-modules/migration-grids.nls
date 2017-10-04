@@ -213,7 +213,7 @@ to grid-read
     
   ]
 
-  ifelse display-grids? = true [ display-npgrids ask grids [st]] [ask grids [ht] ]
+  ifelse display-grids? = true [ display-npgrids] [ask grids [ht] ]
 end
 
 to spawn-grid-centers
@@ -230,15 +230,17 @@ to spawn-grid-centers
     let max-y max [pycor] of patches with [np-grid-id = x] 
     
     ask one-of patches with [pxcor >= min-x + 3 and pxcor <= max-x - 3 and pycor >= min-y + 3 and pycor <= max-y - 3 and np-grid-id = x]
-    [ sprout-grids 1 [ set size 3 set color black set grid-id x set np-qual-id [gnpid] of patch-here if day < 166 [ set p-qual-id [gpid] of patch-here ]] ]
+    [ sprout-grids 1 [ set size 1 set color black set grid-id x set np-qual-id [gnpid] of patch-here if day < 166 [ set p-qual-id [gpid] of patch-here ]] ]
     set x x + 1
   ]
+  ask grids with [np-qual-id = 0] [die]
   ;ask grids [ if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color grey] if np-qual-id = 4 [set color yellow] ]
 end
 
 to display-npgrids
-  ask grids [ set color black ]
-  ask grids [if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color grey] if np-qual-id = 4 [set color yellow] ]
+  ;ask grids [ set color black  st]
+  ask grids [st]
+  ask grids [if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color green] if np-qual-id = 4 [set color yellow] ]
 end
 
 to display-pgrids
@@ -249,34 +251,33 @@ end
 to select-grid
   ;migration grids are selected at the same point that centroids were originally assigned (whenever state switches to 2, or when a centroid is reached and the state doesn't experience a
   ;change.
-  ;This procedure needs to be paired with a shortest path algorithm.
-  ;Shortest path algorithm will utilize centroids, distances b/w centroids, and quality of centroids.
+
+  ;let np-targets grids in-radius 9 with [ who != ([who] of [last-grid] of myself) ]
+  ;set last-grid current-grid
   
+  ;let max-np-qual max [np-qual-id] of grids in-radius 9 with [who != ([who] of [last-grid] of myself)]
+  ;let max-p-qual max [p-qual-id] of grids in-radius 9 with [who != ([who] of [last-grid] of myself)]
   
-  let max-np-qual max [np-qual-id] of grids in-radius 9 with [who != ([who] of [last-grid] of myself)]
-  let max-p-qual max [p-qual-id] of grids in-radius 9 with [who != ([who] of [last-grid] of myself)]
+  ;let np-grid-target grids in-radius 9 with [np-qual-id = max-np-qual and who != ([who] of [last-grid] of myself) ]
+  ;let p-grid-target grids in-radius 9 with [p-qual-id = max-p-qual and who != ([who] of [last-grid] of myself)]
   
+  let max-np-qual max [np-qual-id] of grids in-radius 9 with [who != [last-grid] of myself and who != [current-grid] of myself]
+  let max-p-qual max [p-qual-id] of grids in-radius 9 with [who != [last-grid] of myself and who != [current-grid] of myself]
   
-  let np-grid-target grids in-radius 9 with [np-qual-id = max-np-qual and who != ([who] of [last-grid] of myself) ]
-  let p-grid-target grids in-radius 9 with [p-qual-id = max-p-qual and who != ([who] of [last-grid] of myself)]
+  let np-grid-target grids in-radius 9 with [np-qual-id = max-np-qual and who != [last-grid] of myself and who != [current-grid] of myself]
+  let p-grid-target grids in-radius 9 with [p-qual-id = max-p-qual and who != [last-grid] of myself and who != [current-grid] of myself]
   
-  ;ifelse day > 151 and day < 167 and caribou-class = 2
-  ;  [ 
-  ;    set current-grid min-one-of p-grid-target with [p-qual-id > 0] [distance myself]
-  ;    set last-grid current-grid
-      ;ifelse count p-grid-target > 1 
-      ;[set current-grid min-one-of p-grid-target with [p-qual-id > 0] [distance myself]
-      ;  set last-grid current-grid]
-      ;[set current-grid p-grid-target
-      ;  set last-grid current-grid ]
-  ;] 
-  ;[ 
-    set current-grid min-one-of np-grid-target with [np-qual-id > 0] [distance myself]
+  ifelse day > 151 and day < 166 and caribou-class = 2
+  [ 
     set last-grid current-grid
-  ;]
-  ;ifelse count np-grid-target > 1 
-  ;[set current-grid min-one-of np-grid-target with [np-qual-id > 0] [distance myself]
-  ;  set last-grid current-grid ]
-  ;[set current-grid np-grid-target ]
-  ;set last-grid current-grid ]
+    set current-grid min-one-of p-grid-target with [p-qual-id > 0] [distance myself]
+    set current-grid [who] of current-grid
+  ] 
+  [ 
+    set last-grid current-grid
+    set current-grid min-one-of np-grid-target with [np-qual-id > 0] [distance myself]
+    set current-grid [who] of current-grid
+  ]
+
 end
+
