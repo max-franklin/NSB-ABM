@@ -263,7 +263,7 @@ moose-own
 caribou-own
 [
 
-  energy-gain
+  energy-gain ; Update Q Learning w/ energy
   energy-loss
   group-size
   radius
@@ -1382,7 +1382,7 @@ caribou-radius
 caribou-radius
 0
 12
-1.5
+6
 0.5
 1
 NIL
@@ -2118,7 +2118,7 @@ SWITCH
 533
 show-caribou-utility-non-para?
 show-caribou-utility-non-para?
-1
+0
 1
 -1000
 
@@ -2131,7 +2131,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.8
+1
 0.01
 1
 NIL
@@ -2410,16 +2410,16 @@ INPUTBOX
 1101
 960
 Q-Gamma
-0.999
+0.3
 1
 0
 Number
 
 INPUTBOX
-1102
-900
-1161
-960
+1167
+901
+1226
+961
 Q-rate
 0.001
 1
@@ -2433,7 +2433,7 @@ SWITCH
 896
 use-q
 use-q
-1
+0
 1
 -1000
 

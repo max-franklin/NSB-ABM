@@ -906,7 +906,7 @@ to go-caribou-q
     
     ;TODO: NEXT STEPS; 
     ; Take the action and record the utility value (reward)
-    ;   propagate backwards by : utill + gamma * MAX(Q(s_t+1,a))
+    ;   propagate backwards by : util + gamma * MAX(Q(s_t+1,a))
     ;   where MAX(Q(s_t+1,a)) is the values produced by running of net-sout  ;; Map to independent softmax and save as net-zout?
     
     ;increase taxi/migration based on high values util values
@@ -1103,14 +1103,22 @@ to go-caribou-q
       
       ;Q_t+1
      let net-xt 0
-     let net-w1t 0
+     ;let net-w1t 0
      let net-s1t 0
      let net-z1t 0
-     let net-w2t 0
+     ;let net-w2t 0
      let net-s2t 0
      let net-z2t 0
      let net-woutt 0
      let net-soutt 0
+
+
+    set net-xt  matrix:make-constant 1 9 0
+    set net-s1t matrix:make-constant 1 9 0
+    set net-s2t matrix:make-constant 1 9 0
+    set net-z1t matrix:make-constant 1 9 0
+    set net-z2t matrix:make-constant 1 9 0
+    set net-soutt matrix:make-constant 1 4 0
 
     set close-hunt (min-one-of hunters [distance myself] )
     set hunt-dist-raw distance close-hunt
@@ -1191,11 +1199,15 @@ to go-caribou-q
     matrix:set net-xt 0 7 intra-ratio
     matrix:set net-xt 0 8 migrate-ratio
     
-    set net-s1t matrix:times net-xt net-w1t
+    ; Do not use new weights for t+1
+    
+
+    
+    set net-s1t matrix:times net-xt net-w1
     set net-z1t matrix:map fcm-sigmoid-simple net-s1t
-    set net-s2t matrix:times net-z1t net-w2t
+    set net-s2t matrix:times net-z1t net-w2
     set net-z2t matrix:map fcm-sigmoid-simple net-s2t
-    set net-soutt matrix:times net-z2t net-woutt
+    set net-soutt matrix:times net-z2t net-wout
 
     ;Apply Gamma for memory
     set net-soutt matrix:times net-soutt Q-Gamma
@@ -1210,23 +1222,45 @@ to go-caribou-q
     let fp2 matrix:map sigmoid-derivative net-s2
     
     
-  ;  let d2 matrix:times q-loss (matrix:times (matrix:transpose net-w2) fp2)
-    let d2 matrix:times q-loss (matrix:transpose net-w2)
+    ;To calculate D2 select the appropriate action located in Weights_out, then transpose.
+    ;  This will only update the wieghts associated with producing this action.
+    ;  In other words, create a 1x9 matrix from the last set of weights to output.
+    let waction matrix:submatrix net-wout 0 (state - 1) 9 (state)
+    
+    
+    ;----------------------;PRINT;---------------------;
+    print matrix:pretty-print-text net-xt
+        
+    print matrix:pretty-print-text (matrix:transpose waction)
+    print matrix:pretty-print-text net-s2
+    print matrix:pretty-print-text fp2
+    print q-loss
+    print "------------------"
+    let d2 matrix:times q-loss matrix:transpose waction
+   ; let d2 matrix:times q-loss (fp2)
+   
     set d2 matrix:times-element-wise d2 fp2
      
-    ;let d1 matrix:times d2 (matrix:times (matrix:transpose net-w1) fp1)
-    let d1 matrix:times d2 (matrix:transpose net-w1)
+    ;let d1 matrix:times d2 (matrix:times (matrix:transpose net-w2) fp1)
+    let d1 matrix:times d2 (matrix:transpose net-w2)
     set d1 matrix:times-element-wise d1 fp1
     
     ;update weights
-    
+    ;place our q-value (q-loss) into a matrix the same dimension as the output layer, then take this 
+   
     set net-w1 matrix:times (matrix:times (matrix:transpose net-x) d1) (-1 * Q-rate)
-    set net-w2 matrix:times-element-wise (matrix:transpose (matrix:times net-z1 (-1 * Q-rate))) d2
-    set net-wout matrix:times-element-wise (matrix:transpose (matrix:times net-z2 (-1 * Q-rate))) q-loss
+    set net-w2 matrix:times (matrix:times (matrix:transpose net-z1) d2) (-1 * Q-rate)
+    
+    let q-out matrix:make-constant 1 4 1
+    matrix:set q-out 0 (state - 1) q-loss
+    
+    set net-wout matrix:times(matrix:times (matrix:transpose net-z2) q-out) (-1 * Q-rate)
     ]
  
 
 end
+
+
 
 to-report matrix-element-sum [matin]
   let matSum 0
@@ -1237,14 +1271,16 @@ to-report matrix-element-sum [matin]
    
    set i (i + 1)
   ]
+  
+  report matSum
 end
 to setup-caribou-q
   ask caribou 
   [ 
     ;initialize weights to 1
-    set net-w1 matrix:make-constant 9 9 1
-    set net-w2 matrix:make-constant 9 9 1
-    set net-wout matrix:make-constant 9 4 1
+    set net-w1 matrix:make-constant 9 9 0
+    set net-w2 matrix:make-constant 9 9 0
+    set net-wout matrix:make-constant 9 4 0
     
     ;initialize these to anything, they will be overwritten in the go-caribou procedure
     set net-x matrix:make-constant 1 9 0
@@ -1253,6 +1289,8 @@ to setup-caribou-q
     set net-z1 matrix:make-constant 1 9 0
     set net-z2 matrix:make-constant 1 9 0
     set net-sout matrix:make-constant 1 4 0
+  
+
     
   ]
     
@@ -1280,7 +1318,7 @@ to-report restrictive-q-softmax [matin]
     set temp (e ^ temp)
     set e-sum (e-sum + temp)
    ; matrix:set matin  0 i 
-    
+    set i (i + 1)
   ]
   
   let stack-sum 0
@@ -1290,6 +1328,7 @@ to-report restrictive-q-softmax [matin]
     let temp matrix:get matin 0 i
     set temp (e ^ temp)
     matrix:set zout 0 i (temp / e-sum)
+    set i (i + 1)
 
   ]
   
@@ -1304,10 +1343,11 @@ to-report restrictive-q-softmax [matin]
     [
       set found-index i
     ]
+    
+    set i (i + 1)
   ]
   
   report i
-  
   
   
 end
