@@ -412,7 +412,7 @@ to setup
   set hour 0
   set day 152
   set year 0
-
+  reset-caribou-banks
 
   set cent-day-list [ ]
   ask patches
@@ -577,6 +577,7 @@ to go
   set hour hour + 1.5
   if(hour = 24)
   [
+    reset-caribou-banks
     set hour 0
     set day (day + 1)
     go-ndvi
@@ -683,7 +684,15 @@ to go
   set bio-en-store lput mean [bioenergy] of caribou bio-en-store
 end
 
-
+to reset-caribou-banks
+  ask caribou
+  [
+    set bank-rest 8
+    set bank-intra 5
+    set bank-inter 2
+    set bank-migrate 1
+  ]
+end
 
 ;Apply deflectors, bug with updating adding wrong values
 to go-deflectors
@@ -1461,7 +1470,7 @@ caribou-group-amt
 caribou-group-amt
 0
 200
-50
+1
 1
 1
 NIL
@@ -2201,7 +2210,7 @@ SWITCH
 499
 show-caribou-utility-para?
 show-caribou-utility-para?
-1
+0
 1
 -1000
 
@@ -2212,7 +2221,7 @@ SWITCH
 533
 show-caribou-utility-non-para?
 show-caribou-utility-non-para?
-0
+1
 1
 -1000
 
@@ -2493,9 +2502,9 @@ true
 "" ""
 PENS
 "Evade" 1.0 0 -16777216 true "" "plotxy ticks count caribou with [state = 0]"
-"Interforage" 1.0 0 -7500403 true "" "plotxy ticks count caribou with [state = 1]"
-"Taxi/migrate" 1.0 0 -2674135 true "" "plotxy ticks count caribou with [state = 2]"
-"Rest" 1.0 0 -955883 true "" "plotxy ticks count caribou with [state = 3]"
+"Interforage" 1.0 0 -1264960 true "" "plotxy ticks count caribou with [state = 1]"
+"Taxi/migrate" 1.0 0 -13791810 true "" "plotxy ticks count caribou with [state = 2]"
+"Rest" 1.0 0 -1184463 true "" "plotxy ticks count caribou with [state = 3]"
 "Intraforage" 1.0 0 -6459832 true "" "plotxy ticks count caribou with [state = 4]"
 
 INPUTBOX
@@ -2527,7 +2536,7 @@ SWITCH
 896
 use-q
 use-q
-1
+0
 1
 -1000
 
