@@ -127,9 +127,13 @@ to select-fcms
     ;if (x + 1) > length fcm-adja-list [ show fcm-adja-list ]
   ] 
 
-  ;set fcm-success-list map [ i -> (i - min-bio)/(max-bio - min-bio) ]  fcm-success-list 
+  ;carefully 
+  ;[ set fcm-success-list map [ i -> (i - min-bio)/(max-bio - min-bio) ]  fcm-success-list ]
+  ;[ set fcm-success-list map [ i -> 1 ] fcm-success-list ]
   ;set fcm-agentnum-list map [ i -> i / (count caribou)]  fcm-agentnum-list
-  set fcm-success-list map [ (? - min-bio)/(max-bio - min-bio) ]  fcm-success-list 
+  carefully
+  [ set fcm-success-list map [ (? - min-bio)/(max-bio - min-bio) ]  fcm-success-list ]
+  [ set fcm-success-list map [ 1 ] fcm-success-list ]
   set fcm-agentnum-list map [ ? / (count caribou)]  fcm-agentnum-list
   
   let weighted-list (map * fcm-success-list fcm-agentnum-list)

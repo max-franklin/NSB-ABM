@@ -75,9 +75,12 @@ to setup-caribou
   
   create-caribou caribou-group-amt
   [
-    ;set grid-memory [ ]
-    ;repeat 20 [ set grid-memory lput 0 cent-memory ]
-    ;State management
+    
+    set grid-memory []
+    set cent-memory []
+    repeat 15 [ set grid-memory lput 0 grid-memory ] ;reduced memory to reduce chance of running out of possible targets.
+    repeat 15 [ set cent-memory lput 0 cent-memory ]
+
     set last-state-migrate false
     set allowed-to-remember false
     set color blue + 2

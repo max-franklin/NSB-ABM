@@ -249,34 +249,30 @@ to display-pgrids
 end
 
 to select-grid
-  ;migration grids are selected at the same point that centroids were originally assigned (whenever state switches to 2, or when a centroid is reached and the state doesn't experience a
-  ;change.
-
-  ;let np-targets grids in-radius 9 with [ who != ([who] of [last-grid] of myself) ]
-  ;set last-grid current-grid
+  let max-np-qual max [np-qual-id] of grids in-radius 12 with [who != [last-grid] of myself and who != [current-grid] of myself 
+    and [patch-id] of patch-here != [grid-memory] of myself]
+  let max-p-qual max [p-qual-id] of grids in-radius 12 with [who != [last-grid] of myself and who != [current-grid] of myself 
+    and [patch-id] of patch-here != [grid-memory] of myself]
   
-  ;let max-np-qual max [np-qual-id] of grids in-radius 9 with [who != ([who] of [last-grid] of myself)]
-  ;let max-p-qual max [p-qual-id] of grids in-radius 9 with [who != ([who] of [last-grid] of myself)]
-  
-  ;let np-grid-target grids in-radius 9 with [np-qual-id = max-np-qual and who != ([who] of [last-grid] of myself) ]
-  ;let p-grid-target grids in-radius 9 with [p-qual-id = max-p-qual and who != ([who] of [last-grid] of myself)]
-  
-  let max-np-qual max [np-qual-id] of grids in-radius 9 with [who != [last-grid] of myself and who != [current-grid] of myself]
-  let max-p-qual max [p-qual-id] of grids in-radius 9 with [who != [last-grid] of myself and who != [current-grid] of myself]
-  
-  let np-grid-target grids in-radius 9 with [np-qual-id = max-np-qual and who != [last-grid] of myself and who != [current-grid] of myself]
-  let p-grid-target grids in-radius 9 with [p-qual-id = max-p-qual and who != [last-grid] of myself and who != [current-grid] of myself]
+  let np-grid-target grids in-radius 12 with [np-qual-id = max-np-qual and who != [last-grid] of myself and who != [current-grid] of myself 
+    and [patch-id] of patch-here != [grid-memory] of myself]
+  let p-grid-target grids in-radius 12 with [p-qual-id = max-p-qual and who != [last-grid] of myself and who != [current-grid] of myself 
+    and [patch-id] of patch-here != [grid-memory] of myself]
   
   ifelse day > 151 and day < 166 and caribou-class = 2
   [ 
     set last-grid current-grid
     set current-grid min-one-of p-grid-target with [p-qual-id > 0] [distance myself]
     set current-grid [who] of current-grid
+    set grid-memory lput ([patch-id] of [patch-here] of grid last-grid) grid-memory
+    set grid-memory remove-item 0 grid-memory
   ] 
   [ 
     set last-grid current-grid
     set current-grid min-one-of np-grid-target with [np-qual-id > 0] [distance myself]
     set current-grid [who] of current-grid
+    set grid-memory lput ([patch-id] of [patch-here] of grid last-grid) grid-memory
+    set grid-memory remove-item 0 grid-memory
   ]
 
 end

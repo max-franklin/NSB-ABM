@@ -158,6 +158,7 @@ globals
 
 patches-own
 [
+  patch-id
   river-set
   river-id
   np-network-id
@@ -269,6 +270,7 @@ moose-own
 caribou-own
 [
   cent-memory ;try length 20 - value from Semenuik?
+  grid-memory
   bioenergy-success ;acknowledges that it's impossible for a caribou to acquire hundreds of thousands of MJ. Serves to limit inputs to FCM
 
   energy-gain ; Update Q Learning w/ energy
@@ -407,6 +409,7 @@ cent-links-own
 ;wraps to other setup functions
 to setup
   clear-all
+  random-seed 0
   set time-of-year 0
   set max-roughness 442.442
   set hour 0
@@ -494,6 +497,8 @@ to setup
   set fcm-store lput (length fcm-adja-list) fcm-store
 
   test-flow
+  let counter 1
+  let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set patch-id counter] set counter counter + 1 set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
 end
 
 to setup-hunters-temp
@@ -599,7 +604,7 @@ to go
 
       ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
-      centroid-export
+      if export-centroids? [ centroid-export ]
 
       set year year + 1
 
@@ -1470,7 +1475,7 @@ caribou-group-amt
 caribou-group-amt
 0
 200
-1
+50
 1
 1
 NIL
@@ -1517,7 +1522,7 @@ set-centroid-attraction
 set-centroid-attraction
 0.01
 1
-0.06
+0.1
 0.01
 1
 NIL
@@ -1529,7 +1534,7 @@ INPUTBOX
 1341
 438
 caribou-veg-factor
-0.12
+0.08
 1
 0
 Number
@@ -1582,7 +1587,7 @@ INPUTBOX
 1564
 437
 caribou-modifier-factor
-1
+0.1
 1
 0
 Number
@@ -1694,17 +1699,6 @@ INPUTBOX
 722
 decay-rate
 0.01
-1
-0
-Number
-
-INPUTBOX
-808
-662
-880
-722
-caribou-reutility
-1
 1
 0
 Number
@@ -2234,7 +2228,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.89
+0.5
 0.01
 1
 NIL
@@ -2246,7 +2240,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-50
+33.7
 1
 0
 Number
@@ -2536,7 +2530,18 @@ SWITCH
 896
 use-q
 use-q
-0
+1
+1
+-1000
+
+SWITCH
+66
+520
+236
+553
+export-centroids?
+export-centroids?
+1
 1
 -1000
 

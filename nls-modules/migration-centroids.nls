@@ -127,8 +127,6 @@ to centroid-read
 
   ]
   
-  
-  ;setup-network
 
   if display-centroids? = true [ display-npc ]
 end
@@ -145,37 +143,26 @@ to display-pc
 end
 
 to select-centroid 
-  ;let xg [pxcor] of current-grid
-  ;show xg
-  ;set xg item 0 xg
-  ;let yg [pycor] of current-grid
-  ;show yg
-  ;set yg item 0 yg
-  
-  ;try implementing larger length of caribou centroid memory before modifying too much centroid selection code.
-  ;after memory attempt, could try short term patch memory approach where caribous remember previous 'success' they had in a general area --> modify prob
-  ;of selecting centroids in that area --> gets around the problem of centroid layer switching.
   
   set last-centroid current-centroid
   let grid-target grid current-grid
-  ;show grid-target
   
-  ;let np-target-centroids patches with [ sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2)) < 8 and npid > 0]
+  let nonTarget patches with [ member? [patch-id] of self [cent-memory] of myself ]  
+  set nonTarget patches with [ any? nonTarget in-radius 2 ] ask nonTarget [set pcolor red] 
+  let target patches with [ not any? nonTarget in-radius 0 ]
+
   let last-np-cent [np-network-id] of last-centroid
   let current-np-cent [np-network-id] of current-centroid
-  let np-target-centroids patches with [distance grid-target < 16 and npid > 0 and np-network-id != last-np-cent and np-network-id != current-np-cent ] ;distance grid-target *bug* where agents cannot find any target centroids.
-  ;let np-target-centroids patches with [distance [current-grid] of myself < 8 and npid > 0]
+  let np-target-centroids target with [distance grid-target < 16 and npid > 0 and np-network-id != last-np-cent and np-network-id != current-np-cent ] 
+
   let last-p-cent [p-network-id] of last-centroid
   let current-p-cent [p-network-id] of current-centroid
-  let p-target-centroids patches with [distance grid-target < 16 and pid > 0 and p-network-id != last-p-cent and p-network-id != current-p-cent]
-  ;let p-target-centroids patches with [ sqrt(((pxcor - xg) ^ 2) + ((pycor - yg) ^ 2)) < 8 and pid > 0]
-  ;let p-target-centroids patches with [distance [current-grid] of myself < 8 and pid > 0]
+  let p-target-centroids target with [distance grid-target < 16 and pid > 0 and p-network-id != last-p-cent and p-network-id != current-p-cent]
 
   let qual-list []
   let patch-list []
   
-  
-  ifelse (day > 151 and day < 167) and caribou-class = 2
+  ifelse (day > 151 and day < 167) and caribou-class = 2 
   [
     ask p-target-centroids [ 
       let caribou-dist distance myself
@@ -187,8 +174,7 @@ to select-centroid
       ;set np-cent-prob lput report-np-probs np-cent-prob
     ]
     
-    set last-centroid current-centroid
-    set current-centroid one-of patch-list
+    mod-cent-target patch-list
     
     mod-p-network
   ]
@@ -204,42 +190,17 @@ to select-centroid
       ;set np-cent-prob lput report-np-probs np-cent-prob
     ]
     
-    set last-centroid current-centroid
-    set current-centroid one-of patch-list
+    mod-cent-target patch-list
     
     mod-np-network
   ]
-  
-  ;ifelse (day > 151 and day < 167) and caribou-class = 2
-  ;[
-  ;  ask p-target-centroids [ 
-  ;    let caribou-dist distance myself
-  ;    let grid-dist distance [ current-grid ] of myself
-  ;    let qual-val pid / (caribou-dist + grid-dist)
-  ;    set qual-list lput qual-val qual-list
-  ;    if qual-val >= max qual-list
-  ;    [ set patch-list lput self patch-list]
-  ;    ;set np-cent-prob lput report-np-probs np-cent-prob
-  ;  ]
-  ;]
-  ;[
-  ;  ask np-target-centroids [ 
-  ;    let caribou-dist distance myself
-  ;    let grid-dist distance [ current-grid ] of myself
-  ;    let qual-val npid / (caribou-dist + grid-dist)
-  ;    set qual-list lput qual-val qual-list
-  ;    if qual-val >= max qual-list
-  ;    [ set patch-list lput self patch-list]
-  ;    ;set np-cent-prob lput report-np-probs np-cent-prob
-  ;  ]
-  ;]
-  
-  ;show patch-list
-  
-  
-  
-  ;show current-centroid
-  
+end
+
+to mod-cent-target [ targets ] ;caribou procedure
+  set last-centroid current-centroid
+  set cent-memory lput [patch-id] of last-centroid cent-memory
+  set cent-memory remove-item 0 cent-memory
+  set current-centroid one-of targets
 end
 
 
@@ -267,33 +228,37 @@ to mod-np-network
  ; show row 
  ; show col
  ; show ((matrix:get np-centroid-network row col) + 1) 
-  ifelse (row = col)
-  [ print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
-    ;inspect self ]
-    stop ] 
-  [ set np-centroid-network matrix:set-and-report np-centroid-network row col ((matrix:get np-centroid-network row col) + 1) ]
+  if row != 0 and col != 0 [ ;prevents caribou agents who have 'throw-away' last centroids from modifying the network.
+    ifelse (row = col)
+    [ print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
+      ;inspect self ]
+      stop ] 
+    [ set np-centroid-network matrix:set-and-report np-centroid-network (row - 1) (col - 1) ((matrix:get np-centroid-network (row - 1) (col - 1) ) + 1) ] ;site of matrix index error
+  ]
 end
 
 to mod-p-network
-  let row [p-network-id] of last-centroid
-  let col [p-network-id] of current-centroid
-  
-  ifelse (row = col)
-  [ print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
-    ;inspect self ]
-    stop ]
-  [ set p-centroid-network matrix:set-and-report p-centroid-network row col ((matrix:get p-centroid-network row col) + 1) ]
+    let row [p-network-id] of last-centroid
+    let col [p-network-id] of current-centroid
+  if row != 0 and col != 0 [  ;prevents caribou agents who have 'throw-away' last centroids from modifying the network.
+    ifelse (row = col)
+    [ print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
+      ;inspect self ]
+      stop ]
+    [ set p-centroid-network matrix:set-and-report p-centroid-network (row - 1) (col - 1) ((matrix:get p-centroid-network (row - 1) (col - 1) ) + 1) ]
+  ]
 end
 
 to centroid-weight-io
-  ifelse day >= 258
+  ifelse day >= 258 and export-centroids?
   [ ;for final export.
-    let output word "data/centroid-network-working-files/np-master-matrix-" 250
-    set output word output ".csv"
-    file-delete output
-    file-open output
-    file-print matrix:to-row-list np-centroid-network
-    file-close-all 
+      let output word "data/centroid-network-working-files/np-master-matrix-" 250
+      set output word output ".csv"
+      file-delete output
+      file-open output
+      file-print matrix:to-row-list np-centroid-network
+      file-close-all 
+    
     ;print "the final centroid weighting successfully exported."
   ]
   [
@@ -336,22 +301,25 @@ to centroid-weight-io
         ;file-delete input
       ] 
       [;export then inport
+        if export-centroids? [
+          let output word "data/centroid-network-working-files/np-master-matrix-" (day - 14)
+          set output word output ".csv"
+          file-delete output
+          file-open output
+          file-print matrix:to-row-list np-centroid-network
+          file-close-all 
+        ]
         
-        let output word "data/centroid-network-working-files/np-master-matrix-" (day - 14)
-        set output word output ".csv"
-        file-delete output
-        file-open output
-        file-print matrix:to-row-list np-centroid-network
-        file-close-all 
-        
-        if day <= 166 ;export para weights.
+        if day <= 166 and export-centroids? ;export para weights.
         [
-          set output word "data/centroid-network-working-files/p-master-matrix-" (day - 14)
+          
+          let output word "data/centroid-network-working-files/p-master-matrix-" (day - 14)
           set output word output ".csv"
           file-delete output
           file-open output
           file-print matrix:to-row-list p-centroid-network
           file-close-all
+          
         ]
         
         let input word "data/centroid-network-working-files/np-master-matrix-" day
@@ -379,7 +347,7 @@ to centroid-weight-io
 end
 
 to centroid-weight-master-io
-  ifelse day >= 258
+  ifelse day >= 258 and export-centroids?
   [ ;for final export.
     let output word "data/centroid-network-working-files/np-master-matrix-" 250
     set output word output ".csv"
@@ -429,17 +397,18 @@ to centroid-weight-master-io
         ;file-delete input
       ] 
       [;export then inport
+        if export-centroids? [
+          let output word "data/centroid-network-working-files/np-master-matrix-" (day - 14)
+          set output word output ".csv"
+          file-delete output
+          file-open output
+          file-print matrix:to-row-list np-centroid-network
+          file-close-all 
+        ]
         
-        let output word "data/centroid-network-working-files/np-master-matrix-" (day - 14)
-        set output word output ".csv"
-        file-delete output
-        file-open output
-        file-print matrix:to-row-list np-centroid-network
-        file-close-all 
-        
-        if day <= 166 ;export para weights.
+        if day <= 166 and export-centroids?;export para weights.
         [
-          set output word "data/centroid-network-working-files/p-master-matrix-" (day - 14)
+          let output word "data/centroid-network-working-files/p-master-matrix-" (day - 14)
           set output word output ".csv"
           file-delete output
           file-open output
@@ -562,10 +531,10 @@ to display-weighting
       [
         if item (y - 1) cent-list > 0
         [
-          ask centroids with [ cid = (x - 1) ] 
+          ask centroids with [ cid = x ] 
           [ 
             carefully 
-            [ create-cent-links-to centroids with [ cid = (y - 1) ] [ set link-weight item (y - 1) cent-list set thickness 0.6 set color grey ] ]
+            [ create-cent-links-to centroids with [ cid = y ] [ set link-weight item (y - 1) cent-list set thickness 0.6 set color grey ] ]
             [ set size 4 set color red ]
           ]
         ]
@@ -608,4 +577,9 @@ to in-f
   ]
   
   file-close-all
+end
+
+to-report test-list-mod [ x ]
+  set x lput self x
+  report x
 end
