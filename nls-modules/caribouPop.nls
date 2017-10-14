@@ -142,29 +142,29 @@ to go-caribou-pop ;call this procedure in the mothership go procedure b/w model
     ;  matrix:set-row cog-map 6 [0 0 0 0 0 0 0] ; cent attraction
        set cog-map matrix:copy base-fcm-caribou
 
-       let rand (random-float (mutate-amt * 2) - mutate-amt)
-       matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
+       ;let rand (random-float (mutate-amt * 2) - mutate-amt)
+       ;matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
 
-       set rand (random-float (mutate-amt * 2) - mutate-amt)
-       matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
+       ;set rand (random-float (mutate-amt * 2) - mutate-amt)
+       ;matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
 
-       set rand (random-float (mutate-amt * 2) - mutate-amt)
-       matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
+       ;set rand (random-float (mutate-amt * 2) - mutate-amt)
+       ;matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
 
-       set rand (random-float (mutate-amt * 2) - mutate-amt)
-       matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
+       ;set rand (random-float (mutate-amt * 2) - mutate-amt)
+       ;matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
 
-       set rand (random-float (mutate-amt * 2) - mutate-amt)
-       matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
+       ;set rand (random-float (mutate-amt * 2) - mutate-amt)
+       ;matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
 
-       set rand (random-float (mutate-amt * 2) - mutate-amt)
-       matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
+       ;set rand (random-float (mutate-amt * 2) - mutate-amt)
+       ;matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
 
-       set rand (random-float (mutate-amt * 2) - mutate-amt)
-       matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
+       ;set rand (random-float (mutate-amt * 2) - mutate-amt)
+       ;matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
 
-       set rand (random-float (mutate-amt * 2) - mutate-amt)
-       matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
+       ;set rand (random-float (mutate-amt * 2) - mutate-amt)
+       ;matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
 
        if(is-training?)
        [

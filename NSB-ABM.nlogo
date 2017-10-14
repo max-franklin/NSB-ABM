@@ -2127,22 +2127,11 @@ caribou-util-cutoff
 0
 Number
 
-INPUTBOX
-1046
-592
-1127
-652
-mutate-amt
-0.1
-1
-0
-Number
-
 SWITCH
-1045
-554
-1180
-587
+1033
+495
+1168
+528
 is-training?
 is-training?
 0
@@ -2246,10 +2235,10 @@ energy-gain-factor
 Number
 
 SWITCH
-1044
-509
-1179
-542
+1034
+460
+1169
+493
 is-random?
 is-random?
 0
@@ -2257,10 +2246,10 @@ is-random?
 -1000
 
 BUTTON
-1070
-414
-1133
-447
+1064
+374
+1127
+407
 test
 ask a-caribou 119 [\n\nprint \"Matrix sense state:\" \nprint (matrix:pretty-print-text fcm-mat-sensor)\n\nlet sens-adj matrix:transpose(matrix:submatrix fcm-adja 0 0 10 6)\n;\nlet internal matrix:times sens-adj fcm-mat-sensor\nset internal matrix:map fcm-sigmoid-simple internal\n    \n;weights for actions\nlet conc-adj matrix:transpose(matrix:submatrix fcm-adja 10 6 16 11) \nlet final-states matrix:times conc-adj internal\n\nprint \"Matrix final states:\" \nprint (matrix:pretty-print-text final-states)\n]\n
 NIL
@@ -2274,10 +2263,10 @@ NIL
 1
 
 SWITCH
-1044
-467
-1164
-500
+1038
+427
+1158
+460
 debug-fcm?
 debug-fcm?
 1
@@ -2544,6 +2533,60 @@ export-centroids?
 1
 1
 -1000
+
+CHOOSER
+1417
+151
+1555
+196
+mutation-method
+mutation-method
+"fuzzy-logic" "trivalent" "pentavalent"
+0
+
+INPUTBOX
+1443
+85
+1531
+145
+mutate-prob
+0.1
+1
+0
+Number
+
+SWITCH
+1430
+48
+1548
+81
+mutation?
+mutation?
+1
+1
+-1000
+
+SWITCH
+1551
+47
+1703
+80
+recombination?
+recombination?
+1
+1
+-1000
+
+INPUTBOX
+1587
+85
+1676
+145
+recomb-prob
+0.5
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
