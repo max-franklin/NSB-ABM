@@ -236,35 +236,7 @@ to setup-caribou
 ;[
 ;  setxy -12 -27
 ;]
-;starting centroid is closest centroid
-    ;ifelse day > 151 and day < 167 and caribou-class = 2
-    ;[ set current-centroid min-one-of patches with [pid > 0] [distance myself]
-    ;  set last-centroid current-centroid ]
-    ;[ set current-centroid min-one-of patches with [npid > 0] [distance myself]
-    ;  set last-centroid current-centroid ]
-    ;;starting grid is closest grid
-    ;ifelse day > 151 and day < 167 and caribou-class = 2
-    ;[ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
-    ;  set last-grid current-grid ]
-    ;[ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
-    ;  set last-grid current-grid ]
-    
-    
-    ifelse day > 151 and day < 166 and caribou-class = 2
-      [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
-        set last-centroid patch -64 64 ];current-centroid ]
-      [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
-        set last-centroid patch -64 64 ];current-centroid ] ]
-                                        ;starting grid is closest grid
-    ifelse day > 151 and day < 166 and caribou-class = 2
-      [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
-        set current-grid [who] of current-grid
-        set last-grid 0 ]
-      [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
-        set current-grid [who] of current-grid
-        set last-grid 0 ]  
-
-
+    reset-caribou-centroids
   ]
 end
 

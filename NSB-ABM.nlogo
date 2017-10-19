@@ -596,6 +596,8 @@ to go
       if caribouPopMod? = true
       [ go-caribou-pop ]
 
+      export-fcm-data ;;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
+
       if(is-training? and day >= 258)
       [
         update-caribou-fcm
@@ -612,7 +614,7 @@ to go
       set fcm-store lput (length fcm-adja-list) fcm-store
 
       set day 152
-      ;if year = 20 [ stop ] ; can be deleted, just for network recording.
+      if year = 100 [ stop ] ; can be deleted, just for network recording.
       set avg-sim-time lput timer avg-sim-time
       reset-timer
     ]
@@ -636,25 +638,8 @@ to go
       centroid-read
       grid-read
 
+      ask caribou [ reset-caribou-centroids ]
 
-      ask caribou
-
-      [ ifelse day > 151 and day < 166 and caribou-class = 2
-      [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
-        set last-centroid patch -64 64 ];current-centroid ]
-      [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
-        set last-centroid patch -64 64 ];current-centroid ] ]
-      ;starting grid is closest grid
-      ifelse day > 151 and day < 166 and caribou-class = 2
-      [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
-        set current-grid [who] of current-grid
-        set last-grid 0 ]
-      [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
-        set current-grid [who] of current-grid
-        set last-grid 0 ]  ]
-
-      ;stop
-      ;build-migration-grid
     ]
 
     ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
@@ -678,15 +663,55 @@ to go
   update-non-para-utility
   update-moose-utility
   go-dynamic-display
-
-
-
+  update-caribou-state-data
 
   tick
 
-
   set ticks-store lput ticks ticks-store
   set bio-en-store lput mean [bioenergy] of caribou bio-en-store
+end
+
+to update-caribou-state-data
+  let file-ex "caribou-state-flux-bioE.txt"
+  file-open file-ex
+  file-write ticks
+  file-write count caribou with [state = 0]
+  file-write count caribou with [state = 1]
+  file-write count caribou with [state = 2]
+  file-write count caribou with [state = 3]
+  file-write count caribou with [state = 4]
+  file-write mean [ bioenergy-success ] of caribou
+  file-close
+end
+
+to export-fcm-data
+  ;;dump all pertinent data every year for variable calibration.
+  set fcm-adja-list [fcm-adja] of caribou
+  let file-ex "caribou-fcms-agentnum-success.txt"
+  file-open file-ex
+  file-write year
+  file-write (length fcm-adja-list)
+  build-fcm-data
+  file-write matrix:to-row-list fcm-adja-list
+  file-write fcm-agentnum-list
+  file-write fcm-success-list
+  file-close
+end
+
+to reset-caribou-centroids
+  ifelse day > 151 and day < 166 and caribou-class = 2
+    [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
+      set last-centroid patch -64 64 ];current-centroid ]
+    [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
+      set last-centroid patch -64 64 ];current-centroid ] ]
+                                      ;starting grid is closest grid
+  ifelse day > 151 and day < 166 and caribou-class = 2
+    [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
+      set current-grid [who] of current-grid
+      set last-grid 0 ]
+    [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
+      set current-grid [who] of current-grid
+      set last-grid 0 ]
 end
 
 to reset-caribou-banks
@@ -1430,7 +1455,7 @@ elevation-limit
 elevation-limit
 0
 1000
-236
+221
 1
 1
 NIL
@@ -2935,6 +2960,199 @@ NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="nsb-abm-ndvi-cal" repetitions="1" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <enumeratedValueSet variable="show-caribou-utility?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-veg-factor">
+      <value value="0.08"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="elevation-scale">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-deflection-factor">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-4">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-radius">
+      <value value="1.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-cent-dist-cutoff">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="set-centroid-attraction">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="energy-low-constant">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mutate-prob">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-insect-factor">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="is-training?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-precip-factor">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="ndvi-weight" first="0.1" step="0.1" last="1"/>
+    <enumeratedValueSet variable="mutation-method">
+      <value value="&quot;fuzzy-logic&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="use-q">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-max-elevation">
+      <value value="700"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-population">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-para">
+      <value value="0.71"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="display-grids?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="BoundsFile">
+      <value value="&quot;data/ascBounds/CharDolly10Y.asc&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-hunter-energy">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-2">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-veg-factor">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="energy-high-constant">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="recomb-prob">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="elevation-limit">
+      <value value="231"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="recombination?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="is-random?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-modifier-factor">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="show-caribou-utility-non-para?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="decay-rate">
+      <value value="0.01"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prey-close-constant">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="centroid-attraction-min">
+      <value value="0.04"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="export-centroids?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-5">
+      <value value="0.66"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-max-elevation">
+      <value value="700"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prey-far-constant">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mutation?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="debug-fcm?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-deflection-factor">
+      <value value="0.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-3">
+      <value value="0.66"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="show-moose-utility?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribouPopMod?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-insect-factor">
+      <value value="0.7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-vision">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-max-wetness">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Q-Gamma">
+      <value value="0.999"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-rough-factor">
+      <value value="2.3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-amt">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffuse-amt">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="show-caribou-utility-para?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Q-rate">
+      <value value="0.001"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="display-centroids?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-modify-amt">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-9">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-util-cutoff">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-group-amt">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-max-wetness">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-rough-factor">
+      <value value="-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="centroid-attraction-max">
+      <value value="0.55"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="energy-gain-factor">
+      <value value="33.7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-amt">
+      <value value="2500"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
