@@ -287,7 +287,9 @@ to go-caribou
     ;wraps into the ternary function
     
     let close-hunt (min-one-of hunters [distance myself] )
-    let hunt-dist distance close-hunt
+    let hunt-dist 1000
+    if close-hunt != nobody
+    [set hunt-dist distance close-hunt]
     matrix:set fcm-mat-sensor 0 0  (1 - (fcm-ternary 0.25 0.75 hunt-dist)) ;Foe Close = 0 invert this valuse
     matrix:set fcm-mat-sensor 1 0 (fcm-ternary 0.25 0.75 hunt-dist) ;Foe Far = 1
     
@@ -314,7 +316,9 @@ to go-caribou
       matrix:set fcm-mat-sensor 7 0 (1 - (fcm-ternary 0.50 0 local-quantity)) ;Foe Far = 1
       
       let close-disturb (min-one-of hunters [distance myself] )
-      let disturb-dist distance close-hunt
+      let disturb-dist 1000
+      if close-hunt != nobody
+      [set disturb-dist distance close-hunt]
       matrix:set fcm-mat-sensor 8 0 (1 - (fcm-ternary 1 3 disturb-dist)) ;Foe Close = 0 invert this valuse
       matrix:set fcm-mat-sensor 9 0 (fcm-ternary 1 3 disturb-dist) ;Foe Far = 1
     ]
@@ -338,7 +342,9 @@ to go-caribou
       matrix:set fcm-mat-sensor 7 0 (1 - (fcm-ternary 0.50 0 local-quantity)) ;Foe Far = 1
       
       let close-disturb (min-one-of hunters [distance myself] )
-      let disturb-dist distance close-hunt
+      let disturb-dist 1000
+      if close-hunt != nobody
+      [set disturb-dist distance close-hunt]
       matrix:set fcm-mat-sensor 8 0 (1 - (fcm-ternary 1 3 disturb-dist)) ;Foe Close = 0 invert this valuse
       matrix:set fcm-mat-sensor 9 0 (fcm-ternary 1 3 disturb-dist) ;Foe Far = 1
     ]

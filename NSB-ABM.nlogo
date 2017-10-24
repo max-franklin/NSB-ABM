@@ -7,7 +7,7 @@
 extensions [ gis array matrix table csv]
 
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
-           "nls-modules/caribou.nls" "nls-modules/moose.nls"; "nls-modules/hunters.nls"
+           "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
   "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"
   "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls"]
 
@@ -452,7 +452,6 @@ to setup
   set-oestrid-mean
   set-coastline
 
-  setup-hunters-temp
   setup-precipitation
   setup-terrain-layers
   setup-caribou-utility ;setup caribou utility code requires a fix, semantics of it don't make sense.
@@ -499,20 +498,17 @@ to setup
   test-flow
   let counter 1
   let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set patch-id counter] set counter counter + 1 set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
+  setup-caribou-harvests
+  initialize-FCM-hunters
 end
 
-to setup-hunters-temp
-create-hunters 1
-[
-  setxy 5 5
-]
 
 
-end
 to setup-caribou-harvests
   ask patches
   [
-    if (pxcor mod 1 = 0) and (pycor mod 1 = 0)
+    if (pxcor mod 2 = 0) and (pycor mod 2 = 0)
     [
       sprout-caribou-harvests 1 [set frequency-rank [patch-caribou-harvest] of patch-here]
     ]
@@ -525,7 +521,7 @@ to setup-caribou-harvests
       die
     ]
     set color scale-color red frequency-rank 0 20
-    set size 1.5
+    set size 1
     set shape "circle"
   ]
 
@@ -664,6 +660,8 @@ to go
   update-moose-utility
   go-dynamic-display
   update-caribou-state-data
+
+  go-hunters-nls
 
   tick
 
@@ -1148,10 +1146,10 @@ NIL
 1
 
 BUTTON
-80
-141
-220
-174
+81
+104
+221
+137
 Show Elevation
 display-elevation
 NIL
@@ -1165,10 +1163,10 @@ NIL
 1
 
 BUTTON
-82
-180
-220
-213
+83
+143
+221
+176
 Show Streams
 display-streams
 NIL
@@ -1182,10 +1180,10 @@ NIL
 1
 
 BUTTON
-82
-220
-221
-253
+83
+183
+222
+216
 Show TRI
 display-roughness
 NIL
@@ -1199,10 +1197,10 @@ NIL
 1
 
 BUTTON
-83
-259
-221
-292
+84
+222
+222
+255
 Show Wetness
 display-wetness
 NIL
@@ -1216,10 +1214,10 @@ NIL
 1
 
 BUTTON
-83
-297
-222
-330
+84
+260
+223
+293
 Show Ocean
 display-ocean
 NIL
@@ -1233,10 +1231,10 @@ NIL
 1
 
 BUTTON
-69
-349
-233
-382
+70
+296
+234
+329
 Show Combination
 display-simultaneous
 NIL
@@ -1523,9 +1521,9 @@ HORIZONTAL
 
 BUTTON
 76
-406
+334
 230
-439
+367
 Show Vegetation
 display-vegetation
 NIL
@@ -2332,10 +2330,10 @@ hunter-vision
 hunter-vision
 0
 20
+5
 1
 1
-1
-NIL
+* 2.2 km
 HORIZONTAL
 
 SLIDER
@@ -2362,7 +2360,7 @@ prey-close-constant
 prey-close-constant
 0
 0.5
-0.4
+0.5
 0.05
 1
 NIL
@@ -2377,7 +2375,7 @@ prey-far-constant
 prey-far-constant
 0.5
 1
-0.6
+0.9
 0.05
 1
 NIL
@@ -2527,9 +2525,9 @@ Q-Gamma
 Number
 
 INPUTBOX
-1167
+1108
 901
-1226
+1167
 961
 Q-rate
 0.001
@@ -2612,6 +2610,130 @@ recomb-prob
 1
 0
 Number
+
+SLIDER
+1190
+799
+1412
+832
+initial-trip-length
+initial-trip-length
+0
+115
+115
+1
+1
+* 1.5 hrs
+HORIZONTAL
+
+SLIDER
+1424
+840
+1633
+873
+boat-hike-long-constant
+boat-hike-long-constant
+0
+1
+0.4
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1424
+879
+1639
+912
+boat-hike-short-constant
+boat-hike-short-constant
+0
+1
+0.6
+.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1424
+918
+1666
+951
+caribou-harvest-low-constant
+caribou-harvest-low-constant
+0
+1
+0.4
+.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1424
+956
+1673
+989
+caribou-harvest-high-constant
+caribou-harvest-high-constant
+0
+1
+0.6
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1188
+836
+1413
+869
+hunter-centroid-selection
+hunter-centroid-selection
+0
+21
+10
+1
+1
+f-rank
+HORIZONTAL
+
+BUTTON
+94
+386
+200
+419
+New Hunters
+ask caribou-harvests [ht]\nask hunters [die]\nnew-hunters\n
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+94
+430
+196
+463
+Go Hunters
+go-hunters-nls
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
