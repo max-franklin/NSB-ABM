@@ -80,6 +80,8 @@ to build-fcm-data
   let x 0
   let y (x + 1)
   
+  let test? true
+  
   
   while [x < length fcm-adja-list]
   [
@@ -87,6 +89,54 @@ to build-fcm-data
     let current-fcm item x fcm-adja-list
     ;set counter-list lput 1 counter-list
     let avg-success mean [ bioenergy-success ] of caribou with [ fcm-adja = current-fcm ]
+    
+    if test? [ print avg-success ]
+    
+    let numCar count caribou with [ fcm-adja = current-fcm ]
+    let compStateMem [ ]
+    
+    ask caribou with [ fcm-adja = current-fcm ] [
+      set compStateMem lput state-memory compStateMem
+    ]
+    
+    let counter2 0
+    
+    while [ counter2 < (numCar - 1) ] [
+      set compStateMem replace-item 0 compStateMem (map + (item 0 compStateMem) (item (counter2 + 1) compStateMem ))
+      set counter2 counter2 + 1
+    ]
+    
+    set compStateMem item 0 compStateMem
+    set compStateMem map [ (? * numCar) ] compStateMem 
+    
+    
+    ;;now find amount of time spent in foraging states.
+    let fgTime 100 * ((item 1 compStateMem + item 4 compStateMem) / (sum compStateMem))
+    
+    ;;calculate state fitness based on amount of time spent foraging.
+    let lowFg 50
+    let highFg 88
+    let stateFit 0
+    
+    ifelse fgTime <= highFg and fgTime >= lowFg
+    [ set stateFit 1 ]
+    [
+     ifelse fgTime > highFg
+     [
+       let diff 100 - fgTime
+       set stateFit diff / (100 - highFg)
+     ]
+     [
+       set stateFit fgTime / lowFg
+     ] 
+    ]
+    
+    set avg-success avg-success * stateFit
+    
+    if test? [ print compStateMem print fgTime print stateFit print avg-success ]
+    
+    set test? false
+    
     set y x + 1
     
     if y >= length fcm-adja-list
@@ -125,17 +175,18 @@ end
 to select-fcms
   ;procedure for selecting an FCM for all caribou to use.
   ;FCM is selected randomly from the weights of caribou bioenergy success. 
-  let min-bio min [bioenergy-success] of caribou
-  let max-bio max [bioenergy-success] of caribou
   
   build-fcm-data
+  
+  let min-s min fcm-success-list
+  let max-s max fcm-success-list 
 
   ;carefully 
   ;[ set fcm-success-list map [ i -> (i - min-bio)/(max-bio - min-bio) ]  fcm-success-list ]
   ;[ set fcm-success-list map [ i -> 1 ] fcm-success-list ]
   ;set fcm-agentnum-list map [ i -> i / (count caribou)]  fcm-agentnum-list
   carefully
-  [ set fcm-success-list feature-scale-list min-bio max-bio fcm-success-list ]
+  [ set fcm-success-list feature-scale-list min-s max-s fcm-success-list ]
   [ set fcm-success-list map [ 1 ] fcm-success-list ]
   set fcm-agentnum-list map [ ? / (count caribou)]  fcm-agentnum-list
   
@@ -288,7 +339,8 @@ to update-caribou-fcm
       ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
       ;mutate-genome
       
-      
+      set state-memory []
+      repeat 5 [ set state-memory lput 0 state-memory ]
       let caribou-group-number floor(caribou-amt / caribou-group-amt)
       set bioenergy-success (27.5 * 1000)
       set bioenergy (27.5 * 1000); caribou-group-number * 1000) ; In kJ ;reset energy

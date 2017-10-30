@@ -249,14 +249,14 @@ to display-pgrids
 end
 
 to select-grid
-  let max-np-qual max [np-qual-id] of grids in-radius 12 with [who != [last-grid] of myself and who != [current-grid] of myself 
+  let max-np-qual max [np-qual-id] of grids in-radius 16 with [who != [last-grid] of myself and who != [current-grid] of myself 
     and [patch-id] of patch-here != [grid-memory] of myself]
-  let max-p-qual max [p-qual-id] of grids in-radius 12 with [who != [last-grid] of myself and who != [current-grid] of myself 
+  let max-p-qual max [p-qual-id] of grids in-radius 16 with [who != [last-grid] of myself and who != [current-grid] of myself 
     and [patch-id] of patch-here != [grid-memory] of myself]
   
-  let np-grid-target grids in-radius 12 with [np-qual-id = max-np-qual and who != [last-grid] of myself and who != [current-grid] of myself 
+  let np-grid-target grids in-radius 16 with [np-qual-id = max-np-qual and who != [last-grid] of myself and who != [current-grid] of myself 
     and [patch-id] of patch-here != [grid-memory] of myself]
-  let p-grid-target grids in-radius 12 with [p-qual-id = max-p-qual and who != [last-grid] of myself and who != [current-grid] of myself 
+  let p-grid-target grids in-radius 16 with [p-qual-id = max-p-qual and who != [last-grid] of myself and who != [current-grid] of myself 
     and [patch-id] of patch-here != [grid-memory] of myself]
   
   ifelse day > 151 and day < 166 and caribou-class = 2

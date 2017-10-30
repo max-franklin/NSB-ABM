@@ -1,0 +1,129 @@
+to setup-caribou-var-cal 
+  ;print "this is a test to see if setup-car-var-cal is being called"
+  set caribouVarCal [ ] 
+  ifelse randomCaribouVarStart?
+    [
+      ;print "testing to see if random assignment occurs."
+      ;;need to do: check to see if any division by zero errors will occur in caribou utility functions due to random number gen.
+      repeat 9 [
+        ;;from left to right, the variables are: decay-rate, energy-gain, ndvi-weight, caribou-veg-factor, caribou-rough-factor, caribou-insect-factor,
+        ;;caribou-modifier-factor, caribou-deflection-factor, caribou-precip-factor.
+        set caribouVarCal lput random-num 1 caribouVarCal
+      ]
+    ]
+    [
+      repeat 9 [ set caribouVarCal lput 0.1 caribouVarCal ]
+    ]
+    
+  
+    
+  assign-variable-values 
+  setup-var-file 
+end
+
+to go-caribou-var-cal 
+  let mutatedVars? 0
+  let varProb calculate-var-prob
+  if (random-num 1) <= varProb [ 
+    set mutatedVars? 1
+    mutate-caribou-variables
+  ]
+ 
+  export-var-data mutatedVars? 
+end
+
+to setup-var-file 
+  
+  let globalVars [ "decay-rate" "energy-gain" "ndvi-weight" "caribou-veg-factor" "caribou-rough-factor" "caribou-insect-factor" 
+    "caribou-modifier-factor" "caribou-deflection-factor" "caribou-precip-factor" ] 
+  
+  let fileOut "caribou-var-calibration-data-"
+  set fileOut word fileOut seed
+  set fileOut word fileOut ".txt"
+  
+  if file-exists? fileOut [ file-delete fileOut ]
+  
+  file-open fileOut
+  
+  file-write "year"
+  file-write "mutated?"
+  foreach globalVars file-write
+  file-print ""
+  file-write year
+  file-write 0
+  foreach caribouVarCal file-write
+  
+  file-close
+end
+
+to export-var-data [ mutatedVars? ]
+  let fileOut "caribou-var-calibration-data-"
+  set fileOut word fileOut seed
+  set fileOut word fileOut ".txt"
+  
+  file-open fileOut
+  file-print ""
+  file-write year
+  file-write mutatedVars?
+  foreach caribouVarCal file-write 
+  file-close 
+end
+
+to mutate-caribou-variables 
+  ;;for now, just assign a mutate amt.  
+  let mutateAmt (random-num 2) - 1
+  let randItem (random length caribouVarCal)
+  let oldVal item randItem caribouVarCal
+  let newVal oldVal + mutateAmt
+  
+  while [ newVal <= 0 or newVal >= 1 ] [
+    set mutateAmt (random-num 2) - 1
+    set oldVal item randItem caribouVarCal
+    set newVal oldVal + mutateAmt   
+  ]
+ 
+  set caribouVarCal replace-item randItem caribouVarCal newVal
+  
+  assign-variable-values 
+  
+end
+
+to assign-variable-values 
+  let globalVars [ "decay-rate" "energy-gain" "ndvi-weight" "caribou-veg-factor" "caribou-rough-factor" "caribou-insect-factor" 
+    "caribou-modifier-factor" "caribou-deflection-factor" "caribou-precip-factor" ] 
+  
+  set decay-rate item (position "decay-rate" globalVars) caribouVarCal
+  set energy-gain-factor ( item (position "energy-gain" globalVars) caribouVarCal ) * 100 
+  set ndvi-weight item (position "ndvi-weight" globalVars) caribouVarCal
+  set caribou-veg-factor item (position "caribou-veg-factor" globalVars) caribouVarCal
+  set caribou-rough-factor item (position "caribou-rough-factor" globalVars) caribouVarCal
+  set caribou-insect-factor item (position "caribou-insect-factor" globalVars) caribouVarCal
+  set caribou-modifier-factor item (position "caribou-modifier-factor" globalVars) caribouVarCal
+  set caribou-deflection-factor item (position "caribou-deflection-factor" globalVars) caribouVarCal
+  set caribou-precip-factor item (position "caribou-precip-factor" globalVars) caribouVarCal
+end
+
+to-report calculate-var-prob 
+  let convergence length fcm-adja-list
+  set convergence 1 - ( convergence / caribou-group-amt );;divide by initial number of unique caribou FCMs to normalize the variable.
+  let upperFit 38500 ;;constraints on what upper and lower bounds are for bioenergy levels.
+  let lowerFit 16500 ;;limits are somewhat arbitrary, at the moment. 
+  let fitness mean [ bioenergy-success ] of caribou
+  let x 0.5 let y 1
+  
+  ifelse fitness > upperFit 
+  [ set fitness 1 ]
+  [
+    ifelse fitness < lowerFit 
+    [ set fitness 0 ]
+    [ set fitness ( fitness - lowerFit ) / ( upperFit - lowerFit ) ]
+  ]
+  
+  let varProb (y * convergence) - (x * fitness)
+  report varProb
+  ;report ( 1 - ((x * fitness) + (y * convergence)) )
+end
+
+to-report random-num [ num ]
+  report random ((num * 1000) + 1) / 1000
+end
