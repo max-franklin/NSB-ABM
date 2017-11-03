@@ -12,6 +12,7 @@ globals [
           global-internal-print
           global-motor-print
           
+          num-harvests-global
           home-patch-global
         ]
 
@@ -25,10 +26,12 @@ hunters-own [
              boat-and-hike-long
              boat-and-hike-short
              caribou-harvest-low 
-             caribou-harvest-high  
+             caribou-harvest-high 
+             hunter-density-low 
+             hunter-density-high
               
              hunting         ;internal
-             curiousity   
+             exploration    
              weakness
              strength   
              off-boat
@@ -53,11 +56,14 @@ hunters-own [
              
              ;data
              boat-return 
+             current-state
              prev-motor-state
              distance-to-prey
+             surrounding-hunters
              trip-length 
              travel-heuristic 
              harvest-amount
+             hunter-density 
              sensory-prey-close
              sensory-prey-far 
              sensory-enery-low 
@@ -65,7 +71,9 @@ hunters-own [
              sensory-boat-and-hike-long
              sensory-boat-and-hike-short
              sensory-caribou-harvest-low 
-             sensory-caribou-harvest-high  
+             sensory-caribou-harvest-high 
+             sensory-hunter-density-low 
+             sensory-hunter-density-high 
              motor-concept-index
              target-river-centroid
              target-land-centroid
@@ -80,7 +88,7 @@ hunters-own [
              home-patch
              catch-probability
              prey-caught
-             
+             wetness-sum 
              boat-speed 
              hike-speed
              initial-hike-time
@@ -115,7 +123,7 @@ to go-hunters-nls
   tick
   ask hunters 
   [
-    if (trip-length < 1) [ die ]
+    ;if (trip-length < 1) [ die ]
     execute-FCM 
   ]
 end
@@ -124,7 +132,7 @@ end
 to new-hunters
   create-hunters hunter-population
   [
-    set color (random 80)
+    set color white
     set size 3
     setxy 3 1
     set boat-speed 30
@@ -134,8 +142,9 @@ to new-hunters
     set trip-length initial-trip-length
     set spent-time 0
     set harvest-amount 0
+    set hunter-density 0
     set-hunter-sensory-ranges
-    print-hunter-matrices
+    ;print-hunter-matrices
     set-initial-centroids
     set prey-caught false
     set return false 
@@ -155,36 +164,41 @@ to set-hunter-sensory-ranges
     set boat-and-hike-long (boat-hike-long-constant * 1) 
     set boat-and-hike-short (boat-hike-short-constant * 1)
     
-    set caribou-harvest-low (caribou-harvest-low-constant * 1)
-    set caribou-harvest-high (caribou-harvest-high-constant * 1)
+    set caribou-harvest-low (caribou-harvest-low-constant * hunter-harvest-goal)
+    set caribou-harvest-high (caribou-harvest-high-constant * hunter-harvest-goal)
+    
+    set hunter-density-low (hunter-density-low-constant * maximum-hunter-density)
+    set hunter-density-high (hunter-density-high-constant * maximum-hunter-density)
 end 
 
 
 to initialize-FCM-hunters
-  set global-fcm-matrix matrix:from-row-list [[ 0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1 -1 -1  1 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1 -1 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  0  0  1 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0 -1 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]]
+  set global-fcm-matrix matrix:from-row-list [[ 0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1 -1 -1  2 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1 -1 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  0  0  1.75 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0 -1 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]]
   
-  set global-fcm-sensory matrix:from-row-list [[ 0  0  0  0  0  0  0  0 ]]
-  set global-fcm-internal matrix:submatrix global-fcm-matrix 0 8 8 16
-  set global-fcm-motor matrix:submatrix global-fcm-matrix 8 16 16 20
+  set global-fcm-sensory matrix:from-row-list [[ 0  0  0  0  0  0  0  0  0  0]]
+  set global-fcm-internal matrix:submatrix global-fcm-matrix 0 10 10 18
+  set global-fcm-motor matrix:submatrix global-fcm-matrix 10 18 18 22
   
   set global-full-print matrix:pretty-print-text global-fcm-matrix
   set global-sensory-print matrix:pretty-print-text global-fcm-sensory
@@ -218,6 +232,9 @@ to set-hunter-fcm-sensory
   set sensory-caribou-harvest-low (1 - (ternary-funct caribou-harvest-low caribou-harvest-high harvest-amount))
   set sensory-caribou-harvest-high ternary-funct caribou-harvest-low caribou-harvest-high harvest-amount 
   
+  set sensory-hunter-density-low (1 - (ternary-funct hunter-density-low hunter-density-high hunter-density))
+  set sensory-hunter-density-high ternary-funct hunter-density-low hunter-density-high hunter-density 
+  
   matrix:set hunter-fcm-sensory 0 0 sensory-prey-close
   matrix:set hunter-fcm-sensory 0 1 sensory-prey-far 
   matrix:set hunter-fcm-sensory 0 2 sensory-enery-low
@@ -226,6 +243,8 @@ to set-hunter-fcm-sensory
   matrix:set hunter-fcm-sensory 0 5 sensory-boat-and-hike-short 
   matrix:set hunter-fcm-sensory 0 6 sensory-caribou-harvest-low
   matrix:set hunter-fcm-sensory 0 7 sensory-caribou-harvest-high
+  matrix:set hunter-fcm-sensory 0 8 sensory-hunter-density-low
+  matrix:set hunter-fcm-sensory 0 9 sensory-hunter-density-high 
 
   set sensory-print matrix:pretty-print-text hunter-fcm-sensory
 end
@@ -248,7 +267,7 @@ to set-hunter-fcm-motor
   set hunter-fcm-motor-results matrix:times hunter-fcm-act-internal hunter-fcm-motor 
 
   set motor-print matrix:pretty-print-text hunter-fcm-motor
-  matrix:set hunter-fcm-motor-results 0 3 .75
+ ; matrix:set hunter-fcm-motor-results 0 3 .75
   set motor-results-print matrix:pretty-print-text hunter-fcm-motor-results
 
   
@@ -281,7 +300,7 @@ to run-motor-function
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 0
     set hunt true
-    print "Hunting...\n"
+    ;print "Hunting...\n"
     hunt-funct
   ]
   if motor-concept-index = 1
@@ -290,14 +309,14 @@ to run-motor-function
     set prev-motor-state 1
     ;check for prev state
     set foot-travel true
-    print "Foot travelling..."
-    foot-travel-funct target-land-centroid
+    ;print "Foot travelling..."
+    foot-travel-funct ([patch-here] of target-land-centroid)
   ]
   if motor-concept-index = 2
   [
     set boat-travel true
     set prev-motor-state 2
-    print "Boat travelling..."
+    ;print "Boat travelling..."
     boat-travel-funct target-river-patch-r
   ]
   if motor-concept-index = 3
@@ -315,6 +334,7 @@ to execute-FCM
     find-prey
     set-distance-to-prey
     set-travel-cost-evaluation
+    set-hunter-density
     set-hunter-fcm-sensory
     set-hunter-fcm-raw-internal
     set-hunter-act-internal
@@ -334,31 +354,41 @@ to hunt-funct
 end
 
 to foot-travel-funct [target]
-  ifelse(member? target neighbors)
+  if(patch-here != target)
   [
-    face target
-    move-to target
-  ]
-  [
-    let land-patches min-n-of 2 neighbors with [ocean = 0] [distance [target] of myself]
-    set land-p min-one-of land-patches [wetness]
-    face land-p
-    move-to land-p
-  ]
+     ifelse(member? target neighbors = false)
+     [
+        let land-patches min-n-of 2 neighbors with [elevation > 0] [distance [target] of myself]
+        set land-p min-one-of land-patches [wetness]
+        set wetness-sum (wetness-sum + ([wetness] of land-p))
+        face land-p
+        move-to land-p
+     ]
+     [
+        set wetness-sum (wetness-sum + ([wetness] of target))
+        face target
+        move-to target
+     ]
+   ]
 end
 
 to foot-travel-return-funct [target]
-  print "Foot return."
-  ifelse(member? target neighbors)
+  ;print "Foot return."
+  if(patch-here != target)
   [
-    face target
-    move-to target
-  ]
-  [
-    let land-patches min-n-of 2 neighbors with [ocean = 0]  [distance [target] of myself]
-    set land-p min-one-of land-patches [wetness]
-    face land-p
-    move-to land-p
+     ifelse(member? target neighbors = false)
+     [
+        let land-patches min-n-of 2 neighbors with [elevation > 0] [distance [target] of myself]
+        set land-p min-one-of land-patches [wetness]
+        set wetness-sum (wetness-sum + ([wetness] of land-p))
+        face land-p
+        move-to land-p
+     ]
+     [
+        set wetness-sum (wetness-sum + ([wetness] of target))
+        face target
+        move-to target
+     ]
   ]
 end
 
@@ -371,13 +401,14 @@ to boat-travel-funct [target-r]
   [ 
     set river-memory lput patch-here river-memory
     let target neighbors with [connected? = true and not member? self [river-memory] of myself 
-                             and (list-intersect ([river-to-follow] of myself) river-set) ] in-radius 3 ;and not member of my memory
+                             and (list-intersect ([river-to-follow] of myself) river-set) ] ;and not member of my memory
     set target max-one-of target [elevation]
     carefully [ face target move-to target ];move-to target
     [
-      move-to min-one-of (patches with [(list-intersect ([river-to-follow] of myself) river-set)]) in-radius 3 [pycor] ;min-one-of
+      ;move-to min-one-of neighbors with [connected? = true][pycor] ;;;;;;;;;
+      ;move-to min-one-of neighbors [pycor]
       set target neighbors with [connected? = true and not member? self [river-memory] of myself 
-                                and (list-intersect ([river-to-follow] of myself) river-set)] in-radius 3
+                                and (list-intersect ([river-to-follow] of myself) river-set)] 
       set target max-one-of target [elevation]
       if target != NOBODY
       [ face target move-to target ]
@@ -386,17 +417,18 @@ to boat-travel-funct [target-r]
 end 
 
 to boat-travel-return-funct
-  print "Boat return"
+  ;print "Boat return"
   set river-memory []
   set river-memory lput patch-here river-memory
   let target neighbors with [connected? = true and not member? self [river-memory] of myself and ( [distance home-patch-global] of self < [distance home-patch] of myself )
-                             and (list-intersect ([river-to-follow] of myself) river-set)] in-radius 2 ;and not member of my memory
+                             and (list-intersect ([river-to-follow] of myself) river-set)] ;in-radius 2 ;and not member of my memory
   set target min-one-of target [elevation]
   carefully [ face target move-to target ];move-to target
   [
-     move-to max-one-of patches with [ (list-intersect ([river-to-follow] of myself) river-set)] in-radius 2 [pycor] ;min-one-of
+     ;move-to max-one-of neighbors with [connected? = true] [pycor];min-one-of
+     ;move-to max-one-of neighbors [pycor]
      set target neighbors with [connected? = true and not member? self [river-memory] of myself and ( [distance home-patch-global] of self < [distance home-patch] of myself )
-                                and (list-intersect ([river-to-follow] of myself) river-set)] in-radius 2    
+                                and (list-intersect ([river-to-follow] of myself) river-set)] ;in-radius 2    
      set target min-one-of target [elevation]
      if target != NOBODY
      [ face target move-to target ]
@@ -413,16 +445,20 @@ to find-prey
    set prey one-of caribou in-radius hunter-vision
 end
 
+to set-hunter-density 
+  set hunter-density count hunters in-radius hunter-vision 
+end
+
 to head-towards-prey
   if(prey != nobody)[ set heading towards prey ]
 end
 
 to catch-prey
    set catch-probability ( random-float 1 )
-   if catch-probability >= 0.8
+   if catch-probability >= 0.9
    [
      set prey-caught true
-     print "PREY CAUGHT"
+     set num-harvests-global (num-harvests-global + 1)
      set harvest-amount (harvest-amount + 1)
    ]
 end
@@ -493,7 +529,7 @@ end
 
 to set-target-land-centroid ;set the land destination 
    set target-land-centroid one-of caribou-harvests with [frequency-rank < hunter-centroid-selection]
-   ask target-land-centroid [ st ] 
+  ; ask target-land-centroid [ st ] 
 end
 
 to set-target-river
@@ -538,27 +574,22 @@ end
 
 
 to print-hunter-matrices
-  ;print "Sensory matrix:"
-  ;print sensory-print
-  ;print "\nInternal matrix:"
-  ;print internal-print
-  ;print "\nRaw internal matrix:"
-  ;print raw-internal-print
-  ;print "\nActivated internal matrix:"
-  ;print act-internal-print
-  ;print "\nMotor matrix:"
-  ;print motor-print
+  print "Sensory matrix:"
+  print sensory-print
+  print "\nInternal matrix:"
+  print internal-print
+  print "\nRaw internal matrix:"
+  print raw-internal-print
+  print "\nActivated internal matrix:"
+  print act-internal-print
+  print "\nMotor matrix:"
+  print motor-print
   print "\nMotor times activated internal matrix:"
   print motor-results-print
-
-  ;print "Number of rows:"
-  ;print num-rows-h
-  ;print "Number of columns:"
-  ;print num-cols-h
-  ;print "Motor matrix max:"
-  ;print motor-max
- ; print "Concept index:"
-  ;print motor-concept-index
+  print "Motor matrix max:"
+  print motor-max
+  print "Concept index:"
+  print motor-concept-index
 end
 
 to print-global-matrices 

@@ -501,6 +501,9 @@ to setup
 
   setup-caribou-harvests
   initialize-FCM-hunters
+  ask caribou-harvests [ht]
+  ask hunters [die]
+  new-hunters
 end
 
 
@@ -1357,7 +1360,7 @@ CHOOSER
 BoundsFile
 BoundsFile
 "data/ascBounds/CharDolly10Y.asc" "data/ascBounds/CharDolly12M.asc" "data/ascBounds/Cisco10Y.asc" "data/ascBounds/Cisco12M.asc" "data/ascBounds/MooseBounds10Y.asc" "data/ascBounds/MooseBounds12M.asc" "data/ascBounds/whitefish12m.asc" "data/ascBounds/whitefish10Y.asc"
-0
+7
 
 BUTTON
 1012
@@ -2066,10 +2069,10 @@ TEXTBOX
 1
 
 TEXTBOX
-642
-540
-792
-558
+643
+552
+793
+570
 Temp Commands
 12
 0.0
@@ -2157,7 +2160,7 @@ SWITCH
 528
 is-training?
 is-training?
-0
+1
 1
 -1000
 
@@ -2179,7 +2182,7 @@ SWITCH
 618
 caribouPopMod?
 caribouPopMod?
-1
+0
 1
 -1000
 
@@ -2216,7 +2219,7 @@ SWITCH
 499
 show-caribou-utility-para?
 show-caribou-utility-para?
-0
+1
 1
 -1000
 
@@ -2264,7 +2267,7 @@ SWITCH
 493
 is-random?
 is-random?
-0
+1
 1
 -1000
 
@@ -2297,20 +2300,20 @@ debug-fcm?
 -1000
 
 TEXTBOX
-1271
-652
-1339
-675
+1465
+668
+1533
+691
 HUNTERS
 11
 0.0
 1
 
 SLIDER
-1189
-680
-1412
-713
+1262
+730
+1485
+763
 hunter-population
 hunter-population
 0
@@ -2322,70 +2325,55 @@ NIL
 HORIZONTAL
 
 SLIDER
-1189
-720
-1412
-753
+1262
+770
+1485
+803
 hunter-vision
 hunter-vision
 0
 20
-5
+4
 1
 1
 * 2.2 km
 HORIZONTAL
 
 SLIDER
-1189
-760
-1412
-793
-initial-hunter-energy
-initial-hunter-energy
-0
-2000
-1000
-50
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1423
-680
-1646
-713
+1496
+730
+1719
+763
 prey-close-constant
 prey-close-constant
 0
 0.5
-0.5
+0.4
 0.05
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1423
-720
-1647
-753
+1496
+770
+1720
+803
 prey-far-constant
 prey-far-constant
 0.5
 1
-0.9
+0.6
 0.05
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1423
-761
-1646
-794
+1496
+812
+1719
+845
 energy-low-constant
 energy-low-constant
 0
@@ -2397,10 +2385,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1424
-801
-1648
-834
+1496
+852
+1720
+885
 energy-high-constant
 energy-high-constant
 0.50
@@ -2612,10 +2600,10 @@ recomb-prob
 Number
 
 SLIDER
-1190
-799
-1412
-832
+1263
+809
+1485
+842
 initial-trip-length
 initial-trip-length
 0
@@ -2627,10 +2615,10 @@ initial-trip-length
 HORIZONTAL
 
 SLIDER
-1424
-840
-1633
-873
+1496
+890
+1705
+923
 boat-hike-long-constant
 boat-hike-long-constant
 0
@@ -2642,55 +2630,55 @@ NIL
 HORIZONTAL
 
 SLIDER
-1424
+1496
+931
+1711
+964
+boat-hike-short-constant
+boat-hike-short-constant
+0
+1
+0.6
+.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1496
+969
+1738
+1002
+caribou-harvest-low-constant
+caribou-harvest-low-constant
+0
+1
+0.4
+.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1496
+1008
+1745
+1041
+caribou-harvest-high-constant
+caribou-harvest-high-constant
+0
+1
+0.6
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1262
+846
+1487
 879
-1639
-912
-boat-hike-short-constant
-boat-hike-short-constant
-0
-1
-0.6
-.05
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1424
-918
-1666
-951
-caribou-harvest-low-constant
-caribou-harvest-low-constant
-0
-1
-0.4
-.05
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1424
-956
-1673
-989
-caribou-harvest-high-constant
-caribou-harvest-high-constant
-0
-1
-0.6
-0.05
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1188
-836
-1413
-869
 hunter-centroid-selection
 hunter-centroid-selection
 0
@@ -2725,6 +2713,34 @@ BUTTON
 463
 Go Hunters
 go-hunters-nls
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+INPUTBOX
+1500
+1060
+1739
+1135
+new-file
+\"WetnessSumsBefore.txt\"
+1
+0
+String
+
+BUTTON
+1517
+1223
+1610
+1256
+Open File
+file-open new-file
 NIL
 1
 T
@@ -2734,6 +2750,132 @@ NIL
 NIL
 NIL
 1
+
+BUTTON
+1616
+1223
+1710
+1256
+Close File
+file-close\n
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+PLOT
+625
+1001
+1468
+1306
+Hunter State Flux
+NIL
+NIL
+0.0
+10.0
+0.0
+11.0
+true
+true
+"" ""
+PENS
+"Hunt" 1.0 0 -16777216 true "" "plot count hunters with [prev-motor-state = 0]"
+"Foot Travel " 1.0 0 -2139308 true "" "plot count hunters with [prev-motor-state = 1]"
+"Boat Travel " 1.0 0 -11085214 true "" "plot count hunters with [prev-motor-state = 2]"
+"Return " 1.0 0 -6917194 true "" "plot count hunters with [prev-motor-state = 3]"
+
+BUTTON
+1565
+1145
+1666
+1178
+Write to File
+file-open new-file \nask hunters [file-write wetness-sum]\nfile-close
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+1260
+692
+1579
+725
+maximum-hunter-density
+maximum-hunter-density
+0
+10
+3
+1
+1
+hunters/caribou group
+HORIZONTAL
+
+SLIDER
+1255
+928
+1491
+961
+hunter-density-low-constant
+hunter-density-low-constant
+0
+0.5
+0.4
+.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1250
+965
+1493
+998
+hunter-density-high-constant
+hunter-density-high-constant
+.5
+1
+0.6
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1262
+886
+1491
+919
+hunter-harvest-goal
+hunter-harvest-goal
+1
+10
+1
+1
+1
+caribou
+HORIZONTAL
+
+MONITOR
+508
+1000
+617
+1045
+Hunter Success
+sum ([harvest-amount] of hunters)
+2
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
