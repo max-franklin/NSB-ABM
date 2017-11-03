@@ -75,7 +75,11 @@ to setup-caribou
   
   create-caribou caribou-group-amt
   [
-    
+    ;;initialize state memory list: positions from 0:4 = evade, interforage, taxi/migrate, rest, intraforage
+    ;;numbers stored in list are the amount of ticks for a given year the caribou has spent in the different
+    ;;states.
+    set state-memory []
+    repeat 5 [ set state-memory lput 0 state-memory ]
     set grid-memory []
     set cent-memory []
     repeat 15 [ set grid-memory lput 0 grid-memory ] ;reduced memory to reduce chance of running out of possible targets.
@@ -271,6 +275,7 @@ to go-caribou
   let high-food-non-para 0.5 * max [caribou-utility-non-para] of patches
   ask caribou
   [ ;if day = 166 [stop]
+    
     let dist-cent distance current-centroid
     let dist-grid distance grid current-grid
     
@@ -789,6 +794,8 @@ to go-caribou
     if bioenergy < bioenergy-lower [ set bioenergy bioenergy-lower ]  ;adjust working bioenergy values to reasonable limit values. This is to prevent emergence of "super" caribou agents
     ;that have excessive stores of bioenergy.
     
+    ;;increment state memory location by 1
+    set state-memory replace-item state state-memory (item state state-memory + 1) 
     
   ]
   

@@ -9,7 +9,7 @@ extensions [ gis array matrix table csv]
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
            "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
   "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"
-  "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls"]
+  "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls" "nls-modules/caribou-calibration.nls"]
 
 
 breed [moose a-moose]
@@ -27,6 +27,8 @@ directed-link-breed [ cent-links cent-link ]
 
 globals
 [
+  seed
+  caribouVarCal ;;list containing values of caribou related variables that need to be calibrated.
   years-store
   fcm-store
   ticks-store
@@ -269,6 +271,9 @@ moose-own
 
 caribou-own
 [
+  ;;make a list that caribou utilize for recording time spent in different states (length = 5). List is accessed for modifying fitness
+  ;;in the update-fcm procedure.
+  state-memory
   cent-memory ;try length 20 - value from Semenuik?
   grid-memory
   bioenergy-success ;acknowledges that it's impossible for a caribou to acquire hundreds of thousands of MJ. Serves to limit inputs to FCM
@@ -409,7 +414,8 @@ cent-links-own
 ;wraps to other setup functions
 to setup
   clear-all
-  random-seed 0
+  set seed -2147483648 + random-num (2147483648 * 2)
+  random-seed seed
   set time-of-year 0
   set max-roughness 442.442
   set hour 0
@@ -499,14 +505,22 @@ to setup
   let counter 1
   let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set patch-id counter] set counter counter + 1 set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
 
+  setup-caribou-var-cal
+  setup-caribou-state-data
+  setup-caribou-fcm-data
+
   setup-caribou-harvests
   initialize-FCM-hunters
+<<<<<<< HEAD
   ask caribou-harvests [ht]
   ask hunters [die]
   new-hunters
 end
 
+=======
+>>>>>>> 65d43f4845f7eb9b82d29eed114fac0dc6255c3c
 
+end
 
 to setup-caribou-harvests
   ask patches
@@ -609,11 +623,13 @@ to go
 
       set year year + 1
 
+      if calibrateCaribouVar? [ go-caribou-var-cal ]
+
       set years-store lput year years-store
       set fcm-store lput (length fcm-adja-list) fcm-store
 
       set day 152
-      if year = 100 [ stop ] ; can be deleted, just for network recording.
+      if year = 200 [ stop ] ; can be deleted, just for network recording.
       set avg-sim-time lput timer avg-sim-time
       reset-timer
     ]
@@ -662,7 +678,13 @@ to go
   update-non-para-utility
   update-moose-utility
   go-dynamic-display
-  update-caribou-state-data
+  export-caribou-state-data
+
+  go-hunters-nls
+
+  go-hunters-nls
+
+  go-hunters-nls
 
   go-hunters-nls
 
@@ -672,9 +694,31 @@ to go
   set bio-en-store lput mean [bioenergy] of caribou bio-en-store
 end
 
-to update-caribou-state-data
-  let file-ex "caribou-state-flux-bioE.txt"
+to setup-caribou-state-data
+  let file-ex "caribou-state-flux-bioE-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
+
+  if file-exists? file-ex [ file-delete file-ex ]
+
   file-open file-ex
+  file-write "ticks"
+  file-write "state 0"
+  file-write "state 1"
+  file-write "state 2"
+  file-write "state 3"
+  file-write "state 4"
+  file-write "bioenergy success"
+  file-close
+end
+
+to export-caribou-state-data
+  let file-ex "caribou-state-flux-bioE-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
+
+  file-open file-ex
+  file-print ""
   file-write ticks
   file-write count caribou with [state = 0]
   file-write count caribou with [state = 1]
@@ -685,17 +729,43 @@ to update-caribou-state-data
   file-close
 end
 
+to setup-caribou-fcm-data
+  let file-ex "caribou-fcms-agentnum-success-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
+
+  if file-exists? file-ex [ file-delete file-ex ]
+
+  file-open file-ex
+  file-write "year,"
+  file-write "fcm agent useage,"
+  file-write "fcm success,"
+  file-write "caribou fcm matrix"
+  file-close
+end
+
 to export-fcm-data
   ;;dump all pertinent data every year for variable calibration.
-  set fcm-adja-list [fcm-adja] of caribou
-  let file-ex "caribou-fcms-agentnum-success.txt"
+  ;set fcm-adja-list [fcm-adja] of caribou
+  let file-ex "caribou-fcms-agentnum-success-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
+
   file-open file-ex
-  file-write year
-  file-write (length fcm-adja-list)
   build-fcm-data
-  file-write matrix:to-row-list fcm-adja-list
-  file-write fcm-agentnum-list
-  file-write fcm-success-list
+
+  let x length fcm-adja-list
+  let y 0
+  while [ y < x ] [
+    file-print ""
+    file-write word year ","
+    file-write word (item y fcm-agentnum-list) ","
+    file-write word (item y fcm-success-list) ","
+    file-write matrix:to-row-list (item y fcm-adja-list)
+    set y y + 1
+  ]
+
+  ;file-write matrix:to-row-list fcm-adja-list
   file-close
 end
 
@@ -1560,7 +1630,7 @@ INPUTBOX
 1341
 438
 caribou-veg-factor
-0.08
+0.588
 1
 0
 Number
@@ -1571,7 +1641,7 @@ INPUTBOX
 1415
 438
 caribou-rough-factor
-2.3
+0.649
 1
 0
 Number
@@ -1602,7 +1672,7 @@ INPUTBOX
 1490
 437
 caribou-insect-factor
-0.7
+0.492
 1
 0
 Number
@@ -1613,7 +1683,7 @@ INPUTBOX
 1564
 437
 caribou-modifier-factor
-0.1
+0.137
 1
 0
 Number
@@ -1724,7 +1794,7 @@ INPUTBOX
 805
 722
 decay-rate
-0.01
+0.9919999999999999
 1
 0
 Number
@@ -1810,7 +1880,7 @@ INPUTBOX
 1638
 437
 caribou-deflection-factor
-0.3
+0.7989999999999999
 1
 0
 Number
@@ -2192,7 +2262,7 @@ INPUTBOX
 1705
 437
 caribou-precip-factor
-1
+0.371
 1
 0
 Number
@@ -2243,7 +2313,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.5
+0.698
 0.01
 1
 NIL
@@ -2255,7 +2325,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-33.7
+95.6
 1
 0
 Number
@@ -2546,20 +2616,20 @@ export-centroids?
 -1000
 
 CHOOSER
-1417
-151
-1555
-196
+1429
+127
+1567
+172
 mutation-method
 mutation-method
 "fuzzy-logic" "trivalent" "pentavalent"
 0
 
 INPUTBOX
-1443
-85
-1531
-145
+1455
+61
+1543
+121
 mutate-prob
 0.1
 1
@@ -2567,37 +2637,60 @@ mutate-prob
 Number
 
 SWITCH
-1430
-48
-1548
-81
+1442
+24
+1560
+57
 mutation?
 mutation?
-1
+0
 1
 -1000
 
 SWITCH
-1551
-47
-1703
-80
+1563
+23
+1715
+56
 recombination?
 recombination?
-1
+0
 1
 -1000
 
 INPUTBOX
-1587
-85
-1676
-145
+1599
+61
+1688
+121
 recomb-prob
 0.5
 1
 0
 Number
+
+SWITCH
+1469
+181
+1655
+214
+calibrateCaribouVar?
+calibrateCaribouVar?
+0
+1
+-1000
+
+SWITCH
+1457
+216
+1667
+249
+randomCaribouVarStart?
+randomCaribouVarStart?
+0
+1
+-1000
+
 
 SLIDER
 1263
