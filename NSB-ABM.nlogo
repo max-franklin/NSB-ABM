@@ -505,20 +505,20 @@ to setup
   let counter 1
   let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set patch-id counter] set counter counter + 1 set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
 
-  setup-caribou-var-cal
-  setup-caribou-state-data
-  setup-caribou-fcm-data
+  if calibrateCaribouVar? [ setup-caribou-var-cal ]
+  if exportCaribouData? [
+    setup-caribou-state-data
+    setup-caribou-fcm-data
+  ]
 
-  setup-caribou-harvests
-  initialize-FCM-hunters
-<<<<<<< HEAD
-  ask caribou-harvests [ht]
-  ask hunters [die]
-  new-hunters
-end
+  if use-hunters? [
+    setup-caribou-harvests
+    initialize-FCM-hunters
+  ]
 
-=======
->>>>>>> 65d43f4845f7eb9b82d29eed114fac0dc6255c3c
+ ; ask caribou-harvests [ht]
+ ; ask hunters [die]
+ ; new-hunters
 
 end
 
@@ -609,7 +609,7 @@ to go
       if caribouPopMod? = true
       [ go-caribou-pop ]
 
-      export-fcm-data ;;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
+      if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
       if(is-training? and day >= 258)
       [
@@ -629,7 +629,7 @@ to go
       set fcm-store lput (length fcm-adja-list) fcm-store
 
       set day 152
-      if year = 200 [ stop ] ; can be deleted, just for network recording.
+      ;if year = 200 [ stop ] ; can be deleted, just for network recording.
       set avg-sim-time lput timer avg-sim-time
       reset-timer
     ]
@@ -678,15 +678,17 @@ to go
   update-non-para-utility
   update-moose-utility
   go-dynamic-display
-  export-caribou-state-data
 
-  go-hunters-nls
+  if exportCaribouData?[ export-caribou-state-data ]
 
-  go-hunters-nls
+  ;go-hunters-nls
 
-  go-hunters-nls
+  ;go-hunters-nls
 
-  go-hunters-nls
+  ;go-hunters-nls
+  if use-hunters? [
+    go-hunters-nls
+  ]
 
   tick
 
@@ -1173,6 +1175,89 @@ to visualize-rivers
     set x x + 1
   ]
 end
+
+
+;to-report build-prob-list [ weighted-list ]
+;  let x 1
+;  let prob-num 0
+;  ;let mini-list [ ]
+;  let prob-list [ ]
+;  set prob-num item (x - 1) weighted-list + item x weighted-list
+;  set prob-list lput prob-num prob-list
+;
+;  while [x < length weighted-list]
+;  [
+;    set prob-num 0;
+
+;    set prob-num item (x - 1) prob-list + item x weighted-list
+
+;    set prob-list lput prob-num prob-list
+;    set x x + 1
+;  ]
+
+;  print "pre-scaled prob list:"
+;  show prob-list
+
+;  let minVal min prob-list
+;  let maxVal max prob-list
+;  set prob-list feature-scale-list minVal maxVal prob-list
+
+;  report prob-list
+;end
+
+
+;;use this function to build a probability list from a weighted listed. Order doesn't matter
+;;in the weighted list.
+to-report build-prob-list [ weighted-list ]
+  let sumWeight sum weighted-list
+  let fracWeight map [ ? / sumWeight ] weighted-list
+
+  let prob-list [ ]
+  let x 1
+  let prob-num item 0 fracWeight
+  set prob-list lput prob-num prob-list
+
+  while [x < length fracWeight]
+  [
+    set prob-num item (x - 1) prob-list + item x fracWeight
+
+    set prob-list lput prob-num prob-list
+    set x x + 1
+  ]
+
+  set prob-list replace-item (length prob-list - 1) prob-list 1
+  ;set prob-list fput 0 prob-list
+
+  ;show prob-list
+
+  report prob-list
+end
+
+;;prob-list is your incoming probabilities associated with each centroid, selection-list is your list
+;;of centroids or centroid ID's you can in turn use to reference your centroids.
+to-report select-weighted-val [ prob-list selection-list ]
+  let test? false
+  let random-prob (1 + random 1000) / 1000
+  let diff-list map [ abs(? - random-prob) ] prob-list
+  let pos position (min diff-list) diff-list
+
+  if test? [
+    show random-prob
+    show prob-list
+    show diff-list
+    show pos
+  ]
+
+  ifelse random-prob > item pos prob-list
+  [
+    if test? [ show (pos + 1) show item (pos + 1) prob-list ]
+    report item (pos + 1) selection-list
+  ]
+  [
+    if test? [ show pos show item pos prob-list ]
+    report item pos selection-list
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 278
@@ -1630,7 +1715,7 @@ INPUTBOX
 1341
 438
 caribou-veg-factor
-0.588
+0.53
 1
 0
 Number
@@ -1641,7 +1726,7 @@ INPUTBOX
 1415
 438
 caribou-rough-factor
-0.649
+0.164
 1
 0
 Number
@@ -1672,7 +1757,7 @@ INPUTBOX
 1490
 437
 caribou-insect-factor
-0.492
+0.394
 1
 0
 Number
@@ -1683,7 +1768,7 @@ INPUTBOX
 1564
 437
 caribou-modifier-factor
-0.137
+0.028
 1
 0
 Number
@@ -1794,7 +1879,7 @@ INPUTBOX
 805
 722
 decay-rate
-0.9919999999999999
+0.41
 1
 0
 Number
@@ -1880,7 +1965,7 @@ INPUTBOX
 1638
 437
 caribou-deflection-factor
-0.7989999999999999
+0.913
 1
 0
 Number
@@ -2252,7 +2337,7 @@ SWITCH
 618
 caribouPopMod?
 caribouPopMod?
-0
+1
 1
 -1000
 
@@ -2262,7 +2347,7 @@ INPUTBOX
 1705
 437
 caribou-precip-factor
-0.371
+0.942
 1
 0
 Number
@@ -2313,7 +2398,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.698
+0.906
 0.01
 1
 NIL
@@ -2325,7 +2410,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-95.6
+5.1
 1
 0
 Number
@@ -2664,16 +2749,16 @@ INPUTBOX
 1688
 121
 recomb-prob
-0.5
+0.2
 1
 0
 Number
 
 SWITCH
-1469
-181
-1655
-214
+1363
+186
+1549
+219
 calibrateCaribouVar?
 calibrateCaribouVar?
 0
@@ -2681,16 +2766,15 @@ calibrateCaribouVar?
 -1000
 
 SWITCH
-1457
-216
-1667
-249
+1351
+221
+1561
+254
 randomCaribouVarStart?
 randomCaribouVarStart?
 0
 1
 -1000
-
 
 SLIDER
 1263
@@ -2969,6 +3053,28 @@ sum ([harvest-amount] of hunters)
 2
 1
 11
+
+SWITCH
+1029
+533
+1169
+566
+use-hunters?
+use-hunters?
+1
+1
+-1000
+
+SWITCH
+1566
+195
+1747
+228
+exportCaribouData?
+exportCaribouData?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
