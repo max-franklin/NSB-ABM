@@ -18,7 +18,7 @@ to setup-caribou-var-cal
   
     
   assign-variable-values 
-  setup-var-file 
+  if exportCaribouData? [ setup-var-file ]
 end
 
 to go-caribou-var-cal 
@@ -29,7 +29,7 @@ to go-caribou-var-cal
     mutate-caribou-variables
   ]
  
-  export-var-data mutatedVars? 
+  if exportCaribouData? [ export-var-data mutatedVars? ]
 end
 
 to setup-var-file 
