@@ -120,6 +120,7 @@ to setup-hunter-nls
 end
 
 to go-hunters-nls
+  tick
   ask hunters 
   [
     ;if (trip-length < 1) [ die ]
@@ -295,39 +296,34 @@ end
 to run-motor-function
   if motor-concept-index = 0
   [
-    print prev-motor-state
     ;check for prev state
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 0
-    
-    ;set hunt true
+    set hunt true
     ;print "Hunting...\n"
     hunt-funct
   ]
   if motor-concept-index = 1
   [
-    print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 1
     ;check for prev state
-    ;set foot-travel true
+    set foot-travel true
     ;print "Foot travelling..."
     foot-travel-funct ([patch-here] of target-land-centroid)
   ]
-  if motor-concept-index = 2 ;CHECK TO RETURN BACK TO RIVER PATCH 
+  if motor-concept-index = 2
   [
-    print prev-motor-state
+    set boat-travel true
     set prev-motor-state 2
-    ;set boat-travel true
     ;print "Boat travelling..."
-    boat-travel-funct target-river-patch-r ;pass in returning patch 
+    boat-travel-funct target-river-patch-r
   ]
   if motor-concept-index = 3
   [
-    print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ]
+    set return true
     set prev-motor-state 3
-    ;set return true
     ;print "Returning...\n"
     return-home
   ]
@@ -358,11 +354,12 @@ to hunt-funct
 end
 
 to foot-travel-funct [target]
-  ifelse(patch-here != target) ;Travel to destination 
+  if(patch-here != target)
   [
      ifelse(member? target neighbors = false)
      [
-        set land-p min-one-of neighbors with [elevation > 0 and ( [distance target] of self < [distance target] of myself )] [wetness]
+        let land-patches min-n-of 2 neighbors with [elevation > 0] [distance [target] of myself]
+        set land-p min-one-of land-patches [wetness]
         set wetness-sum (wetness-sum + ([wetness] of land-p))
         face land-p
         move-to land-p
@@ -372,12 +369,7 @@ to foot-travel-funct [target]
         face target
         move-to target
      ]
-  ]
-  [  ;Local search 
-     set land-p (one-of neighbors with [[distance target] of self <= local-search-radius and elevation > 0])
-     face land-p
-     move-to land-p
-  ] 
+   ]
 end
 
 to foot-travel-return-funct [target]
@@ -386,7 +378,8 @@ to foot-travel-return-funct [target]
   [
      ifelse(member? target neighbors = false)
      [
-        set land-p min-one-of neighbors with [elevation > 0 and ( [distance target] of self < [distance target] of myself )] [wetness]
+        let land-patches min-n-of 2 neighbors with [elevation > 0] [distance [target] of myself]
+        set land-p min-one-of land-patches [wetness]
         set wetness-sum (wetness-sum + ([wetness] of land-p))
         face land-p
         move-to land-p
@@ -412,7 +405,7 @@ to boat-travel-funct [target-r]
     set target max-one-of target [elevation]
     carefully [ face target move-to target ];move-to target
     [
-      move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor] ;;;;;;;;;
+      ;move-to min-one-of neighbors with [connected? = true][pycor] ;;;;;;;;;
       ;move-to min-one-of neighbors [pycor]
       set target neighbors with [connected? = true and not member? self [river-memory] of myself 
                                 and (list-intersect ([river-to-follow] of myself) river-set)] 
@@ -432,7 +425,7 @@ to boat-travel-return-funct
   set target min-one-of target [elevation]
   carefully [ face target move-to target ];move-to target
   [
-     move-to max-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)] [pycor];min-one-of
+     ;move-to max-one-of neighbors with [connected? = true] [pycor];min-one-of
      ;move-to max-one-of neighbors [pycor]
      set target neighbors with [connected? = true and not member? self [river-memory] of myself and ( [distance home-patch-global] of self < [distance home-patch] of myself )
                                 and (list-intersect ([river-to-follow] of myself) river-set)] ;in-radius 2    
