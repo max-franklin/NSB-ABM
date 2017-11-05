@@ -511,14 +511,10 @@ to setup
 
   setup-caribou-harvests
   initialize-FCM-hunters
-<<<<<<< HEAD
+
   ask caribou-harvests [ht]
   ask hunters [die]
   new-hunters
-end
-
-=======
->>>>>>> 65d43f4845f7eb9b82d29eed114fac0dc6255c3c
 
 end
 
