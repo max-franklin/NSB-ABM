@@ -9,7 +9,7 @@ extensions [ gis array matrix table csv]
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
            "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
   "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"
-  "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls" ]
+  "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls" "nls-modules/caribou-calibration.nls" ]
 
 
 breed [moose a-moose]
@@ -27,6 +27,9 @@ directed-link-breed [ cent-links cent-link ]
 
 globals
 [
+  seed
+  caribouVarCal ;;list containing values of caribou related variables that need to be calibrated.
+
   years-store
   fcm-store
   ticks-store
@@ -410,7 +413,8 @@ cent-links-own
 ;wraps to other setup functions
 to setup
   clear-all
-  random-seed 0
+  set seed -2147483648 + random-num (2147483648 * 2)
+  random-seed seed
   set time-of-year 0
   set max-roughness 442.442
   set hour 0
@@ -512,11 +516,13 @@ to setup
     initialize-FCM-hunters
   ]
 
- ask caribou-harvests [ht]
- ask hunters [die]
- new-hunters
+ ;ask caribou-harvests [ht]
+ ;ask hunters [die]
+ ;new-hunters
 
 end
+
+
 to setup-caribou-harvests
   ask patches
   [
@@ -618,6 +624,8 @@ to go
 
       set year year + 1
 
+      if calibrateCaribouVar? [ go-caribou-var-cal ]
+
       set years-store lput year years-store
       set fcm-store lput (length fcm-adja-list) fcm-store
 
@@ -685,32 +693,82 @@ to go
   set bio-en-store lput mean [bioenergy] of caribou bio-en-store
 end
 
-to update-caribou-state-data
-  let file-ex "caribou-state-flux-bioE.txt"
+to setup-caribou-state-data
+  let file-ex "caribou-state-flux-bioE-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
+
+  if file-exists? file-ex [ file-delete file-ex ]
+
   file-open file-ex
-  file-write ticks
-  file-write count caribou with [state = 0]
-  file-write count caribou with [state = 1]
-  file-write count caribou with [state = 2]
-  file-write count caribou with [state = 3]
-  file-write count caribou with [state = 4]
-  file-write mean [ bioenergy-success ] of caribou
+
+  file-write "ticks"
+  file-write "state 0"
+  file-write "state 1"
+  file-write "state 2"
+  file-write "state 3"
+  file-write "state 4"
+  file-write "bioenergy success"
   file-close
+
+end
+
+to export-caribou-state-data
+   let file-ex "caribou-state-flux-bioE-"
+   set file-ex word file-ex seed
+   set file-ex word file-ex ".txt"
+
+   file-open file-ex
+   file-print ""
+   file-write ticks
+   file-write count caribou with [state = 0]
+   file-write count caribou with [state = 1]
+   file-write count caribou with [state = 2]
+   file-write count caribou with [state = 3]
+   file-write count caribou with [state = 4]
+   file-write mean [ bioenergy-success ] of caribou
+    file-close
+end
+
+to setup-caribou-fcm-data
+   let file-ex "caribou-fcms-agentnum-success-"
+   set file-ex word file-ex seed
+   set file-ex word file-ex ".txt"
+
+   if file-exists? file-ex [ file-delete file-ex ]
+
+   file-open file-ex
+   file-write "year,"
+   file-write "fcm agent useage,"
+   file-write "fcm success,"
+   file-write "caribou fcm matrix"
+   file-close
 end
 
 to export-fcm-data
-  ;;dump all pertinent data every year for variable calibration.
-  set fcm-adja-list [fcm-adja] of caribou
-  let file-ex "caribou-fcms-agentnum-success.txt"
-  file-open file-ex
-  file-write year
-  file-write (length fcm-adja-list)
-  build-fcm-data
-  file-write matrix:to-row-list fcm-adja-list
-  file-write fcm-agentnum-list
-  file-write fcm-success-list
-  file-close
+    ;;dump all pertinent data every year for variable calibration.
+   ;set fcm-adja-list [fcm-adja] of caribou
+   let file-ex "caribou-fcms-agentnum-success-"
+   set file-ex word file-ex seed
+   set file-ex word file-ex ".txt"
+
+    file-open file-ex
+    build-fcm-data
+
+   let x length fcm-adja-list
+   let y 0
+   while [ y < x ] [
+     file-print ""
+     file-write word year ","
+     file-write word (item y fcm-agentnum-list) ","
+     file-write word (item y fcm-success-list) ","
+     file-write matrix:to-row-list (item y fcm-adja-list)
+     set y y + 1
+   ]
+
+    file-close
 end
+
 
 to reset-caribou-centroids
   ifelse day > 151 and day < 166 and caribou-class = 2
@@ -1651,68 +1709,68 @@ NIL
 HORIZONTAL
 
 INPUTBOX
-1271
-378
-1341
-438
+1256
+422
+1326
+482
 caribou-veg-factor
-0.53
+0.841
 1
 0
 Number
 
 INPUTBOX
-1345
-378
-1415
-438
+1330
+422
+1400
+482
 caribou-rough-factor
-0.164
+0.915
 1
 0
 Number
 
 TEXTBOX
-1371
-262
-1547
-292
+1356
+306
+1532
+336
 Caribou Vegetation Values
 12
 53.0
 1
 
 TEXTBOX
-1386
-357
-1557
-387
+1371
+401
+1542
+431
 Caribou Utility Factors
 12
 13.0
 1
 
 INPUTBOX
-1420
-377
-1490
-437
+1405
+421
+1475
+481
 caribou-insect-factor
-0.7
+0.757
 1
 0
 Number
 
 INPUTBOX
-1494
-377
-1564
-437
+1479
+421
+1549
+481
 caribou-modifier-factor
-0.028
+0.878
 1
 0
-String
+Number
 
 SLIDER
 700
@@ -1820,7 +1878,7 @@ INPUTBOX
 805
 722
 decay-rate
-0.41
+0.278
 1
 0
 Number
@@ -1901,12 +1959,12 @@ elevation-scale
 Number
 
 INPUTBOX
-1567
-377
-1638
-437
+1552
+421
+1623
+481
 caribou-deflection-factor
-0.913
+0.78
 1
 0
 Number
@@ -1934,10 +1992,10 @@ moose-max-wetness
 Number
 
 INPUTBOX
-1273
-489
-1343
-549
+1274
+510
+1344
+570
 moose-util-type-2
 0.25
 1
@@ -1945,10 +2003,10 @@ moose-util-type-2
 Number
 
 INPUTBOX
-1346
-489
-1418
-549
+1347
+510
+1419
+570
 moose-util-type-3
 0.66
 1
@@ -1956,10 +2014,10 @@ moose-util-type-3
 Number
 
 INPUTBOX
-1420
-489
-1492
-549
+1421
+510
+1493
+570
 moose-util-type-4
 0.5
 1
@@ -1967,10 +2025,10 @@ moose-util-type-4
 Number
 
 INPUTBOX
-1495
-489
-1569
-549
+1496
+510
+1570
+570
 moose-util-type-5
 0.66
 1
@@ -1978,10 +2036,10 @@ moose-util-type-5
 Number
 
 INPUTBOX
-1572
-489
-1642
-549
+1573
+510
+1643
+570
 moose-util-type-9
 0.25
 1
@@ -1989,10 +2047,10 @@ moose-util-type-9
 Number
 
 INPUTBOX
-1274
-585
-1345
-645
+1275
+606
+1346
+666
 moose-veg-factor
 1
 1
@@ -2000,10 +2058,10 @@ moose-veg-factor
 Number
 
 INPUTBOX
-1347
-585
-1419
-645
+1348
+606
+1420
+666
 moose-rough-factor
 -5
 1
@@ -2011,10 +2069,10 @@ moose-rough-factor
 Number
 
 INPUTBOX
-1421
-585
-1494
-645
+1422
+606
+1495
+666
 moose-insect-factor
 0.5
 1
@@ -2022,10 +2080,10 @@ moose-insect-factor
 Number
 
 INPUTBOX
-1497
-585
-1568
-645
+1498
+606
+1569
+666
 moose-deflection-factor
 1
 1
@@ -2055,20 +2113,20 @@ show-moose-utility?
 -1000
 
 TEXTBOX
-1380
-467
-1569
-497
+1381
+488
+1570
+518
 Moose Vegetation Values
 12
 0.0
 1
 
 TEXTBOX
-1359
-561
-1509
-579
+1360
+582
+1510
+600
 Moose Utility Factors
 12
 0.0
@@ -2256,7 +2314,7 @@ SWITCH
 528
 is-training?
 is-training?
-1
+0
 1
 -1000
 
@@ -2283,15 +2341,15 @@ caribouPopMod?
 -1000
 
 INPUTBOX
-1643
-377
-1705
-437
+1628
+421
+1690
+481
 caribou-precip-factor
-0.942
+0.82
 1
-1
-String
+0
+Number
 
 SLIDER
 801
@@ -2331,15 +2389,15 @@ show-caribou-utility-non-para?
 -1000
 
 SLIDER
-1274
-309
-1693
-342
+1259
+353
+1678
+386
 ndvi-weight
 ndvi-weight
 0
 1
-0.906
+0.987
 0.01
 1
 NIL
@@ -2351,7 +2409,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-5.1
+91.9
 1
 0
 Number
@@ -2669,7 +2727,7 @@ SWITCH
 81
 mutation?
 mutation?
-1
+0
 1
 -1000
 
@@ -2680,7 +2738,7 @@ SWITCH
 80
 recombination?
 recombination?
-1
+0
 1
 -1000
 
@@ -2696,10 +2754,10 @@ recomb-prob
 Number
 
 SWITCH
-1363
-186
-1549
-219
+1359
+206
+1545
+239
 calibrateCaribouVar?
 calibrateCaribouVar?
 0
@@ -2707,10 +2765,10 @@ calibrateCaribouVar?
 -1000
 
 SWITCH
-1351
-221
-1561
-254
+1347
+241
+1557
+274
 randomCaribouVarStart?
 randomCaribouVarStart?
 0
@@ -3009,6 +3067,7 @@ local-search-radius
 1
 patches
 HORIZONTAL
+
 SWITCH
 1029
 533
