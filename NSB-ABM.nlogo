@@ -623,6 +623,7 @@ to go
 
       set day 152
 
+      ;if year = 200 [ stop ] ; can be deleted, just for network recording.
       set avg-sim-time lput timer avg-sim-time
       reset-timer
     ]
@@ -1707,8 +1708,8 @@ INPUTBOX
 377
 1564
 437
-caribou-modifier-factor0.1
-1
+caribou-modifier-factor
+0.028
 1
 0
 String
@@ -1819,7 +1820,7 @@ INPUTBOX
 805
 722
 decay-rate
-0.01
+0.41
 1
 0
 Number
@@ -1905,7 +1906,7 @@ INPUTBOX
 1638
 437
 caribou-deflection-factor
-0.3
+0.913
 1
 0
 Number
@@ -2287,7 +2288,7 @@ INPUTBOX
 1705
 437
 caribou-precip-factor
-<<<<<<< HEAD
+0.942
 1
 1
 String
@@ -2338,7 +2339,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.5
+0.906
 0.01
 1
 NIL
@@ -2350,7 +2351,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-33.7
+5.1
 1
 0
 Number
@@ -3008,6 +3009,16 @@ local-search-radius
 1
 patches
 HORIZONTAL
+SWITCH
+1029
+533
+1169
+566
+use-hunters?
+use-hunters?
+1
+1
+-1000
 
 SWITCH
 1566
