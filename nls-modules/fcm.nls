@@ -131,16 +131,8 @@ to build-fcm-data
       [ set stateFit fgTime / lowFg ] 
     ]
     
-    
-    ifelse ( avg-success < 0 )
-    [ 
-      let negFit 1 - stateFit
-      set avg-success avg-success * negFit
-    ]
-    
-    [ set avg-success avg-success * stateFit ]
+    if avg-success >= 0 [ set avg-success avg-success * stateFit ]
 
-    
     if test? [ print compStateMem print fgTime print stateFit print avg-success ]
     
     set test? false

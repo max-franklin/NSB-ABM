@@ -1714,7 +1714,7 @@ INPUTBOX
 1326
 482
 caribou-veg-factor
-0.841
+0.516
 1
 0
 Number
@@ -1725,7 +1725,7 @@ INPUTBOX
 1400
 482
 caribou-rough-factor
-0.915
+0.025
 1
 0
 Number
@@ -1756,7 +1756,7 @@ INPUTBOX
 1475
 481
 caribou-insect-factor
-0.757
+0.244
 1
 0
 Number
@@ -1767,7 +1767,7 @@ INPUTBOX
 1549
 481
 caribou-modifier-factor
-0.878
+0.907
 1
 0
 Number
@@ -1878,7 +1878,7 @@ INPUTBOX
 805
 722
 decay-rate
-0.278
+0.857
 1
 0
 Number
@@ -1964,7 +1964,7 @@ INPUTBOX
 1623
 481
 caribou-deflection-factor
-0.78
+0.998
 1
 0
 Number
@@ -2346,7 +2346,7 @@ INPUTBOX
 1690
 481
 caribou-precip-factor
-0.82
+0.706
 1
 0
 Number
@@ -2397,7 +2397,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.987
+0.884
 0.01
 1
 NIL
@@ -2409,7 +2409,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-91.9
+3.6999999999999997
 1
 0
 Number
@@ -3086,7 +3086,7 @@ SWITCH
 228
 exportCaribouData?
 exportCaribouData?
-1
+0
 1
 -1000
 
