@@ -29,7 +29,7 @@ to go-caribou-var-cal
     mutate-caribou-variables
   ]
  
-  if exportCaribouData? [ export-var-data mutatedVars? ]
+  if exportCaribouData? [ export-var-data mutatedVars? varProb ]
 end
 
 to setup-var-file 
@@ -46,24 +46,36 @@ to setup-var-file
   file-open fileOut
   
   file-write "year"
+  file-write "mean season Bio-E"
+  file-write "fcm convergence"
+  file-write "probability of mutation"
   file-write "mutated?"
   foreach globalVars file-write
   file-print ""
   file-write year
+  file-write 0
+  file-write 0
+  file-write 0
   file-write 0
   foreach caribouVarCal file-write
   
   file-close
 end
 
-to export-var-data [ mutatedVars? ]
+to export-var-data [ mutatedVars? varProb ]
   let fileOut "caribou-var-calibration-data-"
   set fileOut word fileOut seed
   set fileOut word fileOut ".txt"
   
+  let convergence length fcm-adja-list
+  set convergence 1 - ( convergence / caribou-group-amt )
+  
   file-open fileOut
   file-print ""
   file-write year
+  file-write mean [bioenergy-success] of caribou
+  file-write convergence
+  file-write varProb
   file-write mutatedVars?
   foreach caribouVarCal file-write 
   file-close 
@@ -104,22 +116,56 @@ to assign-variable-values
 end
 
 to-report calculate-var-prob 
+  let test? false
   let convergence length fcm-adja-list
   set convergence 1 - ( convergence / caribou-group-amt );;divide by initial number of unique caribou FCMs to normalize the variable.
-  let upperFit 38500 ;;constraints on what upper and lower bounds are for bioenergy levels.
-  let lowerFit 16500 ;;limits are somewhat arbitrary, at the moment. 
-  let fitness mean [ bioenergy-success ] of caribou
+  
+  ;;following values = winter energetic loss buffer range taken from Semeniuk et al. 2012 woodland caribou paper.
+  let lowE 710000 
+  let highE 947000
+  let midE (lowE + highE) / 2
+  let rng highE - lowE
+  let var 1
+  let fitness 0
+  let avgSeasonE mean [ bioenergy-success ] of caribou
+  ;let avgSeasonE lowE
+  
+  let diff abs(midE - avgSeasonE)
+  
+  ifelse avgSeasonE <= (highE + (var * rng) ) and avgSeasonE >= (lowE - (var * rng) )
+  [
+    ;;if E in reasonable range of values, base fitness on how high
+    let t (rng / 2) + (var * rng)
+    set fitness 1 - ( diff / t )
+  ]
+  [
+    ifelse avgSeasonE > (highE + (var * rng) )
+    [
+      set fitness 0
+    ]
+    [
+      if avgSeasonE < (lowE - (var * rng) )
+      [
+        set fitness 0
+      ]
+    ] 
+  ]
+
   let x 0.5 let y 1
   
-  ifelse fitness > upperFit 
-  [ set fitness 1 ]
-  [
-    ifelse fitness < lowerFit 
-    [ set fitness 0 ]
-    [ set fitness ( fitness - lowerFit ) / ( upperFit - lowerFit ) ]
+  let varProb (y * convergence) - (x * fitness)
+  
+  if test? [
+    print "fitness from caribou seasonal bioE:"
+    show fitness
+    
+    print "convergence:"
+    show convergence
+    
+    print "probability of mutating one of caribou variables:"
+    show varProb
   ]
   
-  let varProb (y * convergence) - (x * fitness)
   report varProb
   ;report ( 1 - ((x * fitness) + (y * convergence)) )
 end

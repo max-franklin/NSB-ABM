@@ -112,7 +112,7 @@ hunters-own [
             ]
 
 to setup-hunter-nls
-  reset-ticks
+  ;reset-ticks
   kill-caribou
   kill-hunters
   initialize-FCM-hunters
