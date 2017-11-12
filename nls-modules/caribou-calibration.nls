@@ -72,7 +72,7 @@ to export-var-data [ mutatedVars? varProb ]
   
   file-open fileOut
   file-print ""
-  file-write year
+  file-write (year + 1)
   file-write mean [bioenergy-success] of caribou
   file-write convergence
   file-write varProb

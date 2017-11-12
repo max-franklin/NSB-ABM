@@ -612,7 +612,9 @@ to go
 
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
-      if(is-training? and day >= 258)
+      if calibrateCaribouVar? [ go-caribou-var-cal ]
+
+      if(is-training?)
       [
         update-caribou-fcm
         ;export-fcm
@@ -623,8 +625,6 @@ to go
       if export-centroids? [ centroid-export ]
 
       set year year + 1
-
-      if calibrateCaribouVar? [ go-caribou-var-cal ]
 
       set years-store lput year years-store
       set fcm-store lput (length fcm-adja-list) fcm-store

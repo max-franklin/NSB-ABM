@@ -82,6 +82,8 @@ to build-fcm-data
   
   let test? true
   
+  let bottomE min [bioenergy-success] of caribou
+  
   
   while [x < length fcm-adja-list]
   [
@@ -121,17 +123,23 @@ to build-fcm-data
     ifelse fgTime <= highFg and fgTime >= lowFg
     [ set stateFit 1 ]
     [
-     ifelse fgTime > highFg
-     [
-       let diff 100 - fgTime
-       set stateFit diff / (100 - highFg)
-     ]
-     [
-       set stateFit fgTime / lowFg
-     ] 
+      ifelse fgTime > highFg
+      [
+        let diff 100 - fgTime
+        set stateFit diff / (100 - highFg)
+      ]
+      [ set stateFit fgTime / lowFg ] 
     ]
     
-    set avg-success avg-success * stateFit
+    
+    ifelse ( avg-success < 0 )
+    [ 
+      let negFit 1 - stateFit
+      set avg-success avg-success * negFit
+    ]
+    
+    [ set avg-success avg-success * stateFit ]
+
     
     if test? [ print compStateMem print fgTime print stateFit print avg-success ]
     
