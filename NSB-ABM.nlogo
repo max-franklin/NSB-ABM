@@ -508,7 +508,6 @@ to setup
   ]
 
   if use-hunters? [
-    ask hunters [die]
     setup-caribou-harvests
     initialize-FCM-hunters
     setup-hunter-nls
