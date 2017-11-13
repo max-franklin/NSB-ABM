@@ -70,20 +70,19 @@ to-report test-diff [diff]
   report sum-vals
 end
 
-to build-fcm-data 
-  set fcm-adja-list [fcm-adja] of caribou
+to-report build-fcm-data [ fcm-adja-list agent-type ]
+  ;;agent-type = 0 = caribou
+  ;;agent-type = 1 = hunter
   
-  set fcm-agentnum-list [ ]
-
-  set fcm-success-list [ ]
+  let fcm-var-out [ ]
+  
+  let fcm-agentnum-list [ ]
+  let fcm-success-list [ ]
 
   let x 0
   let y (x + 1)
   
-  let test? true
-  
-  let bottomE min [bioenergy-success] of caribou
-  
+  let test? false
   
   while [x < length fcm-adja-list]
   [
@@ -94,47 +93,40 @@ to build-fcm-data
     
     if test? [ print avg-success ]
     
-    let numCar count caribou with [ fcm-adja = current-fcm ]
-    let compStateMem [ 0 0 0 0 0 ]
-    
-    ask caribou with [ fcm-adja = current-fcm ] [
-      ;set compStateMem lput state-memory compStateMem
-      set compStateMem (map + compStateMem state-memory)
-    ]
-    
-    let counter2 0
-    
-    ;while [ counter2 < (numCar - 1) ] [
-    ;  set compStateMem replace-item 0 compStateMem (map + (item 0 compStateMem) (item (counter2 + 1) compStateMem ))
-    ;  set counter2 counter2 + 1
-    ;]
-    
-    ;set compStateMem item 0 compStateMem
-    ;set compStateMem map [ (? * numCar) ] compStateMem 
-    
-    
-    ;;now find amount of time spent in foraging states.
-    let fgTime 100 * ((item 1 compStateMem + item 4 compStateMem) / (sum compStateMem))
-    
-    ;;calculate state fitness based on amount of time spent foraging.
-    let lowFg 50
-    let highFg 88
-    let stateFit 0
-    
-    ifelse fgTime <= highFg and fgTime >= lowFg
-    [ set stateFit 1 ]
-    [
-      ifelse fgTime > highFg
-      [
-        let diff 100 - fgTime
-        set stateFit diff / (100 - highFg)
+    if agent-type = 0 [
+      
+      let compStateMem [ 0 0 0 0 0 ]
+      
+      ask caribou with [ fcm-adja = current-fcm ] [
+        ;set compStateMem lput state-memory compStateMem
+        set compStateMem (map + compStateMem state-memory)
       ]
-      [ set stateFit fgTime / lowFg ] 
+      
+      ;;now find amount of time spent in foraging states.
+      let fgTime 100 * ((item 1 compStateMem + item 4 compStateMem) / (sum compStateMem))
+      
+      ;;calculate state fitness based on amount of time spent foraging.
+      let lowFg 50
+      let highFg 88
+      let stateFit 0
+      
+      ifelse fgTime <= highFg and fgTime >= lowFg
+      [ set stateFit 1 ]
+      [
+        ifelse fgTime > highFg
+        [
+          let diff 100 - fgTime
+          set stateFit diff / (100 - highFg)
+        ]
+        [ set stateFit fgTime / lowFg ] 
+      ]
+      
+      if avg-success >= 0 [ set avg-success avg-success * stateFit ]
+      
+      if test? [ print compStateMem print fgTime print stateFit print avg-success ]
     ]
-    
-    if avg-success >= 0 [ set avg-success avg-success * stateFit ]
 
-    if test? [ print compStateMem print fgTime print stateFit print avg-success ]
+
     
     set test? false
     
@@ -164,20 +156,9 @@ to build-fcm-data
       
     ]
     
-    
-    ;show counter-list show fcm-adja-list
     set x x + 1
-    ;show fcm-adja-list
-    ;if (x + 1) > length fcm-adja-list [ show fcm-adja-list ]
-  ] 
-end
-
-
-to select-fcms
-  ;procedure for selecting an FCM for all caribou to use.
-  ;FCM is selected randomly from the weights of caribou bioenergy success. 
+  ]
   
-  build-fcm-data
   
   let min-s min fcm-success-list
   let max-s max fcm-success-list 
@@ -193,46 +174,76 @@ to select-fcms
   
   let weighted-list (map * fcm-success-list fcm-agentnum-list)
   
+  let prob-list build-prob-list weighted-list 
+  
+  set fcm-var-out list weighted-list prob-list
+  
+  report fcm-var-out
+end
+
+
+to select-fcms
+  ;procedure for selecting an FCM for all caribou to use.
+  ;FCM is selected randomly from the weights of caribou bioenergy success. 
+  
+  ;build-fcm-data
+  
+  let min-s min caribou-fcm-success-list
+  let max-s max caribou-fcm-success-list 
+
+  ;carefully 
+  ;[ set caribou-fcm-success-list map [ i -> (i - min-bio)/(max-bio - min-bio) ]  caribou-fcm-success-list ]
+  ;[ set caribou-fcm-success-list map [ i -> 1 ] caribou-fcm-success-list ]
+  ;set caribou-fcm-agentnum-list map [ i -> i / (count caribou)]  caribou-fcm-agentnum-list
+  carefully
+  [ set caribou-fcm-success-list feature-scale-list min-s max-s caribou-fcm-success-list ]
+  [ set caribou-fcm-success-list map [ 1 ] caribou-fcm-success-list ]
+  set caribou-fcm-agentnum-list map [ ? / (count caribou)]  caribou-fcm-agentnum-list
+  
+  let weighted-list (map * caribou-fcm-success-list caribou-fcm-agentnum-list)
+  
   ;show weighted-list
   
-  let x 0
-  let y (x + 1)
-  let prob-num 0
-  ;let mini-list [ ]
-  let prob-list [ ]
+  ;let x 0
+  ;let y (x + 1)
+  ;let prob-num 0
+  ;;let mini-list [ ]
+  ;let prob-list [ ]
   
-  while [x < length weighted-list ]
-  [
-    set prob-num 0
+  ;while [x < length weighted-list ]
+  ;[
+  ;  set prob-num 0
     ;set mini-list 
     ;set prob-num sum 
-    while [y <= x ]
-    [
-      set prob-num prob-num + item y weighted-list
-      set y y + 1
-    ]
+  ;  while [y <= x ]
+  ;  [
+  ;    set prob-num prob-num + item y weighted-list
+  ;    set y y + 1
+  ;  ]
     
-    set prob-list lput prob-num prob-list
-    set x x + 1
-  ]
+  ;  set prob-list lput prob-num prob-list
+  ;  set x x + 1
+  ;]
   
     
-  let minVal min prob-list
-  let maxVal max prob-list
-  set prob-list feature-scale-list minVal maxVal prob-list
+  ;let minVal min prob-list
+  ;let maxVal max prob-list
+  ;set prob-list feature-scale-list minVal maxVal prob-list
+  
+  let prob-list build-prob-list weighted-list
   
   ask caribou
   [
    ;print word "previous fcm: " fcm-adja
     ifelse recombination?
     [ 
-      let genome-1 select-genome prob-list fcm-adja-list
-      let genome-2 select-genome prob-list fcm-adja-list
+      let genome-1 select-weighted-val prob-list caribou-fcm-adja-list
+      let genome-2 select-weighted-val prob-list caribou-fcm-adja-list
       ;print word "new fcm: " fcm-adja
       set fcm-adja cross-genome genome-1 genome-2  
     ]
     [
-      set fcm-adja select-genome prob-list fcm-adja-list
+      set fcm-adja select-weighted-val prob-list caribou-fcm-adja-list
     ]
    
    if mutation? [ mutate-genome ]
@@ -250,9 +261,9 @@ to-report select-genome [ prob-list genome-list ]
   ifelse random-prob >= item pos prob-list
   ;carefully is for in-case max probability = random-prob, causing caribou to search 1 farther than the list.
     [ carefully 
-      [report item (pos + 1) fcm-adja-list]
-      [report item (pos) fcm-adja-list] ] 
-    [ report item (pos) fcm-adja-list ]
+      [report item (pos + 1) caribou-fcm-adja-list]
+      [report item (pos) caribou-fcm-adja-list] ] 
+    [ report item (pos) caribou-fcm-adja-list ]
 end
 
 to-report cross-genome [ genome-1 genome-2 ]
@@ -331,10 +342,33 @@ end
 ;Breed Updates for FCMs
 to update-caribou-fcm
   
-  select-fcms
+  set caribou-fcm-adja-list [fcm-adja] of caribou
+  
+  set caribou-fcm-agentnum-list [ ]
+
+  set caribou-fcm-success-list [ ]
+  
+  let fcm-var-out (build-fcm-data caribou-fcm-adja-list 0)
+  
+  let weighted-list item 0 fcm-var-out
+  let prob-list item 1 fcm-var-out
   
   ask caribou
     [
+      
+      ;print word "previous fcm: " fcm-adja
+      ifelse recombination?
+      [ 
+        let genome-1 select-weighted-val prob-list caribou-fcm-adja-list
+        let genome-2 select-weighted-val prob-list caribou-fcm-adja-list
+        ;print word "new fcm: " fcm-adja
+        set fcm-adja cross-genome genome-1 genome-2  
+      ]
+      [
+        set fcm-adja select-weighted-val prob-list caribou-fcm-adja-list
+      ]
+      
+      if mutation? [ mutate-genome ]
       ;set fcm-adja matrix:copy fcm-adja-base ; Adj
       ;removing this procedure for the time being.
       ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map

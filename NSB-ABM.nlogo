@@ -30,7 +30,6 @@ globals
   seed
   caribouVarCal ;;list containing values of caribou related variables that need to be calibrated.
 
-  years-store
   fcm-store
   ticks-store
   bio-en-store
@@ -41,9 +40,9 @@ globals
   cent-day-list ;for recording list of days where the centroids need to be reassigned in the simulation
   avg-sim-time ;for reporting the average amount of time it takes to simulate each year.
 
-  fcm-adja-list
-  fcm-agentnum-list
-  fcm-success-list
+  caribou-fcm-adja-list
+  caribou-fcm-agentnum-list
+  caribou-fcm-success-list
 
   patch-roughness-dataset
   patch-wetness-dataset
@@ -477,7 +476,7 @@ to setup
    caribou-random-fcm
   ]
 
-  set fcm-adja-list [fcm-adja] of caribou
+  set caribou-fcm-adja-list [fcm-adja] of caribou
  ; setup-ndvi
   go-veg-ranking
   set-streams
@@ -486,19 +485,16 @@ to setup
   [ set grid-util-non-para 0
     set grid-util-para 0 ]
 
-  reset-ticks
-
   set ticks-store [ ]
   set bio-en-store [ ]
+
+  reset-ticks
 
   set ticks-store lput ticks ticks-store
   set bio-en-store lput mean [bioenergy] of caribou bio-en-store
 
-  set years-store [ ]
   set fcm-store [ ]
-
-  set years-store lput year years-store
-  set fcm-store lput (length fcm-adja-list) fcm-store
+  set fcm-store lput (length caribou-fcm-adja-list) fcm-store
 
   test-flow
   let counter 1
@@ -514,7 +510,10 @@ to setup
   if use-hunters? [
     setup-caribou-harvests
     initialize-FCM-hunters
+    setup-hunter-nls
   ]
+
+
 
  ;ask caribou-harvests [ht]
  ;ask hunters [die]
@@ -610,15 +609,11 @@ to go
       if caribouPopMod? = true
       [ go-caribou-pop ]
 
+      if(is-training?) [ update-caribou-fcm ]
+
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
       if calibrateCaribouVar? [ go-caribou-var-cal ]
-
-      if(is-training?)
-      [
-        update-caribou-fcm
-        ;export-fcm
-      ]
 
       ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
@@ -626,8 +621,7 @@ to go
 
       set year year + 1
 
-      set years-store lput year years-store
-      set fcm-store lput (length fcm-adja-list) fcm-store
+      set fcm-store lput (length caribou-fcm-adja-list) fcm-store
 
       set day 152
 
@@ -747,22 +741,22 @@ end
 
 to export-fcm-data
     ;;dump all pertinent data every year for variable calibration.
-   ;set fcm-adja-list [fcm-adja] of caribou
+   set caribou-fcm-adja-list [fcm-adja] of caribou
+
    let file-ex "caribou-fcms-agentnum-success-"
    set file-ex word file-ex seed
    set file-ex word file-ex ".txt"
 
-    file-open file-ex
-    build-fcm-data
+   file-open file-ex
 
-   let x length fcm-adja-list
+   let x length caribou-fcm-adja-list
    let y 0
    while [ y < x ] [
      file-print ""
      file-write word year ","
-     file-write word (item y fcm-agentnum-list) ","
-     file-write word (item y fcm-success-list) ","
-     file-write matrix:to-row-list (item y fcm-adja-list)
+     file-write word (item y caribou-fcm-agentnum-list) ","
+     file-write word (item y caribou-fcm-success-list) ","
+     file-write matrix:to-row-list (item y caribou-fcm-adja-list)
      set y y + 1
    ]
 
@@ -2314,7 +2308,7 @@ SWITCH
 528
 is-training?
 is-training?
-0
+1
 1
 -1000
 
@@ -2613,7 +2607,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plotxy (year) (length fcm-adja-list)"
+"default" 1.0 0 -16777216 true "" "plotxy (year) (length caribou-fcm-adja-list)"
 
 PLOT
 411
@@ -2760,7 +2754,7 @@ SWITCH
 239
 calibrateCaribouVar?
 calibrateCaribouVar?
-0
+1
 1
 -1000
 
@@ -3075,7 +3069,7 @@ SWITCH
 566
 use-hunters?
 use-hunters?
-1
+0
 1
 -1000
 
@@ -3086,7 +3080,7 @@ SWITCH
 228
 exportCaribouData?
 exportCaribouData?
-0
+1
 1
 -1000
 

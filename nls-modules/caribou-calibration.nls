@@ -67,7 +67,7 @@ to export-var-data [ mutatedVars? varProb ]
   set fileOut word fileOut seed
   set fileOut word fileOut ".txt"
   
-  let convergence length fcm-adja-list
+  let convergence length caribou-fcm-adja-list
   set convergence 1 - ( convergence / caribou-group-amt )
   
   file-open fileOut
@@ -117,7 +117,7 @@ end
 
 to-report calculate-var-prob 
   let test? false
-  let convergence length fcm-adja-list
+  let convergence length caribou-fcm-adja-list
   set convergence 1 - ( convergence / caribou-group-amt );;divide by initial number of unique caribou FCMs to normalize the variable.
   
   ;;following values = winter energetic loss buffer range taken from Semeniuk et al. 2012 woodland caribou paper.
