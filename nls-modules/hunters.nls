@@ -1,7 +1,15 @@
 
 ;GLOBAL
 globals [
-          ;matrices
+  
+  ;;Henri, I inserted these for building the hunter FCM mutation code. (Max)
+  hunter-fcm-adja-list
+  hunter-fcm-agentnum-list
+  hunter-fcm-success-list
+  
+  ;;Henri: minor comment - might be a good idea to delineate the following FCM variables as hunter related. (Max)
+
+  ;matrices
           global-fcm-matrix
           global-fcm-sensory
           global-fcm-internal
@@ -114,8 +122,8 @@ hunters-own [
             ]
 
 to setup-hunter-nls
-  reset-ticks
-  kill-caribou
+  ;reset-ticks
+  ;kill-caribou 
   kill-hunters
   initialize-FCM-hunters
   new-hunters
@@ -596,6 +604,7 @@ to-report ternary-funct [ low high sense]
 end
 
 to-report logistic-funct [ x ]
+  ;;I think we might already have a similar function defined in the caribou code. (Max)
   report ( 1 / ( 1 + e ^ ( -1 * x )))
 end
 
@@ -719,4 +728,13 @@ to new-caribou
     ]
     setxy x y
   ]
+end
+
+to update-hunter-fcms
+  ;;Code block for evolving hunter FCMs. Selection occurs, followed by recombination and mutation.
+  ;;Akin to the caribou FCM evolution code, the hunter 'reset' should probably occur in here, too. 
+  
+  ;;build fcm data
+  
+  
 end
