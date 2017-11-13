@@ -95,21 +95,22 @@ to build-fcm-data
     if test? [ print avg-success ]
     
     let numCar count caribou with [ fcm-adja = current-fcm ]
-    let compStateMem [ ]
+    let compStateMem [ 0 0 0 0 0 ]
     
     ask caribou with [ fcm-adja = current-fcm ] [
-      set compStateMem lput state-memory compStateMem
+      ;set compStateMem lput state-memory compStateMem
+      set compStateMem (map + compStateMem state-memory)
     ]
     
     let counter2 0
     
-    while [ counter2 < (numCar - 1) ] [
-      set compStateMem replace-item 0 compStateMem (map + (item 0 compStateMem) (item (counter2 + 1) compStateMem ))
-      set counter2 counter2 + 1
-    ]
+    ;while [ counter2 < (numCar - 1) ] [
+    ;  set compStateMem replace-item 0 compStateMem (map + (item 0 compStateMem) (item (counter2 + 1) compStateMem ))
+    ;  set counter2 counter2 + 1
+    ;]
     
-    set compStateMem item 0 compStateMem
-    set compStateMem map [ (? * numCar) ] compStateMem 
+    ;set compStateMem item 0 compStateMem
+    ;set compStateMem map [ (? * numCar) ] compStateMem 
     
     
     ;;now find amount of time spent in foraging states.
