@@ -512,8 +512,10 @@ to setup
   ]
 
   if use-hunters? [
+    ask hunters [die]
     setup-caribou-harvests
     initialize-FCM-hunters
+    new-hunters
   ]
 
  ;ask caribou-harvests [ht]
@@ -1714,7 +1716,7 @@ INPUTBOX
 1326
 482
 caribou-veg-factor
-0.841
+0.25
 1
 0
 Number
@@ -1725,7 +1727,7 @@ INPUTBOX
 1400
 482
 caribou-rough-factor
-0.915
+0.793
 1
 0
 Number
@@ -1756,7 +1758,7 @@ INPUTBOX
 1475
 481
 caribou-insect-factor
-0.757
+0.923
 1
 0
 Number
@@ -1767,7 +1769,7 @@ INPUTBOX
 1549
 481
 caribou-modifier-factor
-0.878
+0.43
 1
 0
 Number
@@ -1878,7 +1880,7 @@ INPUTBOX
 805
 722
 decay-rate
-0.278
+0.611
 1
 0
 Number
@@ -1964,7 +1966,7 @@ INPUTBOX
 1623
 481
 caribou-deflection-factor
-0.78
+0.488
 1
 0
 Number
@@ -2346,7 +2348,7 @@ INPUTBOX
 1690
 481
 caribou-precip-factor
-0.82
+0.858
 1
 0
 Number
@@ -2397,7 +2399,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.987
+0.209
 0.01
 1
 NIL
@@ -2409,7 +2411,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-91.9
+31.6
 1
 0
 Number
@@ -2487,7 +2489,7 @@ hunter-vision
 hunter-vision
 0
 20
-4
+3
 1
 1
 * 2.2 km
@@ -2859,7 +2861,7 @@ hunter-centroid-selection
 hunter-centroid-selection
 0
 21
-10
+15
 1
 1
 f-rank
@@ -2889,7 +2891,7 @@ BUTTON
 463
 Go Hunters
 go-hunters-nls
-T
+NIL
 1
 T
 OBSERVER
@@ -2905,7 +2907,7 @@ INPUTBOX
 1739
 1135
 new-file
-\"WetnessSumsBefore.txt\"
+WetnessSumsAfter.txt
 1
 0
 String
@@ -2946,9 +2948,9 @@ NIL
 
 PLOT
 624
-993
-1244
-1298
+1033
+1492
+1338
 Hunter State Flux
 NIL
 NIL
@@ -2971,7 +2973,7 @@ BUTTON
 1666
 1178
 Write to File
-file-open new-file \nask hunters [file-write wetness-sum]\nfile-close
+file-open new-file \nask hunters [file-write wetness-sum / (patch-sum * 1.006791152)]\nfile-close
 NIL
 1
 T
@@ -3075,7 +3077,7 @@ SWITCH
 566
 use-hunters?
 use-hunters?
-1
+0
 1
 -1000
 

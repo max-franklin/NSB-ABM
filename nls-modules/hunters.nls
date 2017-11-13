@@ -56,6 +56,7 @@ hunters-own [
              
              ;data
              boat-return 
+             return-to-river
              current-state
              prev-motor-state
              distance-to-prey
@@ -89,6 +90,7 @@ hunters-own [
              catch-probability
              prey-caught
              wetness-sum 
+             patch-sum
              boat-speed 
              hike-speed
              initial-hike-time
@@ -142,12 +144,14 @@ to new-hunters
     set spent-time 0
     set harvest-amount 0
     set hunter-density 0
+    set patch-sum 0
     set-hunter-sensory-ranges
     ;print-hunter-matrices
     set-initial-centroids
     set prey-caught false
     set return false 
     let done false
+    set return-to-river false
     set-hunter-FCMs
   ]
   set home-patch-global patch 3 1
@@ -295,40 +299,51 @@ end
 to run-motor-function
   if motor-concept-index = 0
   [
-    print prev-motor-state
-    ;check for prev state
+    ;print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 0
-    
-    ;set hunt true
-    ;print "Hunting...\n"
+    set foot-travel false
+    set boat-travel false
+    set return false
+    set hunt true
+    if(target-river-patch-r != 0)
+    [set return-to-river true]
     hunt-funct
   ]
   if motor-concept-index = 1
   [
-    print prev-motor-state
+    ;print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 1
-    ;check for prev state
-    ;set foot-travel true
-    ;print "Foot travelling..."
+    set hunt false
+    set boat-travel false
+    set return false
+    set foot-travel true
+    if(target-river-patch-r != 0)
+    [set return-to-river true]
     foot-travel-funct ([patch-here] of target-land-centroid)
   ]
   if motor-concept-index = 2 ;CHECK TO RETURN BACK TO RIVER PATCH 
   [
-    print prev-motor-state
+    ;print prev-motor-state
     set prev-motor-state 2
-    ;set boat-travel true
-    ;print "Boat travelling..."
+    set hunt false
+    set foot-travel false
+    set return false
+    set boat-travel true
     boat-travel-funct target-river-patch-r ;pass in returning patch 
   ]
   if motor-concept-index = 3
   [
-    print prev-motor-state
+    ;print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ]
     set prev-motor-state 3
-    ;set return true
-    ;print "Returning...\n"
+    set hunt false
+    set boat-travel false
+    set foot-travel false
+    set return true
+    if(target-river-patch-r != 0)
+    [set return-to-river true]
     return-home
   ]
   
@@ -362,19 +377,25 @@ to foot-travel-funct [target]
   [
      ifelse(member? target neighbors = false)
      [
-        set land-p min-one-of neighbors with [elevation > 0 and ( [distance target] of self < [distance target] of myself )] [wetness]
-        set wetness-sum (wetness-sum + ([wetness] of land-p))
-        face land-p
-        move-to land-p
+        set land-p min-one-of neighbors with [ocean = 0 and ( [distance target] of self < [distance target] of myself )] [wetness]
+        if(land-p != nobody)
+        [
+           set wetness-sum (wetness-sum + ([wetness] of land-p))
+           set patch-sum (patch-sum + 1)
+           face land-p
+           move-to land-p
+        ]
      ]
      [
         set wetness-sum (wetness-sum + ([wetness] of target))
+        set patch-sum (patch-sum + 1)
         face target
         move-to target
      ]
   ]
   [  ;Local search 
-     set land-p (one-of neighbors with [[distance target] of self <= local-search-radius and elevation > 0])
+     set land-p (one-of neighbors with [[distance target] of self <= local-search-radius and ocean = 0])
+     set patch-sum (patch-sum + 1)
      face land-p
      move-to land-p
   ] 
@@ -386,13 +407,18 @@ to foot-travel-return-funct [target]
   [
      ifelse(member? target neighbors = false)
      [
-        set land-p min-one-of neighbors with [elevation > 0 and ( [distance target] of self < [distance target] of myself )] [wetness]
-        set wetness-sum (wetness-sum + ([wetness] of land-p))
-        face land-p
-        move-to land-p
+        set land-p min-one-of neighbors with [ocean = 0 and ( [distance target] of self < [distance target] of myself )] [wetness]
+        if(land-p != nobody)
+        [
+          set wetness-sum (wetness-sum + ([wetness] of land-p))
+          set patch-sum (patch-sum + 1)
+          face land-p
+          move-to land-p
+        ]
      ]
      [
         set wetness-sum (wetness-sum + ([wetness] of target))
+        set patch-sum (patch-sum + 1)
         face target
         move-to target
      ]
@@ -400,27 +426,32 @@ to foot-travel-return-funct [target]
 end
 
 to boat-travel-funct [target-r]
-  ifelse(target-r != 0 and member? target-r neighbors)
-  [
-    face target-r
-    move-to target-r
-  ]
-  [ 
-    set river-memory lput patch-here river-memory
-    let target neighbors with [connected? = true and not member? self [river-memory] of myself 
+  if(patch-here = target-r) [set return-to-river false]
+  ifelse(return-to-river = false)
+   [    
+     ifelse(target-r != 0 and member? target-r neighbors)
+     [
+       face target-r
+       move-to target-r
+     ]
+     [ 
+       set river-memory lput patch-here river-memory
+       let target neighbors with [connected? = true and not member? self [river-memory] of myself 
                              and (list-intersect ([river-to-follow] of myself) river-set) ] ;and not member of my memory
-    set target max-one-of target [elevation]
-    carefully [ face target move-to target ];move-to target
-    [
-      move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor] ;;;;;;;;;
-      ;move-to min-one-of neighbors [pycor]
-      set target neighbors with [connected? = true and not member? self [river-memory] of myself 
+       set target max-one-of target [elevation]
+       carefully [ face target move-to target ];move-to target
+       [
+         move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor] ;;;;;;;;;
+         ;move-to min-one-of neighbors [pycor]
+         set target neighbors with [connected? = true and not member? self [river-memory] of myself 
                                 and (list-intersect ([river-to-follow] of myself) river-set)] 
-      set target max-one-of target [elevation]
-      if target != NOBODY
-      [ face target move-to target ]
-    ]
-  ]
+         set target max-one-of target [elevation]
+         if target != NOBODY
+         [ face target move-to target ]
+       ]
+     ]
+   ]
+   [foot-travel-return-funct target-r]
 end 
 
 to boat-travel-return-funct
@@ -472,6 +503,8 @@ end
 
 to move-forward
    fd 1
+   set wetness-sum (wetness-sum + ([wetness] of patch-here))
+   set patch-sum (patch-sum + 1)
 end
 
 to set-distance-to-prey
