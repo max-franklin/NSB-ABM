@@ -535,8 +535,8 @@ to head-towards-prey
 end
 
 to catch-prey
-   set catch-probability ( random-float 1 )
-   if catch-probability >= 0.9
+   ;set catch-probability ( random-float 1 )
+   if (distance prey <= 0.5)
    [
      set prey-caught true
      set num-harvests-global (num-harvests-global + 1)

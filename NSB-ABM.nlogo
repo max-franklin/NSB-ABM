@@ -2817,8 +2817,8 @@ SLIDER
 trip-length-max
 trip-length-max
 0
-115
-115
+224
+112
 1
 1
 * 1.5 hrs
