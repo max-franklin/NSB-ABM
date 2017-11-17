@@ -486,7 +486,15 @@ to boat-travel-funct [target-r]
        ]
      ]
    ]
-   [foot-travel-return-funct target-r]
+   [
+     ifelse (target-r != 0)
+     [  
+        foot-travel-return-funct target-r
+     ]
+     [
+       foot-travel-return-funct home-patch 
+     ]
+   ]
 end 
 
 to boat-travel-return-funct
