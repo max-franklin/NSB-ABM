@@ -2,6 +2,10 @@
 ;GLOBAL
 globals [
           ;matrices
+          hunter-fcm-adja-list
+          hunter-fcm-agentnum-list
+          hunter-fcm-success-list
+
           global-fcm-matrix
           global-fcm-sensory
           global-fcm-internal
@@ -827,4 +831,53 @@ to new-caribou
     ]
     setxy x y
   ]
+end
+
+to update-hunter-fcms
+  ;;Code block for evolving hunter FCMs. Selection occurs, followed by recombination and mutation.
+  ;;Akin to the caribou FCM evolution code, the hunter 'reset' should probably occur in here, too. 
+  
+  ;set caribou-fcm-adja-list [fcm-adja] of caribou
+  ;;insert here... what the adjacency matrix should be.
+  
+  set hunter-fcm-adja-list [ hunter-fcm-matrix ] of hunters
+  
+  ;set caribou-fcm-agentnum-list [ ]
+  ;set hunter-fcm-agentnum-list [ ]
+
+  ;set caribou-fcm-success-list [ ]
+  ;set hunter-fcm-success-list [ ]
+  
+  ;;1 for hunters, 0 for caribou
+  let fcm-var-out (build-fcm-data hunter-fcm-adja-list  1)
+  
+  let weighted-list item 0 fcm-var-out
+  let prob-list item 1 fcm-var-out
+  
+  ask hunters
+    [
+      
+      ;print word "previous fcm: " fcm-adja
+      ifelse recombination?
+      [ 
+        let genome-1 select-weighted-val prob-list hunter-fcm-adja-list
+        let genome-2 select-weighted-val prob-list hunter-fcm-adja-list
+        ;print word "new fcm: " fcm-adja
+        set fcm-adja cross-genome genome-1 genome-2  
+      ]
+      [
+        set fcm-adja select-weighted-val prob-list hunter-fcm-adja-list
+      ]
+      
+      if mutation? [ mutate-genome ]
+      
+      ;;now, can reference "reset" code procedure here to make sure they're all back at Nuiqsut
+      ;;for the next year of the simulation.
+      
+    ]
+  
+  
+  ;]
+  
+  
 end
