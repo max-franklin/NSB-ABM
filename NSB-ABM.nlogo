@@ -156,6 +156,11 @@ globals
   ;;;; insect modifier
   insect-needs-reset
   insect-season
+
+  hunter-streams-restriction
+  caribou-harvest-selection-list
+  caribou-harvest-fRanks-list
+  caribou-harvest-probability-list
 ]
 
 patches-own
@@ -507,17 +512,13 @@ to setup
     setup-caribou-fcm-data
   ]
 
+  set hunter-streams-restriction (0.025 * (max [streams] of patches))
   if use-hunters? [
     setup-caribou-harvests
     initialize-FCM-hunters
     setup-hunter-nls
   ]
 
-
-
- ;ask caribou-harvests [ht]
- ;ask hunters [die]
- ;new-hunters
 
 end
 
@@ -1250,6 +1251,45 @@ to-report select-weighted-val [ prob-list selection-list ]
     if test? [ show pos show item pos prob-list ]
     report item pos selection-list
   ]
+end
+
+to build-caribou-harvest-lists
+  ask caribou-harvests
+  [
+     set caribou-harvest-selection-list lput ([who] of self) caribou-harvest-selection-list
+     set caribou-harvest-fRanks-list lput (20 - ([frequency-rank] of self)) caribou-harvest-fRanks-list
+  ]
+end
+
+to build-caribou-harvest-prob-list
+  set caribou-harvest-probability-list build-prob-list caribou-harvest-fRanks-list
+end
+
+to output-hunter-data
+   ;per trip
+   ask hunters
+   [
+     set data-output []
+     set data-output lput spent-time data-output
+     set data-output lput ([who] of self) data-output
+     set data-output lput prey-caught data-output
+     set data-output lput harvest-patch data-output
+   ]
+   file-open "trip-data.txt"
+   ask hunters [file-write data-output]
+   file-close
+
+   ;per year
+   ask hunters
+   [
+     set data-output []
+     set data-output lput year data-output
+     set data-output lput ([who] of self) data-output
+     set data-output lput harvest-amount data-output
+   ]
+   file-open "year-data.txt"
+   ask hunters [file-write data-output]
+   file-close
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -2448,10 +2488,10 @@ debug-fcm?
 -1000
 
 TEXTBOX
-1465
-668
-1533
-691
+1637
+664
+1705
+687
 HUNTERS
 11
 0.0
@@ -2522,8 +2562,8 @@ SLIDER
 812
 1719
 845
-energy-low-constant
-energy-low-constant
+trip-long-constant
+trip-long-constant
 0
 0.50
 0.4
@@ -2537,8 +2577,8 @@ SLIDER
 852
 1720
 885
-energy-high-constant
-energy-high-constant
+trip-short-constant
+trip-short-constant
 0.50
 1
 0.6
@@ -2565,7 +2605,7 @@ SWITCH
 718
 display-grids?
 display-grids?
-1
+0
 1
 -1000
 
@@ -2774,8 +2814,8 @@ SLIDER
 803
 1485
 836
-initial-trip-length
-initial-trip-length
+trip-length-max
+trip-length-max
 0
 115
 115
@@ -2894,10 +2934,10 @@ NIL
 1
 
 INPUTBOX
-1500
-1060
-1739
-1135
+1759
+688
+1998
+763
 new-file
 WetnessSumsAfter.txt
 1
@@ -2905,10 +2945,10 @@ WetnessSumsAfter.txt
 String
 
 BUTTON
-1517
-1223
-1610
-1256
+1780
+810
+1873
+843
 Open File
 file-open new-file
 NIL
@@ -2922,10 +2962,10 @@ NIL
 1
 
 BUTTON
-1616
-1223
-1710
-1256
+1879
+810
+1973
+843
 Close File
 file-close\n
 NIL
@@ -2941,7 +2981,7 @@ NIL
 PLOT
 624
 1033
-1492
+1251
 1338
 Hunter State Flux
 NIL
@@ -2960,10 +3000,10 @@ PENS
 "Return " 1.0 0 -6917194 true "" "plot count hunters with [prev-motor-state = 3]"
 
 BUTTON
-1565
-1145
-1666
-1178
+1824
+773
+1925
+806
 Write to File
 file-open new-file \nask hunters [file-write wetness-sum / (patch-sum * 1.006791152)]\nfile-close
 NIL
@@ -2992,10 +3032,10 @@ hunters/caribou group
 HORIZONTAL
 
 SLIDER
-1264
-913
-1492
-946
+1496
+1045
+1724
+1078
 hunter-density-low-constant
 hunter-density-low-constant
 0
@@ -3007,10 +3047,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1265
-950
-1493
-983
+1497
+1082
+1725
+1115
 hunter-density-high-constant
 hunter-density-high-constant
 .5
@@ -3048,10 +3088,10 @@ sum ([harvest-amount] of hunters)
 11
 
 SLIDER
-1265
-987
-1493
-1020
+1262
+912
+1490
+945
 local-search-radius
 local-search-radius
 0
@@ -3083,6 +3123,23 @@ exportCaribouData?
 1
 1
 -1000
+
+BUTTON
+1839
+894
+1919
+927
+line test
+  let patch-list-t []\n  let num-t 0\n  let x1-t 3\n  let y1-t 1\n  let x2-t -43\n  let y2-t 5\n  let d-x (x2-t - x1-t)\n  let d-y (y2-t - y1-t)\n  let slope-t d-y / d-x\n  ifelse (abs d-x >  abs d-y)\n  [\n     let x-t x1-t\n     let y-t 0\n     ifelse (x2-t > x1-t)\n     [\n        while[x-t <= x2-t]\n        [\n          set y-t (slope-t * (x-t - x1-t) + y1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set x-t (x-t + 1)\n        ]\n     ]\n     [\n        while[x-t >= x2-t]\n        [\n          set y-t (slope-t * (x-t - x1-t) + y1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set x-t (x-t - 1)\n        ]\n     ]\n   ]  \n   [\n     let y-t y1-t\n     let x-t 0\n     ifelse (y2-t > y1-t)\n     [\n        while[y-t <= y2-t]\n        [;\n          set x-t ((y-t - y1-t) / slope-t + x1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set y-t (y-t + 1)\n        ]\n     ]\n     [\n        while[y-t >= y2-t]\n        [;\n          set x-t ((y-t - y1-t) / slope-t + x1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set y-t (y-t - 1)\n        ]\n     ]\n   ]\n  foreach patch-list-t\n  [\n      ask ? \n      [\n         set pcolor red\n         if(streams > (0.025 * (max [streams] of patches)) or empty? river-set = false and pxcor != 3 and pycor != 1)\n         [set pcolor white]\n      ]\n  ]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
