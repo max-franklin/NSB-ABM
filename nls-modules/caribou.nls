@@ -127,7 +127,7 @@ to setup-caribou
     
     ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
     
-    mutate-genome
+    ;mutate-genome caribou-mutate-prob
 
     ;TODO Evaluate real values
     set close-range 1.0;  ex: 1.2

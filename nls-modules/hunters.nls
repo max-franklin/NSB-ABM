@@ -858,18 +858,18 @@ to update-hunter-fcms
     [
       
       ;print word "previous fcm: " fcm-adja
-      ifelse recombination?
+      ifelse hunter-recombine?
       [ 
         let genome-1 select-weighted-val prob-list hunter-fcm-adja-list
         let genome-2 select-weighted-val prob-list hunter-fcm-adja-list
         ;print word "new fcm: " fcm-adja
-        set fcm-adja cross-genome genome-1 genome-2  
+        set fcm-adja cross-genome genome-1 genome-2 hunter-recomb-prob
       ]
       [
         set fcm-adja select-weighted-val prob-list hunter-fcm-adja-list
       ]
       
-      if mutation? [ mutate-genome ]
+      if hunter-mutate? [ mutate-genome hunter-mutate-prob ]
       
       ;;now, can reference "reset" code procedure here to make sure they're all back at Nuiqsut
       ;;for the next year of the simulation.

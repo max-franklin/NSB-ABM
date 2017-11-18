@@ -297,18 +297,18 @@ to select-fcms
   ask caribou
   [
    ;print word "previous fcm: " fcm-adja
-    ifelse recombination?
+    ifelse caribou-recombine?
     [ 
       let genome-1 select-weighted-val prob-list caribou-fcm-adja-list
       let genome-2 select-weighted-val prob-list caribou-fcm-adja-list
       ;print word "new fcm: " fcm-adja
-      set fcm-adja cross-genome genome-1 genome-2  
+      set fcm-adja cross-genome genome-1 genome-2 caribou-recomb-prob
     ]
     [
       set fcm-adja select-weighted-val prob-list caribou-fcm-adja-list
     ]
    
-   if mutation? [ mutate-genome ]
+   if caribou-mutate? [ mutate-genome caribou-mutate-prob ]
 
   ]
   
@@ -328,7 +328,7 @@ to-report select-genome [ prob-list genome-list ]
     [ report item (pos) caribou-fcm-adja-list ]
 end
 
-to-report cross-genome [ genome-1 genome-2 ]
+to-report cross-genome [ genome-1 genome-2 recomb-prob ]
   let recomb-genome []
   ;let recomb-chance 0.5
   let rand-roll random-float 1
@@ -419,18 +419,18 @@ to update-caribou-fcm
     [
       
       ;print word "previous fcm: " fcm-adja
-      ifelse recombination?
+      ifelse caribou-recombine?
       [ 
         let genome-1 select-weighted-val prob-list caribou-fcm-adja-list
         let genome-2 select-weighted-val prob-list caribou-fcm-adja-list
         ;print word "new fcm: " fcm-adja
-        set fcm-adja cross-genome genome-1 genome-2  
+        set fcm-adja cross-genome genome-1 genome-2 caribou-recomb-prob
       ]
       [
         set fcm-adja select-weighted-val prob-list caribou-fcm-adja-list
       ]
       
-      if mutation? [ mutate-genome ]
+      if caribou-mutate? [ mutate-genome caribou-mutate-prob ]
       ;set fcm-adja matrix:copy fcm-adja-base ; Adj
       ;removing this procedure for the time being.
       ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
@@ -499,7 +499,7 @@ to update-caribou-fcm
 end
 
 
-to mutate-genome 
+to mutate-genome [ mutate-prob ] 
   
   ;let point-mut-prob 0.05 ;probability of the genome undergoing a point mutation.
   let random-roll (1 + random 100) / 100
