@@ -1,7 +1,7 @@
 to setup-caribou-var-cal 
   ;print "this is a test to see if setup-car-var-cal is being called"
   set caribouVarCal [ ] 
-  ifelse randomCaribouVarStart?
+  if randomCaribouVarStart?
     [
       ;print "testing to see if random assignment occurs."
       ;;need to do: check to see if any division by zero errors will occur in caribou utility functions due to random number gen.
@@ -11,10 +11,6 @@ to setup-caribou-var-cal
         set caribouVarCal lput random-num 1 caribouVarCal
       ]
     ]
-    [
-      repeat 9 [ set caribouVarCal lput 0.1 caribouVarCal ]
-    ]
-    
   
     
   assign-variable-values 

@@ -515,6 +515,8 @@ to setup
   set hunter-streams-restriction (0.025 * (max [streams] of patches))
   if use-hunters? [
     setup-caribou-harvests
+    build-caribou-harvest-lists
+    build-caribou-harvest-prob-list
     initialize-FCM-hunters
     setup-hunter-nls
   ]
@@ -1256,7 +1258,9 @@ end
 to build-caribou-harvest-lists
   ask caribou-harvests
   [
-     set caribou-harvest-selection-list lput ([who] of self) caribou-harvest-selection-list
+     set caribou-harvest-selection-list [ ]
+     set caribou-harvest-fRanks-list [ ]
+     set caribou-harvest-selection-list lput who caribou-harvest-selection-list
      set caribou-harvest-fRanks-list lput (20 - ([frequency-rank] of self)) caribou-harvest-fRanks-list
   ]
 end
@@ -2234,7 +2238,7 @@ SWITCH
 1063
 is-training?
 is-training?
-1
+0
 1
 -1000
 
@@ -2956,7 +2960,7 @@ SWITCH
 954
 exportCaribouData?
 exportCaribouData?
-0
+1
 1
 -1000
 
@@ -3030,30 +3034,30 @@ NIL
 HORIZONTAL
 
 SLIDER
-1276
-392
-1462
-425
+1272
+379
+1458
+412
 hunter-recomb-prob
 hunter-recomb-prob
 0
 1
-1
+0.2
 .1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1276
-439
-1457
-472
+1272
+413
+1453
+446
 hunter-mutate-prob
 hunter-mutate-prob
 0
 1
-1
+0.1
 .1
 1
 NIL
