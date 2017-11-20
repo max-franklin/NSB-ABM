@@ -112,6 +112,7 @@ to build-fcm-data
     ;set compStateMem item 0 compStateMem
     ;set compStateMem map [ (? * numCar) ] compStateMem 
     
+    ;Division by 0 - EXPORT FCM DATA
     
     ;;now find amount of time spent in foraging states.
     let fgTime 100 * ((item 1 compStateMem + item 4 compStateMem) / (sum compStateMem))

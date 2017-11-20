@@ -811,7 +811,7 @@ to go-caribou-q
   ; 2 - interforage
   ; 3 - migrate
   
-  
+  ;TODO: Correct Caribou/hunter dist
   
   ask caribou
   [
@@ -894,12 +894,13 @@ to go-caribou-q
      
     ]
     
-    
+    ;====================================;
+    ;END Feature Building
     ;====================================;
 
     ;set inputs
     
-    ;net-x
+    ;net-x Assignment for CNN featureset
     matrix:set net-x 0 0 hunt-dist
     matrix:set net-x 0 1 food-dist
     matrix:set net-x 0 2 bioenergy-amt
@@ -910,11 +911,16 @@ to go-caribou-q
     matrix:set net-x 0 7 intra-ratio
     matrix:set net-x 0 8 migrate-ratio
     
-    set net-s1 matrix:times net-x net-w1
+    
+    
+    
+    
+    
+    set net-s1 matrix:times net-x a-net-w1
     set net-z1 matrix:map fcm-sigmoid-simple net-s1
-    set net-s2 matrix:times net-z1 net-w2
+    set net-s2 matrix:times net-z1 a-net-w2
     set net-z2 matrix:map fcm-sigmoid-simple net-s2
-    set net-sout matrix:times net-z2 net-wout
+    set net-sout matrix:times net-z2 a-net-wout
     
     let action restrictive-q-softmax net-sout ; action is our state
     ;Action necessary instead of using state directly?
@@ -939,26 +945,26 @@ to go-caribou-q
     
     
     ;Check banks
-    if(state = 4 and bank-intra = 0)
-    [
-
-      set state 3
-    ]
-    if(state = 3 and bank-rest = 0)
-    [
-
-      set state 2
-    ]
-    if(state = 2 and bank-migrate = 0)
-    [
-
-      set state 1
-    ]
-    if(state = 1 and bank-inter = 0)
-    [
-
-      set state 4
-    ]
+;    if(state = 4 and bank-intra = 0)
+;    [
+;
+;      set state 3
+;    ]
+;    if(state = 3 and bank-rest = 0)
+;    [
+;
+;      set state 2
+;    ]
+;    if(state = 2 and bank-migrate = 0)
+;    [
+;
+;      set state 1
+;    ]
+;    if(state = 1 and bank-inter = 0)
+;    [
+;
+;      set state 4
+;    ]
     
 
 
@@ -1154,7 +1160,7 @@ to go-caribou-q
         ]
       
       
-      ;Q_t+1
+      ;Q_t+1 After Action
      let net-xt 0
      ;let net-w1t 0
      let net-s1t 0
@@ -1253,14 +1259,14 @@ to go-caribou-q
     matrix:set net-xt 0 8 migrate-ratio
     
     ; Do not use new weights for t+1
-    
+    ;a-net is the shared network
 
     
-    set net-s1t matrix:times net-xt net-w1
+    set net-s1t matrix:times net-xt a-net-w1
     set net-z1t matrix:map fcm-sigmoid-simple net-s1t
-    set net-s2t matrix:times net-z1t net-w2
+    set net-s2t matrix:times net-z1t a-net-w2
     set net-z2t matrix:map fcm-sigmoid-simple net-s2t
-    set net-soutt matrix:times net-z2t net-wout
+    set net-soutt matrix:times net-z2t a-net-wout
 
     ;Apply Gamma for memory
     set net-soutt matrix:times net-soutt Q-Gamma
@@ -1331,17 +1337,17 @@ to setup-caribou-q
   ask caribou 
   [ 
     ;initialize weights to 1
-    set net-w1 matrix:make-constant 9 9 0
-    set net-w2 matrix:make-constant 9 9 0
-    set net-wout matrix:make-constant 9 4 0
+    set net-w1 matrix:make-constant 9 9 1
+    set net-w2 matrix:make-constant 9 9 1
+    set net-wout matrix:make-constant 9 4 1
     
     ;initialize these to anything, they will be overwritten in the go-caribou procedure
-    set net-x matrix:make-constant 1 9 0
-    set net-s1 matrix:make-constant 1 9 0
-    set net-s2 matrix:make-constant 1 9 0
-    set net-z1 matrix:make-constant 1 9 0
-    set net-z2 matrix:make-constant 1 9 0
-    set net-sout matrix:make-constant 1 4 0
+    set net-x matrix:make-constant 1 9 1
+    set net-s1 matrix:make-constant 1 9 1
+    set net-s2 matrix:make-constant 1 9 1
+    set net-z1 matrix:make-constant 1 9 1
+    set net-z2 matrix:make-constant 1 9 1
+    set net-sout matrix:make-constant 1 4 1
   
 
     

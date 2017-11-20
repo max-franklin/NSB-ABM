@@ -92,6 +92,11 @@ globals
 
   current-season
 
+  ;Reward Online Learning (Q)
+  a-net-w1
+  a-net-w2
+  a-net-wout
+
 
   adjacency-matrix
 
@@ -1714,7 +1719,7 @@ INPUTBOX
 1326
 482
 caribou-veg-factor
-0.79
+0.67
 1
 0
 Number
@@ -1725,7 +1730,7 @@ INPUTBOX
 1400
 482
 caribou-rough-factor
-0.131
+0.789
 1
 0
 Number
@@ -1756,7 +1761,7 @@ INPUTBOX
 1475
 481
 caribou-insect-factor
-0.684
+0.628
 1
 0
 Number
@@ -1767,7 +1772,7 @@ INPUTBOX
 1549
 481
 caribou-modifier-factor
-0.205
+0.987
 1
 0
 Number
@@ -1878,7 +1883,7 @@ INPUTBOX
 805
 722
 decay-rate
-0.601
+0.853
 1
 0
 Number
@@ -1964,7 +1969,7 @@ INPUTBOX
 1623
 481
 caribou-deflection-factor
-0.766
+0.702
 1
 0
 Number
@@ -2346,7 +2351,7 @@ INPUTBOX
 1690
 481
 caribou-precip-factor
-0.582
+0.918
 1
 0
 Number
@@ -2384,7 +2389,7 @@ SWITCH
 533
 show-caribou-utility-non-para?
 show-caribou-utility-non-para?
-1
+0
 1
 -1000
 
@@ -2397,7 +2402,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.55
+0.13
 0.01
 1
 NIL
@@ -2409,7 +2414,7 @@ INPUTBOX
 1047
 779
 energy-gain-factor
-5.5
+44.5
 1
 0
 Number
@@ -3086,9 +3091,27 @@ SWITCH
 228
 exportCaribouData?
 exportCaribouData?
-0
+1
 1
 -1000
+
+PLOT
+13
+1034
+285
+1314
+Caribou-Utility-Non-Para
+NIL
+NIL
+0.0
+7.0
+0.0
+7000.0
+false
+false
+"" ""
+PENS
+"default" 0.2 1 -16777216 true "" "histogram [caribou-utility-non-para] of patches"
 
 @#$#@#$#@
 ## WHAT IS IT?
