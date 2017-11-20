@@ -2,6 +2,10 @@
 ;GLOBAL
 globals [
           ;matrices
+          hunter-fcm-adja-list
+          hunter-fcm-agentnum-list
+          hunter-fcm-success-list
+
           global-fcm-matrix
           global-fcm-sensory
           global-fcm-internal
@@ -21,14 +25,15 @@ hunters-own [
              ;concepts
              prey-close      ;sensory 
              prey-far        
-             energy-low
-             energy-high 
+             trip-long
+             trip-short 
              boat-and-hike-long
              boat-and-hike-short
              caribou-harvest-low 
              caribou-harvest-high 
              hunter-density-low 
              hunter-density-high
+             rivers-in-way
               
              hunting         ;internal
              exploration    
@@ -56,24 +61,25 @@ hunters-own [
              
              ;data
              boat-return 
-             current-state
+             return-to-river
              prev-motor-state
              distance-to-prey
-             surrounding-hunters
              trip-length 
              travel-heuristic 
              harvest-amount
              hunter-density 
+             number-of-rivers-way
              sensory-prey-close
              sensory-prey-far 
-             sensory-enery-low 
-             sensory-energy-high 
+             sensory-trip-long 
+             sensory-trip-short 
              sensory-boat-and-hike-long
              sensory-boat-and-hike-short
              sensory-caribou-harvest-low 
              sensory-caribou-harvest-high 
              sensory-hunter-density-low 
              sensory-hunter-density-high 
+             sensory-rivers-in-way
              motor-concept-index
              target-river-centroid
              target-land-centroid
@@ -82,16 +88,16 @@ hunters-own [
              home-centroid
              river-to-follow
              river-memory
-             river-p
              land-p
              prey
              home-patch
              catch-probability
              prey-caught
+             harvest-patch
              wetness-sum 
+             patch-sum
              boat-speed 
              hike-speed
-             initial-hike-time
              spent-time 
              boat-dist
              hike-dist-0
@@ -100,6 +106,20 @@ hunters-own [
              hike-t-0
              hike-t-1
              
+             number-of-trips
+             number-of-hunters 
+             data-output
+             
+             patch-list-riw
+             x1-riw 
+             y1-riw
+             x2-riw
+             y2-riw  
+             slope-riw 
+             x-riw 
+             y-riw 
+             num-riw
+  
              sensory-print
              internal-print
              raw-internal-print
@@ -112,7 +132,7 @@ hunters-own [
             ]
 
 to setup-hunter-nls
-  ;reset-ticks
+  reset-ticks
   kill-caribou
   kill-hunters
   initialize-FCM-hunters
@@ -138,27 +158,44 @@ to new-hunters
     set hike-speed 5
     set river-memory []
     set home-patch patch-here
-    set trip-length initial-trip-length
+    set trip-length trip-length-max
     set spent-time 0
     set harvest-amount 0
     set hunter-density 0
+    set patch-sum 0
     set-hunter-sensory-ranges
     ;print-hunter-matrices
     set-initial-centroids
     set prey-caught false
     set return false 
     let done false
+    set return-to-river false
     set-hunter-FCMs
   ]
   set home-patch-global patch 3 1
+end
+
+to reset-hunters 
+   set river-memory []
+   set trip-length trip-length-max
+   set spent-time 0
+   set harvest-amount 0
+   set hunter-density 0
+   set patch-sum 0
+   set-initial-centroids
+   set prey-caught false
+   set return false 
+   let done false
+   set return-to-river false
+   ;reset fcm
 end
 
 to set-hunter-sensory-ranges 
     set prey-close (prey-close-constant * hunter-vision)
     set prey-far (prey-far-constant * hunter-vision)
     
-    set energy-low (energy-low-constant * initial-trip-length)
-    set energy-high (energy-high-constant * initial-trip-length) 
+    set trip-long (trip-long-constant * trip-length-max)
+    set trip-short (trip-short-constant * trip-length-max) 
     
     set boat-and-hike-long (boat-hike-long-constant * 1) 
     set boat-and-hike-short (boat-hike-short-constant * 1)
@@ -168,36 +205,39 @@ to set-hunter-sensory-ranges
     
     set hunter-density-low (hunter-density-low-constant * maximum-hunter-density)
     set hunter-density-high (hunter-density-high-constant * maximum-hunter-density)
+    
+    set rivers-in-way 1
 end 
 
 
 to initialize-FCM-hunters
-  set global-fcm-matrix matrix:from-row-list [[ 0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1 -1 -1  2 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1 -1 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  0  0  1.75 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0 -1 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]]
+  set global-fcm-matrix matrix:from-row-list [[ 0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -2  1  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1 -1 -1  2 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1 -1 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  0  0  1.75 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0 -1 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]]
   
-  set global-fcm-sensory matrix:from-row-list [[ 0  0  0  0  0  0  0  0  0  0]]
-  set global-fcm-internal matrix:submatrix global-fcm-matrix 0 10 10 18
-  set global-fcm-motor matrix:submatrix global-fcm-matrix 10 18 18 22
+  set global-fcm-sensory matrix:from-row-list [[ 0  0  0  0  0  0  0  0  0  0  0]]
+  set global-fcm-internal matrix:submatrix global-fcm-matrix 0 11 11 19
+  set global-fcm-motor matrix:submatrix global-fcm-matrix 11 19 19 23
   
   set global-full-print matrix:pretty-print-text global-fcm-matrix
   set global-sensory-print matrix:pretty-print-text global-fcm-sensory
@@ -222,8 +262,8 @@ to set-hunter-fcm-sensory
   set sensory-prey-close (1 - (ternary-funct prey-close prey-far distance-to-prey))
   set sensory-prey-far  ternary-funct prey-close prey-far distance-to-prey
   
-  set sensory-enery-low (1 - (ternary-funct energy-low energy-high trip-length))
-  set sensory-energy-high ternary-funct energy-low energy-high trip-length 
+  set sensory-trip-long (1 - (ternary-funct trip-long trip-short trip-length))
+  set sensory-trip-short ternary-funct trip-long trip-short trip-length 
   
   set sensory-boat-and-hike-short ternary-funct boat-and-hike-short boat-and-hike-long travel-heuristic 
   set sensory-boat-and-hike-long (1 - (ternary-funct boat-and-hike-short boat-and-hike-long travel-heuristic))
@@ -234,17 +274,20 @@ to set-hunter-fcm-sensory
   set sensory-hunter-density-low (1 - (ternary-funct hunter-density-low hunter-density-high hunter-density))
   set sensory-hunter-density-high ternary-funct hunter-density-low hunter-density-high hunter-density 
   
+  set sensory-rivers-in-way ternary-funct rivers-in-way rivers-in-way number-of-rivers-in-way
+  
   matrix:set hunter-fcm-sensory 0 0 sensory-prey-close
   matrix:set hunter-fcm-sensory 0 1 sensory-prey-far 
-  matrix:set hunter-fcm-sensory 0 2 sensory-enery-low
-  matrix:set hunter-fcm-sensory 0 3 sensory-energy-high
+  matrix:set hunter-fcm-sensory 0 2 sensory-trip-long
+  matrix:set hunter-fcm-sensory 0 3 sensory-trip-short
   matrix:set hunter-fcm-sensory 0 4 sensory-boat-and-hike-long
   matrix:set hunter-fcm-sensory 0 5 sensory-boat-and-hike-short 
   matrix:set hunter-fcm-sensory 0 6 sensory-caribou-harvest-low
   matrix:set hunter-fcm-sensory 0 7 sensory-caribou-harvest-high
   matrix:set hunter-fcm-sensory 0 8 sensory-hunter-density-low
   matrix:set hunter-fcm-sensory 0 9 sensory-hunter-density-high 
-
+  matrix:set hunter-fcm-sensory 0 10 sensory-rivers-in-way
+  
   set sensory-print matrix:pretty-print-text hunter-fcm-sensory
 end
 
@@ -295,40 +338,51 @@ end
 to run-motor-function
   if motor-concept-index = 0
   [
-    print prev-motor-state
-    ;check for prev state
+    ;print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 0
-    
-    ;set hunt true
-    ;print "Hunting...\n"
+    set foot-travel false
+    set boat-travel false
+    set return false
+    set hunt true
+    if(target-river-patch-r != 0)
+    [set return-to-river true]
     hunt-funct
   ]
   if motor-concept-index = 1
   [
-    print prev-motor-state
+    ;print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 1
-    ;check for prev state
-    ;set foot-travel true
-    ;print "Foot travelling..."
+    set hunt false
+    set boat-travel false
+    set return false
+    set foot-travel true
+    if(target-river-patch-r != 0)
+    [set return-to-river true]
     foot-travel-funct ([patch-here] of target-land-centroid)
   ]
   if motor-concept-index = 2 ;CHECK TO RETURN BACK TO RIVER PATCH 
   [
-    print prev-motor-state
+    ;print prev-motor-state
     set prev-motor-state 2
-    ;set boat-travel true
-    ;print "Boat travelling..."
+    set hunt false
+    set foot-travel false
+    set return false
+    set boat-travel true
     boat-travel-funct target-river-patch-r ;pass in returning patch 
   ]
   if motor-concept-index = 3
   [
-    print prev-motor-state
+    ;print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ]
     set prev-motor-state 3
-    ;set return true
-    ;print "Returning...\n"
+    set hunt false
+    set boat-travel false
+    set foot-travel false
+    set return true
+    if(target-river-patch-r != 0)
+    [set return-to-river true]
     return-home
   ]
   
@@ -362,19 +416,25 @@ to foot-travel-funct [target]
   [
      ifelse(member? target neighbors = false)
      [
-        set land-p min-one-of neighbors with [elevation > 0 and ( [distance target] of self < [distance target] of myself )] [wetness]
-        set wetness-sum (wetness-sum + ([wetness] of land-p))
-        face land-p
-        move-to land-p
+        set land-p min-one-of neighbors with [ocean = 0 and (streams < hunter-streams-restriction) and ( [distance target] of self < [distance target] of myself )] [wetness]
+        if(land-p != nobody)
+        [
+           set wetness-sum (wetness-sum + ([wetness] of land-p))
+           set patch-sum (patch-sum + 1)
+           face land-p
+           move-to land-p
+        ]
      ]
      [
         set wetness-sum (wetness-sum + ([wetness] of target))
+        set patch-sum (patch-sum + 1)
         face target
         move-to target
      ]
   ]
   [  ;Local search 
-     set land-p (one-of neighbors with [[distance target] of self <= local-search-radius and elevation > 0])
+     set land-p (one-of neighbors with [[distance target] of self <= local-search-radius and ocean = 0 and (streams < hunter-streams-restriction)])
+     set patch-sum (patch-sum + 1)
      face land-p
      move-to land-p
   ] 
@@ -386,13 +446,18 @@ to foot-travel-return-funct [target]
   [
      ifelse(member? target neighbors = false)
      [
-        set land-p min-one-of neighbors with [elevation > 0 and ( [distance target] of self < [distance target] of myself )] [wetness]
-        set wetness-sum (wetness-sum + ([wetness] of land-p))
-        face land-p
-        move-to land-p
+        set land-p min-one-of neighbors with [ocean = 0 and (streams < hunter-streams-restriction) and ([distance target] of self < [distance target] of myself )] [wetness]
+        if(land-p != nobody)
+        [
+          set wetness-sum (wetness-sum + ([wetness] of land-p))
+          set patch-sum (patch-sum + 1)
+          face land-p
+          move-to land-p
+        ]
      ]
      [
         set wetness-sum (wetness-sum + ([wetness] of target))
+        set patch-sum (patch-sum + 1)
         face target
         move-to target
      ]
@@ -400,27 +465,40 @@ to foot-travel-return-funct [target]
 end
 
 to boat-travel-funct [target-r]
-  ifelse(target-r != 0 and member? target-r neighbors)
-  [
-    face target-r
-    move-to target-r
-  ]
-  [ 
-    set river-memory lput patch-here river-memory
-    let target neighbors with [connected? = true and not member? self [river-memory] of myself 
+  if(patch-here = target-r) [set return-to-river false]
+  ifelse(return-to-river = false)
+   [    
+     ifelse(target-r != 0 and member? target-r neighbors)
+     [
+       face target-r
+       move-to target-r
+     ]
+     [ 
+       set river-memory lput patch-here river-memory
+       let target neighbors with [connected? = true and not member? self [river-memory] of myself 
                              and (list-intersect ([river-to-follow] of myself) river-set) ] ;and not member of my memory
-    set target max-one-of target [elevation]
-    carefully [ face target move-to target ];move-to target
-    [
-      move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor] ;;;;;;;;;
-      ;move-to min-one-of neighbors [pycor]
-      set target neighbors with [connected? = true and not member? self [river-memory] of myself 
+       set target max-one-of target [elevation]
+       carefully [ face target move-to target ];move-to target
+       [
+         move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor] ;;;;;;;;;
+         ;move-to min-one-of neighbors [pycor]
+         set target neighbors with [connected? = true and not member? self [river-memory] of myself 
                                 and (list-intersect ([river-to-follow] of myself) river-set)] 
-      set target max-one-of target [elevation]
-      if target != NOBODY
-      [ face target move-to target ]
-    ]
-  ]
+         set target max-one-of target [elevation]
+         if target != NOBODY
+         [ face target move-to target ]
+       ]
+     ]
+   ]
+   [
+     ifelse (target-r != 0)
+     [  
+        foot-travel-return-funct target-r
+     ]
+     [
+       foot-travel-return-funct home-patch 
+     ]
+   ]
 end 
 
 to boat-travel-return-funct
@@ -461,18 +539,85 @@ to head-towards-prey
 end
 
 to catch-prey
-   set catch-probability ( random-float 1 )
-   if catch-probability >= 0.9
+   ;set catch-probability ( random-float 1 )
+   if (distance prey <= 0.5)
    [
      set prey-caught true
      set num-harvests-global (num-harvests-global + 1)
      set harvest-amount (harvest-amount + 1)
+     set harvest-patch [who] of patch-here
    ]
 end
 
 to move-forward
    fd 1
+   set wetness-sum (wetness-sum + ([wetness] of patch-here))
+   set patch-sum (patch-sum + 1)
 end
+
+to-report number-of-rivers-in-way
+  ;establish line between me and my land destination, find how many streams patches are in that set
+  set patch-list-riw []
+  set num-riw 0
+  set x1-riw [xcor] of myself 
+  set y1-riw [ycor] of myself
+  set x2-riw [xcor] of target-land-centroid
+  set y2-riw [ycor] of target-land-centroid 
+  set slope-riw (y2-riw - y1-riw)/(x2-riw - x1-riw)
+
+  let delta-x (x2-riw - x1-riw)
+  let delta-y (y2-riw - y1-riw)
+  ;check which has the greatest change, calulate either x or y from the equation after for good resolution 
+  ifelse delta-x > delta-y
+  [
+    set x-riw x1-riw
+    set y-riw 0
+    ifelse(x2-riw > x1-riw)
+    [
+      while[x-riw <= x2-riw]
+      [
+        set y-riw (slope-riw * (x-riw - x1-riw) + y1-riw)
+        set patch-list-riw lput (patch x-riw y-riw) patch-list-riw
+        set x-riw (x-riw + 1)
+      ]
+    ]
+    [
+      while[x-riw >= x2-riw]
+      [
+        set y-riw (slope-riw * (x-riw - x1-riw) + y1-riw)
+        set patch-list-riw lput (patch x-riw y-riw) patch-list-riw
+        set x-riw (x-riw - 1)
+      ]
+    ] 
+  ]
+  [
+    set y-riw y1-riw
+    set x-riw 0
+    ifelse (y2-riw > y1-riw)
+    [
+      while [y-riw <= y2-riw]
+      [
+        set x-riw ((y-riw - y1-riw) / slope-riw + x1-riw)
+        set patch-list-riw lput (patch x-riw y-riw) patch-list-riw
+        set y-riw (y-riw + 1)
+      ]
+    ]
+    [
+      while [y-riw >= y2-riw]
+      [
+        set x-riw ((y-riw - y1-riw) / slope-riw + x1-riw)
+        set patch-list-riw lput (patch x-riw y-riw) patch-list-riw
+        set y-riw (y-riw - 1)
+      ]
+    ]
+  ] 
+  foreach patch-list-riw
+  [
+     if(empty? [river-set] of ? = false or [connected?] of ? = true)
+     [set num-riw (num-riw + 1)] 
+  ]
+  report num-riw
+end 
 
 to set-distance-to-prey
    ifelse prey != nobody
@@ -535,8 +680,8 @@ to check-target-river-centroid ;check the centroid you're at for the target
 end
 
 to set-target-land-centroid ;set the land destination 
-   set target-land-centroid one-of caribou-harvests with [frequency-rank < hunter-centroid-selection]
-  ; ask target-land-centroid [ st ] 
+   ;set target-land-centroid one-of caribou-harvests with [frequency-rank < hunter-centroid-selection]
+   set target-land-centroid caribou-harvest (select-weighted-val caribou-harvest-probability-list caribou-harvest-selection-list)
 end
 
 to set-target-river
@@ -686,4 +831,53 @@ to new-caribou
     ]
     setxy x y
   ]
+end
+
+to update-hunter-fcms
+  ;;Code block for evolving hunter FCMs. Selection occurs, followed by recombination and mutation.
+  ;;Akin to the caribou FCM evolution code, the hunter 'reset' should probably occur in here, too. 
+  
+  ;set caribou-fcm-adja-list [fcm-adja] of caribou
+  ;;insert here... what the adjacency matrix should be.
+  
+  set hunter-fcm-adja-list [ hunter-fcm-matrix ] of hunters
+  
+  ;set caribou-fcm-agentnum-list [ ]
+  ;set hunter-fcm-agentnum-list [ ]
+
+  ;set caribou-fcm-success-list [ ]
+  ;set hunter-fcm-success-list [ ]
+  
+  ;;1 for hunters, 0 for caribou
+  let fcm-var-out (build-fcm-data hunter-fcm-adja-list  1)
+  
+  let weighted-list item 0 fcm-var-out
+  let prob-list item 1 fcm-var-out
+  
+  ask hunters
+    [
+      
+      ;print word "previous fcm: " fcm-adja
+      ifelse hunter-recombine?
+      [ 
+        let genome-1 select-weighted-val prob-list hunter-fcm-adja-list
+        let genome-2 select-weighted-val prob-list hunter-fcm-adja-list
+        ;print word "new fcm: " fcm-adja
+        set fcm-adja cross-genome genome-1 genome-2 hunter-recomb-prob
+      ]
+      [
+        set fcm-adja select-weighted-val prob-list hunter-fcm-adja-list
+      ]
+      
+      if hunter-mutate? [ mutate-genome hunter-mutate-prob ]
+      
+      ;;now, can reference "reset" code procedure here to make sure they're all back at Nuiqsut
+      ;;for the next year of the simulation.
+      
+    ]
+  
+  
+  ;]
+  
+  
 end

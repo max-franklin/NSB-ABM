@@ -30,7 +30,6 @@ globals
   seed
   caribouVarCal ;;list containing values of caribou related variables that need to be calibrated.
 
-  years-store
   fcm-store
   ticks-store
   bio-en-store
@@ -41,9 +40,9 @@ globals
   cent-day-list ;for recording list of days where the centroids need to be reassigned in the simulation
   avg-sim-time ;for reporting the average amount of time it takes to simulate each year.
 
-  fcm-adja-list
-  fcm-agentnum-list
-  fcm-success-list
+  caribou-fcm-adja-list
+  caribou-fcm-agentnum-list
+  caribou-fcm-success-list
 
   patch-roughness-dataset
   patch-wetness-dataset
@@ -162,6 +161,11 @@ globals
   ;;;; insect modifier
   insect-needs-reset
   insect-season
+
+  hunter-streams-restriction
+  caribou-harvest-selection-list
+  caribou-harvest-fRanks-list
+  caribou-harvest-probability-list
 ]
 
 patches-own
@@ -482,7 +486,7 @@ to setup
    caribou-random-fcm
   ]
 
-  set fcm-adja-list [fcm-adja] of caribou
+  set caribou-fcm-adja-list [fcm-adja] of caribou
  ; setup-ndvi
   go-veg-ranking
   set-streams
@@ -491,19 +495,16 @@ to setup
   [ set grid-util-non-para 0
     set grid-util-para 0 ]
 
-  reset-ticks
-
   set ticks-store [ ]
   set bio-en-store [ ]
+
+  reset-ticks
 
   set ticks-store lput ticks ticks-store
   set bio-en-store lput mean [bioenergy] of caribou bio-en-store
 
-  set years-store [ ]
   set fcm-store [ ]
-
-  set years-store lput year years-store
-  set fcm-store lput (length fcm-adja-list) fcm-store
+  set fcm-store lput (length caribou-fcm-adja-list) fcm-store
 
   test-flow
   let counter 1
@@ -516,14 +517,15 @@ to setup
     setup-caribou-fcm-data
   ]
 
+  set hunter-streams-restriction (0.025 * (max [streams] of patches))
   if use-hunters? [
     setup-caribou-harvests
+    build-caribou-harvest-lists
+    build-caribou-harvest-prob-list
     initialize-FCM-hunters
+    setup-hunter-nls
   ]
 
- ;ask caribou-harvests [ht]
- ;ask hunters [die]
- ;new-hunters
 
 end
 
@@ -615,15 +617,11 @@ to go
       if caribouPopMod? = true
       [ go-caribou-pop ]
 
+      if(is-training?) [ update-caribou-fcm ]
+
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
       if calibrateCaribouVar? [ go-caribou-var-cal ]
-
-      if(is-training?)
-      [
-        update-caribou-fcm
-        ;export-fcm
-      ]
 
       ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
@@ -631,8 +629,7 @@ to go
 
       set year year + 1
 
-      set years-store lput year years-store
-      set fcm-store lput (length fcm-adja-list) fcm-store
+      set fcm-store lput (length caribou-fcm-adja-list) fcm-store
 
       set day 152
 
@@ -752,22 +749,22 @@ end
 
 to export-fcm-data
     ;;dump all pertinent data every year for variable calibration.
-   ;set fcm-adja-list [fcm-adja] of caribou
+   set caribou-fcm-adja-list [fcm-adja] of caribou
+
    let file-ex "caribou-fcms-agentnum-success-"
    set file-ex word file-ex seed
    set file-ex word file-ex ".txt"
 
-    file-open file-ex
-    build-fcm-data
+   file-open file-ex
 
-   let x length fcm-adja-list
+   let x length caribou-fcm-adja-list
    let y 0
    while [ y < x ] [
      file-print ""
      file-write word year ","
-     file-write word (item y fcm-agentnum-list) ","
-     file-write word (item y fcm-success-list) ","
-     file-write matrix:to-row-list (item y fcm-adja-list)
+     file-write word (item y caribou-fcm-agentnum-list) ","
+     file-write word (item y caribou-fcm-success-list) ","
+     file-write matrix:to-row-list (item y caribou-fcm-adja-list)
      set y y + 1
    ]
 
@@ -1262,11 +1259,52 @@ to-report select-weighted-val [ prob-list selection-list ]
     report item pos selection-list
   ]
 end
+
+to build-caribou-harvest-lists
+  ask caribou-harvests
+  [
+     set caribou-harvest-selection-list [ ]
+     set caribou-harvest-fRanks-list [ ]
+     set caribou-harvest-selection-list lput who caribou-harvest-selection-list
+     set caribou-harvest-fRanks-list lput (20 - ([frequency-rank] of self)) caribou-harvest-fRanks-list
+  ]
+end
+
+to build-caribou-harvest-prob-list
+  set caribou-harvest-probability-list build-prob-list caribou-harvest-fRanks-list
+end
+
+to output-hunter-data
+   ;per trip
+   ask hunters
+   [
+     set data-output []
+     set data-output lput spent-time data-output
+     set data-output lput ([who] of self) data-output
+     set data-output lput prey-caught data-output
+     set data-output lput harvest-patch data-output
+   ]
+   file-open "trip-data.txt"
+   ask hunters [file-write data-output]
+   file-close
+
+   ;per year
+   ask hunters
+   [
+     set data-output []
+     set data-output lput year data-output
+     set data-output lput ([who] of self) data-output
+     set data-output lput harvest-amount data-output
+   ]
+   file-open "year-data.txt"
+   ask hunters [file-write data-output]
+   file-close
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-278
+293
 10
-792
+807
 545
 64
 64
@@ -1291,10 +1329,10 @@ ticks
 30.0
 
 BUTTON
-77
-57
-151
-90
+73
+16
+147
+49
 Setup
 setup
 NIL
@@ -1308,10 +1346,10 @@ NIL
 1
 
 BUTTON
-81
-104
-221
-137
+5
+88
+145
+121
 Show Elevation
 display-elevation
 NIL
@@ -1325,10 +1363,10 @@ NIL
 1
 
 BUTTON
-83
-143
-221
-176
+4
+122
+142
+155
 Show Streams
 display-streams
 NIL
@@ -1342,10 +1380,10 @@ NIL
 1
 
 BUTTON
-83
-183
-222
-216
+4
+157
+143
+190
 Show TRI
 display-roughness
 NIL
@@ -1359,10 +1397,10 @@ NIL
 1
 
 BUTTON
-84
-222
-222
-255
+4
+192
+142
+225
 Show Wetness
 display-wetness
 NIL
@@ -1376,10 +1414,10 @@ NIL
 1
 
 BUTTON
-84
-260
-223
-293
+4
+226
+143
+259
 Show Ocean
 display-ocean
 NIL
@@ -1393,10 +1431,10 @@ NIL
 1
 
 BUTTON
-70
-296
-234
-329
+4
+261
+144
+294
 Show Combination
 display-simultaneous
 NIL
@@ -1410,10 +1448,10 @@ NIL
 1
 
 BUTTON
-1160
-29
-1289
-62
+153
+88
+282
+121
 Show Nuiqsut
 display-Nuiqsut
 NIL
@@ -1427,10 +1465,10 @@ NIL
 1
 
 BUTTON
-1160
-69
-1289
-102
+152
+157
+281
+190
 Show CD5
 display-CD5
 NIL
@@ -1444,10 +1482,10 @@ NIL
 1
 
 BUTTON
-1161
-109
-1287
-142
+153
+228
+279
+261
 Show Cisco
 display-cisco
 NIL
@@ -1461,10 +1499,10 @@ NIL
 1
 
 BUTTON
-1296
-28
-1420
-61
+153
+122
+277
+155
 Hide Nuiqsut
 hide-nuiqsut
 NIL
@@ -1478,10 +1516,10 @@ NIL
 1
 
 BUTTON
-1295
-69
-1420
-102
+153
+193
+278
+226
 Hide CD5
 hide-CD5
 NIL
@@ -1495,10 +1533,10 @@ NIL
 1
 
 BUTTON
-1295
-109
-1423
-142
+153
+264
+281
+297
 Hide Cisco
 hide-cisco
 NIL
@@ -1512,20 +1550,20 @@ NIL
 1
 
 CHOOSER
-1011
-185
-1343
-230
+285
+574
+557
+619
 BoundsFile
 BoundsFile
 "data/ascBounds/CharDolly10Y.asc" "data/ascBounds/CharDolly12M.asc" "data/ascBounds/Cisco10Y.asc" "data/ascBounds/Cisco12M.asc" "data/ascBounds/MooseBounds10Y.asc" "data/ascBounds/MooseBounds12M.asc" "data/ascBounds/whitefish12m.asc" "data/ascBounds/whitefish10Y.asc"
-7
+0
 
 BUTTON
-1012
-238
-1140
-271
+286
+627
+414
+660
 Show Bounds
 display-bounds
 NIL
@@ -1539,10 +1577,10 @@ NIL
 1
 
 BUTTON
-1144
-238
-1222
-271
+418
+627
+496
+660
 Clear
 cd
 NIL
@@ -1556,10 +1594,10 @@ NIL
 1
 
 BUTTON
-983
-76
-1155
-109
+585
+579
+757
+612
 Show Moose Nodes
 display-protograph
 NIL
@@ -1573,10 +1611,10 @@ NIL
 1
 
 BUTTON
-983
-121
-1157
-154
+585
+614
+759
+647
 Hide Moose Nodes
 hide-protograph
 NIL
@@ -1590,10 +1628,10 @@ NIL
 1
 
 BUTTON
-162
-56
-225
-89
+150
+17
+213
+50
 Go
 go
 T
@@ -1607,10 +1645,10 @@ NIL
 1
 
 SLIDER
-800
-18
-833
-168
+193
+869
+356
+902
 elevation-limit
 elevation-limit
 0
@@ -1619,13 +1657,13 @@ elevation-limit
 1
 1
 NIL
-VERTICAL
+HORIZONTAL
 
 SLIDER
-799
-256
-989
-289
+191
+718
+353
+751
 caribou-amt
 caribou-amt
 0
@@ -1637,10 +1675,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1000
-335
-1172
-368
+694
+851
+866
+884
 moose-amt
 moose-amt
 0
@@ -1652,10 +1690,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-800
-293
-990
-326
+192
+755
+353
+788
 caribou-group-amt
 caribou-group-amt
 0
@@ -1667,10 +1705,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-801
-334
-991
-367
+193
+796
+353
+829
 caribou-radius
 caribou-radius
 0
@@ -1682,10 +1720,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-76
-334
-230
-367
+4
+296
+144
+329
 Show Vegetation
 display-vegetation
 NIL
@@ -1699,10 +1737,10 @@ NIL
 1
 
 SLIDER
-31
-478
-265
-511
+358
+665
+556
+698
 set-centroid-attraction
 set-centroid-attraction
 0.01
@@ -1714,10 +1752,10 @@ NIL
 HORIZONTAL
 
 INPUTBOX
-1256
-422
-1326
-482
+585
+680
+655
+740
 caribou-veg-factor
 0.67
 1
@@ -1725,63 +1763,53 @@ caribou-veg-factor
 Number
 
 INPUTBOX
-1330
-422
-1400
-482
+659
+680
+729
+740
 caribou-rough-factor
-0.789
+0.793
 1
 0
 Number
 
 TEXTBOX
-1356
-306
-1532
-336
-Caribou Vegetation Values
-12
-53.0
-1
-
-TEXTBOX
-1371
-401
-1542
-431
+700
+659
+871
+689
 Caribou Utility Factors
 12
 13.0
 1
 
 INPUTBOX
-1405
-421
-1475
-481
+734
+679
+804
+739
 caribou-insect-factor
-0.628
+0.923
 1
 0
 Number
 
 INPUTBOX
-1479
-421
-1549
-481
+808
+679
+878
+739
 caribou-modifier-factor
-0.987
+0.43
 1
 0
 Number
 
 SLIDER
-700
-743
-934
-776
+768
+746
+1002
+779
 caribou-modify-amt
 caribou-modify-amt
 0
@@ -1793,10 +1821,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-36
-567
-201
-601
+8
+789
+173
+823
 Random Centroids
 ask caribou [set current-centroid (random 5 + 1)]
 NIL
@@ -1810,10 +1838,10 @@ NIL
 0
 
 BUTTON
-209
-566
-373
-600
+8
+755
+172
+789
 Change Attraction
 ask caribou [set centroid-attraction set-centroid-attraction]
 NIL
@@ -1827,10 +1855,10 @@ NIL
 0
 
 BUTTON
-384
-564
-508
-598
+8
+721
+132
+755
 Display Pens
 ask caribou\n[\nlet a random 5\nlet b random 5\nifelse (a = b) [pen-down] [pen-up]\n]
 NIL
@@ -1843,56 +1871,22 @@ NIL
 NIL
 0
 
-BUTTON
-649
-566
-752
-600
-Kill Moose
-ask moose [die]
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-808
-193
-956
-227
-Darken Patches
-ask patches\n[\n    set pcolor pcolor - 1\n]
-NIL
-1
-T
-OBSERVER
-NIL
-D
-NIL
-NIL
-1
-
 INPUTBOX
-734
-662
-805
-722
+655
+781
+726
+841
 decay-rate
-0.853
+0.611
 1
 0
 Number
 
 SWITCH
-796
-431
-998
-464
+4
+356
+206
+389
 show-caribou-utility?
 show-caribou-utility?
 1
@@ -1900,10 +1894,10 @@ show-caribou-utility?
 -1000
 
 INPUTBOX
-45
-662
-104
-722
+757
+782
+880
+842
 caribou-max-wetness
 0.8
 1
@@ -1911,41 +1905,21 @@ caribou-max-wetness
 Number
 
 INPUTBOX
-107
-662
-168
-722
+882
+782
+1004
+842
 caribou-max-elevation
 700
 1
 0
 Number
 
-TEXTBOX
-48
-646
-113
-664
-Wetness
-12
-0.0
-1
-
-TEXTBOX
-110
-646
-169
-664
-Elevation
-12
-0.0
-1
-
 INPUTBOX
-474
-659
-546
-719
+38
+641
+110
+701
 diffuse-amt
 0
 1
@@ -1953,10 +1927,10 @@ diffuse-amt
 Number
 
 INPUTBOX
-552
-660
-618
-720
+116
+642
+182
+702
 elevation-scale
 0
 1
@@ -1964,21 +1938,21 @@ elevation-scale
 Number
 
 INPUTBOX
-1552
-421
-1623
-481
+881
+679
+952
+739
 caribou-deflection-factor
-0.702
+0.488
 1
 0
 Number
 
 INPUTBOX
-267
-661
-331
-721
+969
+997
+1033
+1057
 moose-max-elevation
 700
 1
@@ -1986,10 +1960,10 @@ moose-max-elevation
 Number
 
 INPUTBOX
-200
-660
-264
-720
+902
+996
+966
+1056
 moose-max-wetness
 0.8
 1
@@ -1997,10 +1971,10 @@ moose-max-wetness
 Number
 
 INPUTBOX
-1274
-510
-1344
-570
+600
+910
+670
+970
 moose-util-type-2
 0.25
 1
@@ -2008,10 +1982,10 @@ moose-util-type-2
 Number
 
 INPUTBOX
-1347
-510
-1419
-570
+673
+910
+745
+970
 moose-util-type-3
 0.66
 1
@@ -2019,10 +1993,10 @@ moose-util-type-3
 Number
 
 INPUTBOX
-1421
-510
-1493
-570
+747
+910
+819
+970
 moose-util-type-4
 0.5
 1
@@ -2030,10 +2004,10 @@ moose-util-type-4
 Number
 
 INPUTBOX
-1496
-510
-1570
-570
+822
+910
+896
+970
 moose-util-type-5
 0.66
 1
@@ -2041,10 +2015,10 @@ moose-util-type-5
 Number
 
 INPUTBOX
-1573
-510
-1643
-570
+899
+910
+969
+970
 moose-util-type-9
 0.25
 1
@@ -2052,10 +2026,10 @@ moose-util-type-9
 Number
 
 INPUTBOX
-1275
-606
-1346
-666
+602
+996
+673
+1056
 moose-veg-factor
 1
 1
@@ -2063,10 +2037,10 @@ moose-veg-factor
 Number
 
 INPUTBOX
-1348
-606
-1420
-666
+675
+996
+747
+1056
 moose-rough-factor
 -5
 1
@@ -2074,10 +2048,10 @@ moose-rough-factor
 Number
 
 INPUTBOX
-1422
-606
-1495
-666
+749
+996
+822
+1056
 moose-insect-factor
 0.5
 1
@@ -2085,10 +2059,10 @@ moose-insect-factor
 Number
 
 INPUTBOX
-1498
-606
-1569
-666
+825
+996
+896
+1056
 moose-deflection-factor
 1
 1
@@ -2096,10 +2070,10 @@ moose-deflection-factor
 Number
 
 MONITOR
-859
-86
-916
-131
+817
+60
+874
+105
 Day
 day
 1
@@ -2107,10 +2081,10 @@ day
 11
 
 SWITCH
-804
-550
-1007
-583
+4
+461
+207
+494
 show-moose-utility?
 show-moose-utility?
 1
@@ -2118,150 +2092,100 @@ show-moose-utility?
 -1000
 
 TEXTBOX
-1381
-488
-1570
-518
+707
+888
+896
+918
 Moose Vegetation Values
 12
 0.0
 1
 
 TEXTBOX
-1360
-582
-1510
-600
+687
+972
+837
+990
 Moose Utility Factors
 12
 0.0
 1
 
 TEXTBOX
-830
-410
-980
-428
+38
+335
+188
+353
 Show Utility Values
 12
 0.0
 1
 
 TEXTBOX
-819
-235
-969
-253
+206
+663
+356
+681
 Caribou Spawn Values
 12
 0.0
 1
 
 TEXTBOX
-1094
-163
-1244
-181
+368
+552
+518
+570
 Show Harvest Bounds
 12
 0.0
 1
 
 TEXTBOX
-1033
-314
-1183
-332
-Moose Population
-12
-0.0
-1
-
-TEXTBOX
-205
-645
-266
-663
+907
+981
+968
+999
 Wetness
 12
 0.0
 1
 
 TEXTBOX
-270
-646
-340
-664
+974
+981
+1044
+999
 Elevation
 12
 0.0
 1
 
 TEXTBOX
-238
-622
-388
-641
-Moose
-16
-0.0
-1
-
-TEXTBOX
-72
-622
-222
-641
-Caribou
-16
-0.0
-1
-
-TEXTBOX
-490
-632
-640
-650
+64
+620
+214
+638
 ?? Insect Vals ??
 12
 0.0
 1
 
 TEXTBOX
-643
-552
-793
-570
-Temp Commands
-12
-0.0
-1
-
-TEXTBOX
-998
-59
-1148
-77
+600
+562
+750
+580
 Harvest Graph Nodes\n
 12
 0.0
 1
 
-TEXTBOX
-840
-16
-990
-34
-Spawn Elevation Limit
-12
-0.0
-1
-
 MONITOR
-858
-36
-915
-81
+816
+10
+873
+55
 Hour
 hour
 17
@@ -2269,10 +2193,10 @@ hour
 11
 
 INPUTBOX
-39
-749
-203
-809
+8
+826
+172
+886
 centroid-attraction-max
 0.55
 1
@@ -2280,10 +2204,10 @@ centroid-attraction-max
 Number
 
 INPUTBOX
-40
-814
-201
-874
+9
+891
+170
+951
 centroid-attraction-min
 0.04
 1
@@ -2291,10 +2215,10 @@ centroid-attraction-min
 Number
 
 INPUTBOX
-40
-879
-201
-939
+9
+956
+170
+1016
 caribou-cent-dist-cutoff
 20
 1
@@ -2302,10 +2226,10 @@ caribou-cent-dist-cutoff
 Number
 
 INPUTBOX
-41
-940
-200
-1000
+10
+1017
+169
+1077
 caribou-util-cutoff
 0.2
 1
@@ -2313,10 +2237,10 @@ caribou-util-cutoff
 Number
 
 SWITCH
-1033
-495
-1168
-528
+449
+1030
+584
+1063
 is-training?
 is-training?
 0
@@ -2324,10 +2248,10 @@ is-training?
 -1000
 
 MONITOR
-859
-135
-916
-184
+817
+109
+874
+158
 Year
 year
 0
@@ -2335,10 +2259,10 @@ year
 12
 
 SWITCH
-804
-585
-963
-618
+191
+684
+350
+717
 caribouPopMod?
 caribouPopMod?
 1
@@ -2346,21 +2270,21 @@ caribouPopMod?
 -1000
 
 INPUTBOX
-1628
-421
-1690
-481
+957
+679
+1019
+739
 caribou-precip-factor
-0.918
+0.858
 1
 0
 Number
 
 SLIDER
-801
-372
-992
-405
+193
+834
+354
+867
 caribou-para
 caribou-para
 0
@@ -2372,10 +2296,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-796
-466
-999
-499
+4
+391
+207
+424
 show-caribou-utility-para?
 show-caribou-utility-para?
 1
@@ -2383,10 +2307,10 @@ show-caribou-utility-para?
 -1000
 
 SWITCH
-796
-500
-999
-533
+4
+425
+207
+458
 show-caribou-utility-non-para?
 show-caribou-utility-non-para?
 0
@@ -2394,64 +2318,47 @@ show-caribou-utility-non-para?
 -1000
 
 SLIDER
-1259
-353
-1678
-386
+586
+744
+758
+777
 ndvi-weight
 ndvi-weight
 0
 1
-0.13
+0.209
 0.01
 1
 NIL
 HORIZONTAL
 
 INPUTBOX
-978
-719
-1047
-779
+585
+782
+654
+842
 energy-gain-factor
-44.5
+3160
 1
 0
 Number
 
 SWITCH
-1034
-460
-1169
-493
+312
+1030
+447
+1063
 is-random?
 is-random?
 1
 1
 -1000
 
-BUTTON
-1064
-374
-1127
-407
-test
-ask a-caribou 119 [\n\nprint \"Matrix sense state:\" \nprint (matrix:pretty-print-text fcm-mat-sensor)\n\nlet sens-adj matrix:transpose(matrix:submatrix fcm-adja 0 0 10 6)\n;\nlet internal matrix:times sens-adj fcm-mat-sensor\nset internal matrix:map fcm-sigmoid-simple internal\n    \n;weights for actions\nlet conc-adj matrix:transpose(matrix:submatrix fcm-adja 10 6 16 11) \nlet final-states matrix:times conc-adj internal\n\nprint \"Matrix final states:\" \nprint (matrix:pretty-print-text final-states)\n]\n
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
 SWITCH
-1038
-427
-1158
-460
+188
+1029
+308
+1062
 debug-fcm?
 debug-fcm?
 1
@@ -2459,20 +2366,20 @@ debug-fcm?
 -1000
 
 TEXTBOX
-1465
-668
-1533
-691
+1198
+650
+1266
+673
 HUNTERS
 11
 0.0
 1
 
 SLIDER
-1262
-730
-1485
-763
+1060
+760
+1283
+793
 hunter-population
 hunter-population
 0
@@ -2484,25 +2391,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-1262
-767
-1485
-800
+1060
+797
+1283
+830
 hunter-vision
 hunter-vision
 0
 20
-4
+3
 1
 1
 * 2.2 km
 HORIZONTAL
 
 SLIDER
-1496
-730
-1719
-763
+1294
+760
+1517
+793
 prey-close-constant
 prey-close-constant
 0
@@ -2514,10 +2421,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1496
-770
-1720
-803
+1294
+800
+1518
+833
 prey-far-constant
 prey-far-constant
 0.5
@@ -2529,12 +2436,12 @@ NIL
 HORIZONTAL
 
 SLIDER
-1496
-812
-1719
-845
-energy-low-constant
-energy-low-constant
+1294
+842
+1517
+875
+trip-long-constant
+trip-long-constant
 0
 0.50
 0.4
@@ -2544,12 +2451,12 @@ NIL
 HORIZONTAL
 
 SLIDER
-1496
-852
-1720
-885
-energy-high-constant
-energy-high-constant
+1294
+882
+1518
+915
+trip-short-constant
+trip-short-constant
 0.50
 1
 0.6
@@ -2559,10 +2466,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-982
-653
-1154
-686
+3
+495
+175
+528
 display-centroids?
 display-centroids?
 1
@@ -2570,43 +2477,32 @@ display-centroids?
 -1000
 
 SWITCH
-982
-685
-1128
-718
+3
+527
+149
+560
 display-grids?
 display-grids?
-1
+0
 1
 -1000
 
 MONITOR
-975
-10
-1077
-55
+6
+567
+108
+612
 mean sim time
 mean avg-sim-time
 17
 1
 11
 
-MONITOR
-636
-608
-767
-653
-mean caribou state
-mean [state] of caribou
-17
-1
-11
-
 PLOT
-211
-802
-411
-952
+878
+10
+1078
+160
 Number Unique Caribou FCMs
 NIL
 NIL
@@ -2618,13 +2514,13 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plotxy (year) (length fcm-adja-list)"
+"default" 1.0 0 -16777216 true "" "plotxy (year) (length caribou-fcm-adja-list)"
 
 PLOT
-411
-802
-611
-952
+1078
+10
+1278
+160
 Mean Bioenergy of Caribou
 NIL
 NIL
@@ -2639,10 +2535,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plotxy ticks mean [bioenergy-success] of caribou"
 
 PLOT
-625
-795
-1010
-990
+818
+164
+1203
+359
 Caribou State Flux
 NIL
 NIL
@@ -2661,10 +2557,10 @@ PENS
 "Intraforage" 1.0 0 -6459832 true "" "plotxy ticks count caribou with [state = 4]"
 
 INPUTBOX
-1044
-900
-1101
-960
+203
+956
+260
+1016
 Q-Gamma
 0.999
 1
@@ -2672,10 +2568,10 @@ Q-Gamma
 Number
 
 INPUTBOX
-1108
-901
-1167
-961
+267
+957
+326
+1017
 Q-rate
 0.001
 1
@@ -2683,10 +2579,10 @@ Q-rate
 Number
 
 SWITCH
-1044
-863
-1160
-896
+203
+919
+319
+952
 use-q
 use-q
 1
@@ -2694,10 +2590,10 @@ use-q
 -1000
 
 SWITCH
-66
-520
-236
-553
+358
+701
+528
+734
 export-centroids?
 export-centroids?
 1
@@ -2705,64 +2601,42 @@ export-centroids?
 -1000
 
 CHOOSER
-1417
-151
-1555
-196
+358
+875
+496
+920
 mutation-method
 mutation-method
 "fuzzy-logic" "trivalent" "pentavalent"
 0
 
-INPUTBOX
-1443
-85
-1531
-145
-mutate-prob
-0.1
-1
-0
-Number
-
 SWITCH
-1430
-48
-1548
-81
-mutation?
-mutation?
+358
+737
+517
+770
+caribou-mutate?
+caribou-mutate?
 0
 1
 -1000
 
 SWITCH
-1551
-47
-1703
-80
-recombination?
-recombination?
+358
+773
+540
+806
+caribou-recombine?
+caribou-recombine?
 0
 1
 -1000
 
-INPUTBOX
-1587
-85
-1676
-145
-recomb-prob
-0.2
-1
-0
-Number
-
 SWITCH
-1359
-206
-1545
-239
+348
+956
+534
+989
 calibrateCaribouVar?
 calibrateCaribouVar?
 0
@@ -2770,36 +2644,36 @@ calibrateCaribouVar?
 -1000
 
 SWITCH
-1347
-241
-1557
-274
+336
+991
+546
+1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-0
+1
 1
 -1000
 
 SLIDER
-1263
-803
-1485
-836
-initial-trip-length
-initial-trip-length
+1061
+833
+1283
+866
+trip-length-max
+trip-length-max
 0
-115
-115
+224
+112
 1
 1
 * 1.5 hrs
 HORIZONTAL
 
 SLIDER
-1496
-890
-1705
-923
+1294
+920
+1503
+953
 boat-hike-long-constant
 boat-hike-long-constant
 0
@@ -2811,10 +2685,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1496
-931
-1711
-964
+1294
+961
+1509
+994
 boat-hike-short-constant
 boat-hike-short-constant
 0
@@ -2826,10 +2700,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1496
-969
-1738
-1002
+1050
+984
+1292
+1017
 caribou-harvest-low-constant
 caribou-harvest-low-constant
 0
@@ -2841,10 +2715,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1496
-1008
-1745
-1041
+1050
+1023
+1299
+1056
 caribou-harvest-high-constant
 caribou-harvest-high-constant
 0
@@ -2856,25 +2730,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-1262
-840
-1487
-873
+1060
+870
+1285
+903
 hunter-centroid-selection
 hunter-centroid-selection
 0
 21
-10
+15
 1
 1
 f-rank
 HORIZONTAL
 
 BUTTON
-94
-386
-200
-419
+39
+50
+145
+83
 New Hunters
 ask caribou-harvests [ht]\nask hunters [die]\nnew-hunters\n
 NIL
@@ -2888,13 +2762,13 @@ NIL
 1
 
 BUTTON
-94
-430
-196
-463
+149
+51
+251
+84
 Go Hunters
 go-hunters-nls
-T
+NIL
 1
 T
 OBSERVER
@@ -2905,21 +2779,21 @@ NIL
 1
 
 INPUTBOX
-1500
-1060
-1739
-1135
+1052
+573
+1291
+648
 new-file
-\"WetnessSumsBefore.txt\"
+WetnessSumsAfter.txt
 1
 0
 String
 
 BUTTON
-1517
-1223
-1610
-1256
+1300
+616
+1393
+649
 Open File
 file-open new-file
 NIL
@@ -2933,10 +2807,10 @@ NIL
 1
 
 BUTTON
-1616
-1223
-1710
-1256
+1399
+578
+1493
+611
 Close File
 file-close\n
 NIL
@@ -2950,10 +2824,10 @@ NIL
 1
 
 PLOT
-624
-993
-1244
-1298
+818
+359
+1204
+566
 Hunter State Flux
 NIL
 NIL
@@ -2971,12 +2845,12 @@ PENS
 "Return " 1.0 0 -6917194 true "" "plot count hunters with [prev-motor-state = 3]"
 
 BUTTON
-1565
-1145
-1666
-1178
+1294
+578
+1395
+611
 Write to File
-file-open new-file \nask hunters [file-write wetness-sum]\nfile-close
+file-open new-file \nask hunters [file-write wetness-sum / (patch-sum * 1.006791152)]\nfile-close
 NIL
 1
 T
@@ -2988,10 +2862,10 @@ NIL
 1
 
 SLIDER
-1260
-692
-1579
-725
+1058
+722
+1377
+755
 maximum-hunter-density
 maximum-hunter-density
 0
@@ -3003,10 +2877,10 @@ hunters/caribou group
 HORIZONTAL
 
 SLIDER
-1264
-913
-1492
-946
+1304
+999
+1520
+1032
 hunter-density-low-constant
 hunter-density-low-constant
 0
@@ -3018,10 +2892,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1265
-950
-1493
-983
+1305
+1036
+1522
+1069
 hunter-density-high-constant
 hunter-density-high-constant
 .5
@@ -3033,10 +2907,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1263
-876
-1490
-909
+1061
+906
+1288
+939
 hunter-harvest-goal
 hunter-harvest-goal
 1
@@ -3048,10 +2922,10 @@ caribou
 HORIZONTAL
 
 MONITOR
-508
-1000
-617
-1045
+111
+567
+220
+612
 Hunter Success
 sum ([harvest-amount] of hunters)
 2
@@ -3059,10 +2933,10 @@ sum ([harvest-amount] of hunters)
 11
 
 SLIDER
-1265
-987
-1493
-1020
+1060
+942
+1288
+975
 local-search-radius
 local-search-radius
 0
@@ -3074,10 +2948,10 @@ patches
 HORIZONTAL
 
 SWITCH
-1029
-533
-1169
-566
+1058
+685
+1198
+718
 use-hunters?
 use-hunters?
 1
@@ -3085,33 +2959,114 @@ use-hunters?
 -1000
 
 SWITCH
-1566
-195
-1747
-228
+349
+921
+530
+954
 exportCaribouData?
 exportCaribouData?
 1
 1
 -1000
 
-PLOT
-13
-1034
-285
-1314
-Caribou-Utility-Non-Para
+BUTTON
+1400
+616
+1480
+649
+line test
+  let patch-list-t []\n  let num-t 0\n  let x1-t 3\n  let y1-t 1\n  let x2-t -4\n  let y2-t -30\n  let d-x (x2-t - x1-t)\n  let d-y (y2-t - y1-t)\n  let slope-t d-y / d-x\n  ifelse (abs d-x >  abs d-y)\n  [\n     let x-t x1-t\n     let y-t 0\n     ifelse (x2-t > x1-t)\n     [\n        while[x-t <= x2-t]\n        [\n          set y-t (slope-t * (x-t - x1-t) + y1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set x-t (x-t + 1)\n        ]\n     ]\n     [\n        while[x-t >= x2-t]\n        [\n          set y-t (slope-t * (x-t - x1-t) + y1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set x-t (x-t - 1)\n        ]\n     ]\n   ]  \n   [\n     let y-t y1-t\n     let x-t 0\n     ifelse (y2-t > y1-t)\n     [\n        while[y-t <= y2-t]\n        [;\n          set x-t ((y-t - y1-t) / slope-t + x1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set y-t (y-t + 1)\n        ]\n     ]\n     [\n        while[y-t >= y2-t]\n        [;\n          set x-t ((y-t - y1-t) / slope-t + x1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set y-t (y-t - 1)\n        ]\n     ]\n   ]\n  foreach patch-list-t\n  [\n      ask ? \n      [\n         set pcolor red\n         if(streams > (0.025 * (max [streams] of patches)) or empty? river-set = false and pxcor != 3 and pycor != 1)\n         [set pcolor white]\n      ]\n  ]
+NIL
+1
+T
+OBSERVER
 NIL
 NIL
-0.0
-7.0
-0.0
-7000.0
-false
-false
-"" ""
-PENS
-"default" 0.2 1 -16777216 true "" "histogram [caribou-utility-non-para] of patches"
+NIL
+NIL
+1
+
+SWITCH
+1272
+307
+1449
+340
+hunter-recombine?
+hunter-recombine?
+1
+1
+-1000
+
+SWITCH
+1272
+344
+1426
+377
+hunter-mutate?
+hunter-mutate?
+1
+1
+-1000
+
+SLIDER
+357
+808
+544
+841
+caribou-mutate-prob
+caribou-mutate-prob
+0
+1
+0.1
+.1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+357
+842
+549
+875
+caribou-recomb-prob
+caribou-recomb-prob
+0
+1
+0.2
+.1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1272
+379
+1458
+412
+hunter-recomb-prob
+hunter-recomb-prob
+0
+1
+0.2
+.1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1272
+413
+1453
+446
+hunter-mutate-prob
+hunter-mutate-prob
+0
+1
+0.1
+.1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
