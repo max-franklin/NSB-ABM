@@ -95,24 +95,22 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
       
       if test? [ print avg-success ]
       
-      if agent-type = 0 [
-        
-        let compStateMem [ 0 0 0 0 0 ]
-        
-        ask caribou with [ fcm-adja = current-fcm ] [
-          ;set compStateMem lput state-memory compStateMem
-          set compStateMem (map + compStateMem state-memory)
-        ]
-        
-        ;;now find amount of time spent in foraging states.
-        let fgTime 100 * ((item 1 compStateMem + item 4 compStateMem) / (sum compStateMem))
-        
-        ;;calculate state fitness based on amount of time spent foraging.
-        let lowFg 50
-        let highFg 88
-        let stateFit 0
-        
-        ifelse fgTime <= highFg and fgTime >= lowFg
+      let compStateMem [ 0 0 0 0 0 ]
+      
+      ask caribou with [ fcm-adja = current-fcm ] [
+        ;set compStateMem lput state-memory compStateMem
+        set compStateMem (map + compStateMem state-memory)
+      ]
+      
+      ;;now find amount of time spent in foraging states.
+      let fgTime 100 * ((item 1 compStateMem + item 4 compStateMem) / (sum compStateMem))
+      
+      ;;calculate state fitness based on amount of time spent foraging.
+      let lowFg 50
+      let highFg 88
+      let stateFit 0
+      
+      ifelse fgTime <= highFg and fgTime >= lowFg
         [ set stateFit 1 ]
         [
           ifelse fgTime > highFg
@@ -122,12 +120,10 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
           ]
           [ set stateFit fgTime / lowFg ] 
         ]
-        
-        if avg-success >= 0 [ set avg-success avg-success * stateFit ]
-        
-        if test? [ print compStateMem print fgTime print stateFit print avg-success ]
-      ]
       
+      if avg-success >= 0 [ set avg-success avg-success * stateFit ]
+      
+      if test? [ print compStateMem print fgTime print stateFit print avg-success ]
       
       
       set test? false
@@ -160,6 +156,9 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
       
       set x x + 1
     ]
+    set caribou-fcm-adja-list fcm-adja-list
+    set caribou-fcm-agentnum-list fcm-agentnum-list
+    set caribou-fcm-success-list fcm-success-list
   ]
   [
     while [x < length fcm-adja-list]

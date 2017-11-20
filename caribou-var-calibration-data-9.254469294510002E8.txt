@@ -1,0 +1,3 @@
+ "year" "mean season Bio-E" "fcm convergence" "probability of mutation" "mutated?" "recombined?" "decay-rate" "energy-gain" "ndvi-weight" "caribou-veg-factor" "caribou-rough-factor" "caribou-insect-factor" "caribou-modifier-factor" "caribou-deflection-factor" "caribou-precip-factor" "solution success"
+ 0 4461452.338811103 0 0 0 0 0.408 0.281 0.044 0.691 0.128 0.211 0.235 0.715 0.377 0
+ 1 5066073.315195337 0 0 0 0 0.408 0.281 0.044 0.691 0.128 0.211 0.235 0.715 0.377 0

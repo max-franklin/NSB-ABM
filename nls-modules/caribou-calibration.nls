@@ -37,16 +37,81 @@ to setup-caribou-var-cal
 end
 
 to go-caribou-var-cal 
+  let oldCaribouVarCal caribouVarCal
   let mutatedVars? 0
+  let recombined? 0
   let datIn calculate-var-prob
   let varProb item 0 datIn
   let convergence item 1 datIn
+  let soln-success item 2 datIn
   if (random-num 1) <= varProb [ 
     set mutatedVars? 1
+    
+    ;;create temporary lists without current fitness and soln value for purpose of
+    ;;weeding out current soln from recombination pool.
+    let t-car-var-soln-fit-list car-var-soln-fit-list 
+    let t-car-var-soln-list car-var-soln-list 
+    
+    set car-var-soln-fit-list lput soln-success car-var-soln-fit-list
+    set car-var-soln-list lput caribouVarCal car-var-soln-list 
+    
+    let recombRoll random-num 1
+    if recombRoll > ( soln-success / ( max car-var-soln-fit-list )) [
+    ;;recomb caribou variable calibration solutions.
+    set recombined? 1
+    let var-genome-1 0
+    let var-genome-2 0
+    
+    ;;check to see if we need to search for a cross-over partner, or there's only
+    ;;one other solution generated, thus far.
+    ifelse length t-car-var-soln-list > 1 
+    [
+      ;;build a probability list first for weighted selection.
+      let prob-recomb-list build-prob-list car-var-soln-fit-list 
+      ;;now select one of the list randomly for crossing
+      set var-genome-1 select-weighted-val prob-recomb-list t-car-var-soln-list
+      set var-genome-2 caribouVarCal
+      
+    ]
+    [
+      set var-genome-1 item 0 t-car-var-soln-list
+      set var-genome-2 caribouVarCal
+    ]
+    
+    ;;now, we can run the recombination procedure. 
+    set caribouVarCal cross-var-genome var-genome-1 var-genome-2
+      
+    ]
+    
     mutate-caribou-variables
   ]
  
-  if exportCaribouData? [ export-var-data mutatedVars? varProb convergence ]
+  if exportCaribouData? [ export-var-data mutatedVars? recombined? varProb convergence oldCaribouVarCal soln-success ]
+end
+
+to-report cross-var-genome [ genome-1 genome-2 ]
+  let test? true
+  
+  let len-snip-1 random (length genome-1)
+  let snip-1 sublist genome-1 0 len-snip-1
+  
+  let snip-2 sublist genome-2 len-snip-1 (length genome-2)
+  
+  let genome-out snip-1
+  foreach snip-2 [
+   set genome-out lput item ? snip-2 genome-out
+  ]
+  
+  ;;quickly check to make sure we didn't botch the process..
+  if test? [
+    show genome-1
+    show snip-1
+    show genome-2
+    show snip-2
+    show genome-out
+  ]
+  
+  report genome-out
 end
 
 to setup-var-file 
@@ -67,19 +132,22 @@ to setup-var-file
   file-write "fcm convergence"
   file-write "probability of mutation"
   file-write "mutated?"
+  file-write "recombined?"
   foreach globalVars file-write
-  file-print ""
-  file-write year
-  file-write 0
-  file-write 0
-  file-write 0
-  file-write 0
-  foreach caribouVarCal file-write
+  file-write "solution success"
+  ;file-print ""
+  ;file-write year
+  ;file-write 0
+  ;file-write 0
+  ;file-write 0
+  ;file-write 0
+  ;foreach caribouVarCal file-write
+  ;file-write 0
   
   file-close
 end
 
-to export-var-data [ mutatedVars? varProb convergence ]
+to export-var-data [ mutatedVars? recombined? varProb convergence oldCaribouVarCal soln-success ]
   let fileOut "caribou-var-calibration-data-"
   set fileOut word fileOut seed
   set fileOut word fileOut ".txt"
@@ -89,12 +157,16 @@ to export-var-data [ mutatedVars? varProb convergence ]
   
   file-open fileOut
   file-print ""
-  file-write (year + 1)
+  ;file-write (year + 1)
+  file-write year
   file-write mean [bioenergy-success] of caribou
   file-write convergence
   file-write varProb
+  ;;for next two variables, they track with the incoming next line of variable calibration solns.
   file-write mutatedVars?
-  foreach caribouVarCal file-write 
+  file-write recombined?
+  foreach oldCaribouVarCal file-write 
+  file-write soln-success
   file-close 
 end
 
@@ -186,6 +258,7 @@ to-report calculate-var-prob
   
   set datOut lput varProb datOut
   set datOut lput convergence datOut
+  set datOut lput fitness datOut
   
   report datOut
   

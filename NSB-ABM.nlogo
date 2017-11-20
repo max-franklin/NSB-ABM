@@ -617,11 +617,11 @@ to go
       if caribouPopMod? = true
       [ go-caribou-pop ]
 
+      if calibrateCaribouVar? [ go-caribou-var-cal ]
+
       if(is-training?) [ update-caribou-fcm ]
 
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
-
-      if calibrateCaribouVar? [ go-caribou-var-cal ]
 
       ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
@@ -749,7 +749,7 @@ end
 
 to export-fcm-data
     ;;dump all pertinent data every year for variable calibration.
-   set caribou-fcm-adja-list [fcm-adja] of caribou
+   ;set caribou-fcm-adja-list [fcm-adja] of caribou
 
    let file-ex "caribou-fcms-agentnum-success-"
    set file-ex word file-ex seed
@@ -1757,7 +1757,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0.67
+0.606
 1
 0
 Number
@@ -1768,7 +1768,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.793
+0.822
 1
 0
 Number
@@ -1789,7 +1789,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.923
+0.979
 1
 0
 Number
@@ -1800,7 +1800,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.43
+0.41
 1
 0
 Number
@@ -1821,10 +1821,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-8
-789
-173
-823
+12
+739
+177
+773
 Random Centroids
 ask caribou [set current-centroid (random 5 + 1)]
 NIL
@@ -1838,10 +1838,10 @@ NIL
 0
 
 BUTTON
-8
-755
-172
-789
+12
+705
+176
+739
 Change Attraction
 ask caribou [set centroid-attraction set-centroid-attraction]
 NIL
@@ -1855,10 +1855,10 @@ NIL
 0
 
 BUTTON
-8
-721
-132
-755
+12
+671
+136
+705
 Display Pens
 ask caribou\n[\nlet a random 5\nlet b random 5\nifelse (a = b) [pen-down] [pen-up]\n]
 NIL
@@ -1877,7 +1877,7 @@ INPUTBOX
 726
 841
 decay-rate
-0.611
+0.102
 1
 0
 Number
@@ -1916,10 +1916,10 @@ caribou-max-elevation
 Number
 
 INPUTBOX
-38
-641
-110
-701
+42
+591
+114
+651
 diffuse-amt
 0
 1
@@ -1927,10 +1927,10 @@ diffuse-amt
 Number
 
 INPUTBOX
-116
-642
-182
-702
+120
+592
+186
+652
 elevation-scale
 0
 1
@@ -1943,7 +1943,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0.488
+0.343
 1
 0
 Number
@@ -2162,10 +2162,10 @@ Elevation
 1
 
 TEXTBOX
-64
-620
-214
-638
+68
+570
+218
+588
 ?? Insect Vals ??
 12
 0.0
@@ -2193,10 +2193,10 @@ hour
 11
 
 INPUTBOX
-8
-826
-172
-886
+12
+776
+176
+836
 centroid-attraction-max
 0.55
 1
@@ -2204,10 +2204,10 @@ centroid-attraction-max
 Number
 
 INPUTBOX
-9
-891
-170
-951
+13
+841
+174
+901
 centroid-attraction-min
 0.04
 1
@@ -2215,10 +2215,10 @@ centroid-attraction-min
 Number
 
 INPUTBOX
-9
-956
-170
-1016
+13
+906
+174
+966
 caribou-cent-dist-cutoff
 20
 1
@@ -2226,10 +2226,10 @@ caribou-cent-dist-cutoff
 Number
 
 INPUTBOX
-10
-1017
-169
-1077
+14
+967
+173
+1027
 caribou-util-cutoff
 0.2
 1
@@ -2275,7 +2275,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.858
+0.684
 1
 0
 Number
@@ -2326,7 +2326,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.209
+0.155
 0.01
 1
 NIL
@@ -2338,7 +2338,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-3160
+81.8
 1
 0
 Number
@@ -2350,7 +2350,7 @@ SWITCH
 1063
 is-random?
 is-random?
-1
+0
 1
 -1000
 
@@ -2376,10 +2376,10 @@ HUNTERS
 1
 
 SLIDER
-1060
-760
-1283
-793
+1040
+753
+1263
+786
 hunter-population
 hunter-population
 0
@@ -2391,10 +2391,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1060
-797
-1283
-830
+1040
+790
+1263
+823
 hunter-vision
 hunter-vision
 0
@@ -2406,10 +2406,10 @@ hunter-vision
 HORIZONTAL
 
 SLIDER
-1294
-760
-1517
-793
+1304
+715
+1506
+748
 prey-close-constant
 prey-close-constant
 0
@@ -2421,10 +2421,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1294
-800
-1518
-833
+1286
+756
+1510
+789
 prey-far-constant
 prey-far-constant
 0.5
@@ -2436,10 +2436,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1294
-842
-1517
-875
+1286
+798
+1509
+831
 trip-long-constant
 trip-long-constant
 0
@@ -2451,10 +2451,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1294
-882
-1518
-915
+1286
+838
+1510
+871
 trip-short-constant
 trip-short-constant
 0.50
@@ -2488,10 +2488,10 @@ display-grids?
 -1000
 
 MONITOR
-6
-567
-108
-612
+1211
+168
+1313
+213
 mean sim time
 mean avg-sim-time
 17
@@ -2650,15 +2650,15 @@ SWITCH
 1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-1
+0
 1
 -1000
 
 SLIDER
-1061
-833
-1283
-866
+1041
+826
+1263
+859
 trip-length-max
 trip-length-max
 0
@@ -2670,10 +2670,10 @@ trip-length-max
 HORIZONTAL
 
 SLIDER
-1294
-920
-1503
-953
+1286
+876
+1495
+909
 boat-hike-long-constant
 boat-hike-long-constant
 0
@@ -2685,10 +2685,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1294
-961
-1509
-994
+1286
+917
+1501
+950
 boat-hike-short-constant
 boat-hike-short-constant
 0
@@ -2700,10 +2700,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1050
-984
-1292
-1017
+1040
+970
+1282
+1003
 caribou-harvest-low-constant
 caribou-harvest-low-constant
 0
@@ -2715,10 +2715,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1050
-1023
-1299
-1056
+1040
+1009
+1289
+1042
 caribou-harvest-high-constant
 caribou-harvest-high-constant
 0
@@ -2730,10 +2730,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1060
-870
-1285
-903
+1040
+863
+1265
+896
 hunter-centroid-selection
 hunter-centroid-selection
 0
@@ -2862,10 +2862,10 @@ NIL
 1
 
 SLIDER
-1058
-722
-1377
-755
+1038
+715
+1300
+748
 maximum-hunter-density
 maximum-hunter-density
 0
@@ -2877,10 +2877,10 @@ hunters/caribou group
 HORIZONTAL
 
 SLIDER
-1304
-999
-1520
-1032
+1296
+955
+1512
+988
 hunter-density-low-constant
 hunter-density-low-constant
 0
@@ -2892,10 +2892,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1305
-1036
-1522
-1069
+1297
+992
+1514
+1025
 hunter-density-high-constant
 hunter-density-high-constant
 .5
@@ -2907,10 +2907,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1061
-906
-1288
-939
+1041
+899
+1268
+932
 hunter-harvest-goal
 hunter-harvest-goal
 1
@@ -2922,10 +2922,10 @@ caribou
 HORIZONTAL
 
 MONITOR
-111
-567
-220
-612
+1214
+370
+1323
+415
 Hunter Success
 sum ([harvest-amount] of hunters)
 2
@@ -2933,10 +2933,10 @@ sum ([harvest-amount] of hunters)
 11
 
 SLIDER
-1060
-942
-1288
-975
+1040
+935
+1268
+968
 local-search-radius
 local-search-radius
 0
@@ -2948,10 +2948,10 @@ patches
 HORIZONTAL
 
 SWITCH
-1058
-685
-1198
-718
+1038
+678
+1178
+711
 use-hunters?
 use-hunters?
 1
@@ -2965,7 +2965,7 @@ SWITCH
 954
 exportCaribouData?
 exportCaribouData?
-1
+0
 1
 -1000
 
@@ -2987,10 +2987,10 @@ NIL
 1
 
 SWITCH
-1272
-307
-1449
-340
+1214
+422
+1391
+455
 hunter-recombine?
 hunter-recombine?
 1
@@ -2998,10 +2998,10 @@ hunter-recombine?
 -1000
 
 SWITCH
-1272
-344
-1426
-377
+1214
+459
+1368
+492
 hunter-mutate?
 hunter-mutate?
 1
@@ -3039,10 +3039,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1272
-379
-1458
-412
+1214
+494
+1400
+527
 hunter-recomb-prob
 hunter-recomb-prob
 0
@@ -3054,10 +3054,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1272
-413
-1453
-446
+1214
+528
+1395
+561
 hunter-mutate-prob
 hunter-mutate-prob
 0
