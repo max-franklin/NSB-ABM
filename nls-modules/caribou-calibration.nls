@@ -7,6 +7,8 @@ globals [
 
 to setup-caribou-var-cal 
   ;print "this is a test to see if setup-car-var-cal is being called"
+  set car-var-soln-fit-list [ ]
+  set car-var-soln-list [ ]
   set caribouVarCal [ ] 
   ifelse randomCaribouVarStart?
     [
@@ -49,37 +51,48 @@ to go-caribou-var-cal
     
     ;;create temporary lists without current fitness and soln value for purpose of
     ;;weeding out current soln from recombination pool.
-    let t-car-var-soln-fit-list car-var-soln-fit-list 
-    let t-car-var-soln-list car-var-soln-list 
-    
+    ;let t-car-var-soln-fit-list car-var-soln-fit-list 
+    ;let t-car-var-soln-list car-var-soln-list 
     set car-var-soln-fit-list lput soln-success car-var-soln-fit-list
     set car-var-soln-list lput caribouVarCal car-var-soln-list 
     
-    let recombRoll random-num 1
-    if recombRoll > ( soln-success / ( max car-var-soln-fit-list )) [
-    ;;recomb caribou variable calibration solutions.
-    set recombined? 1
-    let var-genome-1 0
-    let var-genome-2 0
+    let t-car-var-soln-list [ ]
+    let t-car-var-soln-fit-list [ ]
+    foreach car-var-soln-fit-list [
+      if item ? car-var-soln-fit-list > 0 [
+        set t-car-var-soln-fit-list item ? car-var-soln-fit-list
+        set t-car-var-soln-list item ? car-var-soln-list
+      ]
+    ]
     
-    ;;check to see if we need to search for a cross-over partner, or there's only
-    ;;one other solution generated, thus far.
-    ifelse length t-car-var-soln-list > 1 
-    [
+    let recombRoll random-num 1
+    let threshold (length t-car-var-soln-list) / (length car-var-soln-list)
+    if recombRoll > threshold [ ]
+    
+    ifelse length t-car-var-soln-list > 1   
+    [  
+      ;if recombRoll > ( soln-success / ( max t-car-var-soln-fit-list )) [
+      ;;recomb caribou variable calibration solutions.
+      set recombined? 1
+      let var-genome-1 0
+      let var-genome-2 0
+      
       ;;build a probability list first for weighted selection.
-      let prob-recomb-list build-prob-list car-var-soln-fit-list 
+      let prob-recomb-list build-prob-list t-car-var-soln-fit-list 
       ;;now select one of the list randomly for crossing
       set var-genome-1 select-weighted-val prob-recomb-list t-car-var-soln-list
       set var-genome-2 caribouVarCal
+        [
+          set var-genome-1 item 0 t-car-var-soln-list
+          set var-genome-2 caribouVarCal
+        ]
       
+      ;;now, we can run the recombination procedure. 
+      set caribouVarCal cross-var-genome var-genome-1 var-genome-2
+      
+      ;]
     ]
     [
-      set var-genome-1 item 0 t-car-var-soln-list
-      set var-genome-2 caribouVarCal
-    ]
-    
-    ;;now, we can run the recombination procedure. 
-    set caribouVarCal cross-var-genome var-genome-1 var-genome-2
       
     ]
     
@@ -171,19 +184,29 @@ to export-var-data [ mutatedVars? recombined? varProb convergence oldCaribouVarC
 end
 
 to mutate-caribou-variables 
-  ;;for now, just assign a mutate amt.  
-  let mutateAmt (random-num 2) - 1
-  let randItem (random length caribouVarCal)
-  let oldVal item randItem caribouVarCal
-  let newVal oldVal + mutateAmt
   
-  while [ newVal <= 0 or newVal >= 1 ] [
-    set mutateAmt (random-num 2) - 1
-    set oldVal item randItem caribouVarCal
-    set newVal oldVal + mutateAmt   
-  ]
- 
-  set caribouVarCal replace-item randItem caribouVarCal newVal
+  ;ifelse item (length car-var-soln-fit-list - 1) car-var-soln-fit-list = 0 
+  ;[
+    ;;since we're not even close, just totally recombine the variable set.
+  ;  repeat 9 [ set caribouVarCal lput random-num 1 caribouVarCal ]
+    
+  ;]
+  ;[
+    ;;if we're in the positive, then just try tweaking the variable set.
+    ;;for now, just assign a mutate amt.  
+    let mutateAmt (random-num 2) - 1
+    let randItem (random length caribouVarCal)
+    let oldVal item randItem caribouVarCal
+    let newVal oldVal + mutateAmt
+    
+    while [ newVal <= 0 or newVal >= 1 ] [
+      set mutateAmt (random-num 2) - 1
+      set oldVal item randItem caribouVarCal
+      set newVal oldVal + mutateAmt   
+    ]
+    
+    set caribouVarCal replace-item randItem caribouVarCal newVal
+  ;]
   
   assign-variable-values 
   
