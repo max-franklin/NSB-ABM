@@ -1678,7 +1678,7 @@ moose-amt
 moose-amt
 0
 150
-1
+0
 1
 1
 NIL
@@ -2333,7 +2333,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-31.6
+3160
 1
 0
 Number
@@ -2634,7 +2634,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-1
+0
 1
 -1000
 
@@ -2645,7 +2645,7 @@ SWITCH
 1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-0
+1
 1
 -1000
 
@@ -2949,7 +2949,7 @@ SWITCH
 718
 use-hunters?
 use-hunters?
-0
+1
 1
 -1000
 

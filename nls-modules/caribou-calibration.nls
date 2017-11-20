@@ -1,7 +1,14 @@
+globals [
+ 
+ car-var-soln-fit-list
+ car-var-soln-list 
+  
+]
+
 to setup-caribou-var-cal 
   ;print "this is a test to see if setup-car-var-cal is being called"
   set caribouVarCal [ ] 
-  if randomCaribouVarStart?
+  ifelse randomCaribouVarStart?
     [
       ;print "testing to see if random assignment occurs."
       ;;need to do: check to see if any division by zero errors will occur in caribou utility functions due to random number gen.
@@ -11,6 +18,18 @@ to setup-caribou-var-cal
         set caribouVarCal lput random-num 1 caribouVarCal
       ]
     ]
+    [
+      ;;set caribouVarCal starting values..
+      set caribouVarCal lput decay-rate caribouVarCal
+      set caribouVarCal lput energy-gain-factor caribouVarCal
+      set caribouVarCal lput ndvi-weight caribouVarCal
+      set caribouVarCal lput caribou-veg-factor caribouVarCal
+      set caribouVarCal lput caribou-rough-factor caribouVarCal
+      set caribouVarCal lput caribou-insect-factor caribouVarCal
+      set caribouVarCal lput caribou-modifier-factor caribouVarCal
+      set caribouVarCal lput caribou-deflection-factor caribouVarCal
+      set caribouVarCal lput caribou-precip-factor caribouVarCal
+    ]
   
     
   assign-variable-values 
@@ -19,13 +38,15 @@ end
 
 to go-caribou-var-cal 
   let mutatedVars? 0
-  let varProb calculate-var-prob
+  let datIn calculate-var-prob
+  let varProb item 0 datIn
+  let convergence item 1 datIn
   if (random-num 1) <= varProb [ 
     set mutatedVars? 1
     mutate-caribou-variables
   ]
  
-  if exportCaribouData? [ export-var-data mutatedVars? varProb ]
+  if exportCaribouData? [ export-var-data mutatedVars? varProb convergence ]
 end
 
 to setup-var-file 
@@ -58,13 +79,13 @@ to setup-var-file
   file-close
 end
 
-to export-var-data [ mutatedVars? varProb ]
+to export-var-data [ mutatedVars? varProb convergence ]
   let fileOut "caribou-var-calibration-data-"
   set fileOut word fileOut seed
   set fileOut word fileOut ".txt"
   
-  let convergence length caribou-fcm-adja-list
-  set convergence 1 - ( convergence / caribou-group-amt )
+  ;let convergence length caribou-fcm-adja-list
+  ;set convergence 1 - ( convergence / caribou-group-amt )
   
   file-open fileOut
   file-print ""
@@ -113,6 +134,7 @@ end
 
 to-report calculate-var-prob 
   let test? false
+  let datOut [ ]
   let convergence length caribou-fcm-adja-list
   set convergence 1 - ( convergence / caribou-group-amt );;divide by initial number of unique caribou FCMs to normalize the variable.
   
@@ -162,7 +184,12 @@ to-report calculate-var-prob
     show varProb
   ]
   
-  report varProb
+  set datOut lput varProb datOut
+  set datOut lput convergence datOut
+  
+  report datOut
+  
+  ;report varProb
   ;report ( 1 - ((x * fitness) + (y * convergence)) )
 end
 
