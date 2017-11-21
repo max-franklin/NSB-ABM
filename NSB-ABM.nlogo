@@ -4,7 +4,7 @@
 ;https://drive.google.com/a/alaska.edu/file/d/0B6Qg-B9DYEuKVE5EQldZMjUtRlE/view?usp=sharing
 
 
-extensions [ gis array matrix table csv]
+extensions [ gis array matrix table csv profiler]
 
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
            "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
@@ -595,6 +595,14 @@ to setup-deflectors
   ]
 
 
+end
+
+to profile-test
+  profiler:reset
+  repeat 20 [ go ]
+  profiler:stop
+  print profiler:report
+  profiler:reset
 end
 
 ;Go, wraps to other go's
@@ -1757,7 +1765,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0.606
+0.287
 1
 0
 Number
@@ -1768,7 +1776,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.822
+0.283
 1
 0
 Number
@@ -1789,7 +1797,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.979
+0.953
 1
 0
 Number
@@ -1800,7 +1808,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.41
+0.135
 1
 0
 Number
@@ -1877,7 +1885,7 @@ INPUTBOX
 726
 841
 decay-rate
-0.102
+0.616
 1
 0
 Number
@@ -1943,7 +1951,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0.343
+0.174
 1
 0
 Number
@@ -2275,7 +2283,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.684
+0.163
 1
 0
 Number
@@ -2326,7 +2334,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.155
+0.096
 0.01
 1
 NIL
@@ -2338,7 +2346,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-81.8
+22.5
 1
 0
 Number
@@ -2639,7 +2647,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-0
+1
 1
 -1000
 
@@ -2965,7 +2973,7 @@ SWITCH
 954
 exportCaribouData?
 exportCaribouData?
-0
+1
 1
 -1000
 
