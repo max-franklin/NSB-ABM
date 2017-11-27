@@ -27,6 +27,11 @@ directed-link-breed [ cent-links cent-link ]
 
 globals
 [
+  npGridId
+  npGridQual
+  pGridId
+  pGridQual
+
   seed
   caribouVarCal ;;list containing values of caribou related variables that need to be calibrated.
 
@@ -448,7 +453,11 @@ to setup
     set np-grid-id 0
     set p-grid-id 0 ]
 
+  let counter 1
+  let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set patch-id counter] set counter counter + 1 set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
   setup-cent-layers
+  setup-grid-layers
 
   set np-centroid-network np-centroid-layer-152
   set p-centroid-network p-centroid-layer-152
@@ -494,6 +503,7 @@ to setup
   setup-patch-list
   setup-insect
   set-precipitation-data-list
+  go-precipitation
   if(is-random?)
   [
    caribou-random-fcm
@@ -520,8 +530,7 @@ to setup
   set fcm-store lput (length caribou-fcm-adja-list) fcm-store
 
   test-flow
-  let counter 1
-  let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set patch-id counter] set counter counter + 1 set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
 
 
   if calibrateCaribouVar? [ setup-caribou-var-cal ]
@@ -614,8 +623,12 @@ to profile-test
   let profileOut "profiler-dat.txt"
   profiler:reset
   profiler:start
+
+  ;setup-grid-layers
   setup
   while [ year != 2 ] [ go ]
+
+
   profiler:stop
   print profiler:report
   file-open profileOut
@@ -690,6 +703,8 @@ to go
     if export-centroids? [ centroid-export ]
     swap-centroid-layers
 
+    go-precipitation
+
   ]
 
   go-deflectors
@@ -702,12 +717,12 @@ to go
   [
     go-caribou
   ]
-  go-precipitation
+
   update-caribou-utility
   update-para-utility
   update-non-para-utility
   update-moose-utility
-  go-dynamic-display
+  if dynamic-display? [ go-dynamic-display ]
 
   if exportCaribouData?[ export-caribou-state-data ]
 
@@ -3093,6 +3108,17 @@ hunter-mutate-prob
 1
 NIL
 HORIZONTAL
+
+SWITCH
+144
+297
+293
+330
+dynamic-display?
+dynamic-display?
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
