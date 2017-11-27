@@ -203,6 +203,86 @@ to mod-cent-target [ targets ] ;caribou procedure
   set current-centroid one-of targets
 end
 
+to profile-net-setup
+
+  profiler:reset
+  profiler:start
+  setup-cent-layers
+  profiler:stop
+  print profiler:report
+
+end
+
+to setup-cent-layers
+  let day-list [ 152 166 180 194 208 222 236 250 ]
+  
+  foreach day-list [
+    set day ? 
+    centroid-read
+    if ? = 152 [
+      set np-centroid-layer-152 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0
+      set p-centroid-layer-152 matrix:make-constant (max [p-network-id] of patches) (max [p-network-id] of patches) 0  ] 
+    
+    if ? = 166 [ set np-centroid-layer-166 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+    if ? = 180 [ set np-centroid-layer-180 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ] 
+    if ? = 194 [ set np-centroid-layer-194 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]  
+    if ? = 208 [ set np-centroid-layer-208 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+    if ? = 222 [ set np-centroid-layer-222 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+    if ? = 236 [ set np-centroid-layer-236 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+    if ? = 250 [ set np-centroid-layer-250 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+  ]
+  
+  set day 152
+  
+end
+
+to swap-centroid-layers
+  if day = 152 [
+     set np-centroid-network np-centroid-layer-152
+     set p-centroid-network p-centroid-layer-152
+  ]
+  
+  if day = 166 [
+   set np-centroid-layer-152 np-centroid-network
+   set np-centroid-network np-centroid-layer-166
+   set p-centroid-layer-152 p-centroid-network 
+  ]
+  
+  if day = 180 [
+    set np-centroid-layer-166 np-centroid-network
+    set np-centroid-network np-centroid-layer-180
+  ]
+  
+  if day = 194 [
+    set np-centroid-layer-180 np-centroid-network
+    set np-centroid-network np-centroid-layer-194
+  ]
+  
+  if day = 208 [
+    set np-centroid-layer-194 np-centroid-network
+    set np-centroid-network np-centroid-layer-208
+  ]
+  
+  if day = 222 [
+    set np-centroid-layer-208 np-centroid-network
+    set np-centroid-network np-centroid-layer-222
+  ]
+  
+  
+  if day = 236 [
+    set np-centroid-layer-222 np-centroid-network
+    set np-centroid-network np-centroid-layer-236
+  ]
+  
+  if day = 250 [
+    set np-centroid-layer-236 np-centroid-network
+    set np-centroid-network np-centroid-layer-250
+  ]
+  
+  if day = 258 [
+   set np-centroid-layer-250 np-centroid-network 
+  ]
+end
 
 to setup-network
   let output word "np-master-matrix-" day
@@ -249,217 +329,6 @@ to mod-p-network
   ]
 end
 
-to centroid-weight-io
-  ifelse day >= 258 and export-centroids?
-  [ ;for final export.
-      let output word "data/centroid-network-working-files/np-master-matrix-" 250
-      set output word output ".csv"
-      file-delete output
-      file-open output
-      file-print matrix:to-row-list np-centroid-network
-      file-close-all 
-    
-    ;print "the final centroid weighting successfully exported."
-  ]
-  [
-    if (day - 12) mod 14 = 0
-    [
-      ifelse day = 152
-      [;beginning import
-        
-        let input word "data/centroid-network-working-files/np-master-matrix-" day
-        set input word input ".csv"
-        let matrix-list []
-        let sub-list []
-        let cycler 1
-        let row-length max [np-network-id] of patches
-        file-open input
-        
-        while [not file-at-end?]
-        [
-          set np-centroid-network matrix:from-row-list file-read
-        ]
-        
-        file-close-all
-        
-        ;file-delete input
-        
-        set input word "data/centroid-network-working-files/p-master-matrix-" day
-        set input word input ".csv"
-        set matrix-list []
-        set sub-list []
-        set cycler 1
-        set row-length max [p-network-id] of patches
-        file-open input
-        
-        while [not file-at-end?]
-        [
-          set p-centroid-network matrix:from-row-list file-read
-        ]
-        
-        file-close-all
-        ;file-delete input
-      ] 
-      [;export then inport
-        if export-centroids? [
-          let output word "data/centroid-network-working-files/np-master-matrix-" (day - 14)
-          set output word output ".csv"
-          file-delete output
-          file-open output
-          file-print matrix:to-row-list np-centroid-network
-          file-close-all 
-        ]
-        
-        if day <= 166 and export-centroids? ;export para weights.
-        [
-          
-          let output word "data/centroid-network-working-files/p-master-matrix-" (day - 14)
-          set output word output ".csv"
-          file-delete output
-          file-open output
-          file-print matrix:to-row-list p-centroid-network
-          file-close-all
-          
-        ]
-        
-        let input word "data/centroid-network-working-files/np-master-matrix-" day
-        set input word input ".csv"
-        let matrix-list []
-        let sub-list []
-        let cycler 1
-        let row-length max [np-network-id] of patches
-        file-open input
-        
-        while [not file-at-end?]
-        [
-          set np-centroid-network matrix:from-row-list file-read
-        ]
-        
-        file-close-all
-        
-        ;file-delete input
-        
-        ;don't need to bother importing para weighting after the first initial import
-        
-      ] 
-    ]
-  ]
-end
-
-to centroid-weight-master-io
-  ifelse day >= 258 and export-centroids?
-  [ ;for final export.
-    let output word "data/centroid-network-working-files/np-master-matrix-" 250
-    set output word output ".csv"
-    file-delete output
-    file-open output
-    file-print matrix:to-row-list np-centroid-network
-    file-close-all 
-    ;print "the final centroid weighting successfully exported."
-  ]
-  [
-    if (day - 12) mod 14 = 0
-    [
-      ifelse day = 152
-      [;beginning import
-        
-        let input word "data/centroid-network-master-files/np-master-matrix-" day
-        set input word input ".csv"
-        let matrix-list []
-        let sub-list []
-        let cycler 1
-        let row-length max [np-network-id] of patches
-        file-open input
-        
-        while [not file-at-end?]
-        [
-          set np-centroid-network matrix:from-row-list file-read
-        ]
-        
-        file-close-all
-        
-        ;file-delete input
-        
-        set input word "data/centroid-network-master-files/p-master-matrix-" day
-        set input word input ".csv"
-        set matrix-list []
-        set sub-list []
-        set cycler 1
-        set row-length max [p-network-id] of patches
-        file-open input
-        
-        while [not file-at-end?]
-        [
-          set p-centroid-network matrix:from-row-list file-read
-        ]
-        
-        file-close-all
-        ;file-delete input
-      ] 
-      [;export then inport
-        if export-centroids? [
-          let output word "data/centroid-network-working-files/np-master-matrix-" (day - 14)
-          set output word output ".csv"
-          file-delete output
-          file-open output
-          file-print matrix:to-row-list np-centroid-network
-          file-close-all 
-        ]
-        
-        if day <= 166 and export-centroids?;export para weights.
-        [
-          let output word "data/centroid-network-working-files/p-master-matrix-" (day - 14)
-          set output word output ".csv"
-          file-delete output
-          file-open output
-          file-print matrix:to-row-list p-centroid-network
-          file-close-all
-        ]
-        
-        let input word "data/centroid-network-master-files/np-master-matrix-" day
-        set input word input ".csv"
-        let matrix-list []
-        let sub-list []
-        let cycler 1
-        let row-length max [np-network-id] of patches
-        file-open input
-        
-        while [not file-at-end?]
-        [
-          set np-centroid-network matrix:from-row-list file-read
-        ]
-        
-        file-close-all
-        
-        ;file-delete input
-        
-        ;don't need to bother importing para weighting after the first initial import
-        
-      ] 
-    ]
-  ]
-end
-
-to centroid-inport
-  centroid-read ;only works if the appropriate day is selected. 
-  let input word "data/centroid-exports/np-master-matrix-" day
-  set input word input "-"
-  set input word input year
-  set input word input ".csv"
-  
-  let matrix-list []
-  let sub-list []
-  let cycler 1
-  let row-length max [np-network-id] of patches
-  file-open input
-  
-  while [not file-at-end?]
-    [
-      set np-centroid-network matrix:from-row-list file-read
-    ]
-  
-  file-close-all
-end
 
 to centroid-export
   ifelse day >= 258
@@ -548,38 +417,3 @@ to display-weighting
   
 end
 
-to exp-f
-  let output word "np-master-matrix-" day
-  set output word output ".csv"
-  file-open output
-  file-print matrix:to-row-list np-centroid-network
-  file-close-all
-  
-  set output word "p-master-matrix-" day
-  set output word output ".csv"
-  file-open output
-  file-print matrix:to-row-list p-centroid-network
-  file-close-all
-end
-
-to in-f
-  let input word "np-master-matrix-" 152
-  set input word input ".csv"
-  let matrix-list []
-  let sub-list []
-  let cycler 1
-  let row-length max [np-network-id] of patches
-  file-open input
-  
-  while [not file-at-end?]
-  [
-    set np-centroid-network matrix:from-row-list file-read
-  ]
-  
-  file-close-all
-end
-
-to-report test-list-mod [ x ]
-  set x lput self x
-  report x
-end
