@@ -4,7 +4,7 @@
 ;https://drive.google.com/a/alaska.edu/file/d/0B6Qg-B9DYEuKVE5EQldZMjUtRlE/view?usp=sharing
 
 
-extensions [ gis array matrix table csv profiler]
+extensions [ gis array matrix table csv]
 
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
            "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
@@ -23,6 +23,7 @@ breed [deflectors deflector]
 breed [mem-markers mem-mark]
 breed [hunters hunter]
 breed [caribou-harvests caribou-harvest] ;centroids for caribou harvest
+breed [caribou-ghosts caribou-ghost]
 directed-link-breed [ cent-links cent-link ]
 
 globals
@@ -33,16 +34,6 @@ globals
   fcm-store
   ticks-store
   bio-en-store
-
-  np-centroid-layer-152
-  np-centroid-layer-166
-  np-centroid-layer-180
-  np-centroid-layer-194
-  np-centroid-layer-208
-  np-centroid-layer-222
-  np-centroid-layer-236
-  np-centroid-layer-250
-  p-centroid-layer-152
 
 ;GIS DATA
   np-centroid-network
@@ -291,6 +282,18 @@ moose-own
   fd-amt
 ]
 
+;Ghost caribou used for agent based q-learning exploration
+caribou-ghost-own
+[
+  energy-gain
+  energy-loss
+  group-size
+
+  energy
+  weight
+  fd-amt
+]
+
 caribou-own
 [
   cent-memory ;try length 20 - value from Semenuik?
@@ -349,14 +352,15 @@ caribou-own
 
 
   ;Q-Net
+  ;shared weighting implemented
   net-x
-  net-w1
+ ; net-w1
   net-s1
   net-z1
-  net-w2
+  ;net-w2
   net-s2
   net-z2
-  net-wout
+  ;net-wout
   net-sout
 
 
@@ -450,13 +454,10 @@ to setup
     set np-grid-id 0
     set p-grid-id 0 ]
 
-  setup-cent-layers
-
-  set np-centroid-network np-centroid-layer-152
-  set p-centroid-network p-centroid-layer-152
-
   centroid-read
   grid-read
+  ;centroid-weight-io
+  centroid-weight-master-io
 
   set season 1
   setup-deflectors
@@ -612,19 +613,6 @@ to setup-deflectors
 
 end
 
-to profile-test
-  let profileOut "profiler-dat.txt"
-  profiler:reset
-  profiler:start
-  setup
-  while [ year != 2 ] [ go ]
-  profiler:stop
-  print profiler:report
-  file-open profileOut
-  file-print profiler:report
-  file-close-all
-end
-
 ;Go, wraps to other go's
 to go
  ; set day (ticks mod 365)
@@ -651,7 +639,9 @@ to go
 
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
-      ;ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
+      ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
+
+      if export-centroids? [ centroid-export ]
 
       set year year + 1
 
@@ -687,11 +677,9 @@ to go
 
     ]
 
-    ;ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
+    ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
-    if export-centroids? [ centroid-export ]
-    swap-centroid-layers
-
+    ;centroid-export
   ]
 
   go-deflectors
@@ -1785,7 +1773,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0.287
+0.569
 1
 0
 Number
@@ -1796,7 +1784,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.283
+0.478
 1
 0
 Number
@@ -1817,7 +1805,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.953
+0.51
 1
 0
 Number
@@ -1828,7 +1816,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.135
+0.36
 1
 0
 Number
@@ -1905,7 +1893,7 @@ INPUTBOX
 726
 841
 decay-rate
-0.616
+0.884
 1
 0
 Number
@@ -1971,7 +1959,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0.174
+0.191
 1
 0
 Number
@@ -2303,7 +2291,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.163
+0.895
 1
 0
 Number
@@ -2354,7 +2342,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.096
+0.215
 0.01
 1
 NIL
@@ -2366,7 +2354,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-22.5
+59.5
 1
 0
 Number
@@ -2667,7 +2655,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-1
+0
 1
 -1000
 
@@ -2678,7 +2666,7 @@ SWITCH
 1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-1
+0
 1
 -1000
 
@@ -2993,7 +2981,7 @@ SWITCH
 954
 exportCaribouData?
 exportCaribouData?
-1
+0
 1
 -1000
 
