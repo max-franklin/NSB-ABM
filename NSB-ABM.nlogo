@@ -34,6 +34,16 @@ globals
   ticks-store
   bio-en-store
 
+  np-centroid-layer-152
+  np-centroid-layer-166
+  np-centroid-layer-180
+  np-centroid-layer-194
+  np-centroid-layer-208
+  np-centroid-layer-222
+  np-centroid-layer-236
+  np-centroid-layer-250
+  p-centroid-layer-152
+
 ;GIS DATA
   np-centroid-network
   p-centroid-network
@@ -438,10 +448,13 @@ to setup
     set np-grid-id 0
     set p-grid-id 0 ]
 
+  setup-cent-layers
+
+  set np-centroid-network np-centroid-layer-152
+  set p-centroid-network p-centroid-layer-152
+
   centroid-read
   grid-read
-  ;centroid-weight-io
-  centroid-weight-master-io
 
   set season 1
   setup-deflectors
@@ -598,11 +611,16 @@ to setup-deflectors
 end
 
 to profile-test
+  let profileOut "profiler-dat.txt"
   profiler:reset
-  repeat 20 [ go ]
+  profiler:start
+  setup
+  while [ year != 2 ] [ go ]
   profiler:stop
   print profiler:report
-  profiler:reset
+  file-open profileOut
+  file-print profiler:report
+  file-close-all
 end
 
 ;Go, wraps to other go's
@@ -631,9 +649,7 @@ to go
 
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
-      ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
-
-      if export-centroids? [ centroid-export ]
+      ;ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
       set year year + 1
 
@@ -669,9 +685,11 @@ to go
 
     ]
 
-    ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
+    ;ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
-    ;centroid-export
+    if export-centroids? [ centroid-export ]
+    swap-centroid-layers
+
   ]
 
   go-deflectors
@@ -2658,7 +2676,7 @@ SWITCH
 1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-0
+1
 1
 -1000
 
