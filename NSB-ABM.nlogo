@@ -249,6 +249,8 @@ patches-own
   coast
   ;needed?
   ;bool-ocean
+
+  patch-historic-utility-caribou
 ]
 
 caribou-harvests-own
