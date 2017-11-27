@@ -234,6 +234,8 @@ patches-own
   coast
   ;needed?
   ;bool-ocean
+
+  patch-historic-utility-caribou
 ]
 
 caribou-harvests-own
@@ -1757,7 +1759,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0.606
+0.569
 1
 0
 Number
@@ -1768,7 +1770,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.822
+0.478
 1
 0
 Number
@@ -1789,7 +1791,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.979
+0.51
 1
 0
 Number
@@ -1800,7 +1802,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.41
+0.36
 1
 0
 Number
@@ -1877,7 +1879,7 @@ INPUTBOX
 726
 841
 decay-rate
-0.102
+0.884
 1
 0
 Number
@@ -1943,7 +1945,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0.343
+0.191
 1
 0
 Number
@@ -2275,7 +2277,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.684
+0.895
 1
 0
 Number
@@ -2326,7 +2328,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.155
+0.215
 0.01
 1
 NIL
@@ -2338,7 +2340,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-81.8
+59.5
 1
 0
 Number

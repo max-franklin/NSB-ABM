@@ -82,10 +82,10 @@ to go-caribou-var-cal
       ;;now select one of the list randomly for crossing
       set var-genome-1 select-weighted-val prob-recomb-list t-car-var-soln-list
       set var-genome-2 caribouVarCal
-        [
-          set var-genome-1 item 0 t-car-var-soln-list
-          set var-genome-2 caribouVarCal
-        ]
+       ; [
+       ;   set var-genome-1 item 0 t-car-var-soln-list
+       ;   set var-genome-2 caribouVarCal
+       ; ]
       
       ;;now, we can run the recombination procedure. 
       set caribouVarCal cross-var-genome var-genome-1 var-genome-2
