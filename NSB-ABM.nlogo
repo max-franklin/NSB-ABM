@@ -1992,10 +1992,10 @@ caribou-deflection-factor
 Number
 
 INPUTBOX
-969
-997
-1033
-1057
+964
+991
+1028
+1051
 moose-max-elevation
 700
 1
@@ -2003,10 +2003,10 @@ moose-max-elevation
 Number
 
 INPUTBOX
-902
-996
-966
-1056
+897
+990
+961
+1050
 moose-max-wetness
 0.8
 1
@@ -2069,10 +2069,10 @@ moose-util-type-9
 Number
 
 INPUTBOX
-602
-996
-673
-1056
+597
+990
+668
+1050
 moose-veg-factor
 1
 1
@@ -2080,10 +2080,10 @@ moose-veg-factor
 Number
 
 INPUTBOX
-675
-996
-747
-1056
+670
+990
+742
+1050
 moose-rough-factor
 -5
 1
@@ -2091,10 +2091,10 @@ moose-rough-factor
 Number
 
 INPUTBOX
-749
-996
-822
-1056
+744
+990
+817
+1050
 moose-insect-factor
 0.5
 1
@@ -2102,10 +2102,10 @@ moose-insect-factor
 Number
 
 INPUTBOX
-825
-996
-896
-1056
+820
+990
+891
+1050
 moose-deflection-factor
 1
 1
@@ -2185,20 +2185,20 @@ Show Harvest Bounds
 1
 
 TEXTBOX
-907
-981
-968
-999
+902
+975
+963
+993
 Wetness
 12
 0.0
 1
 
 TEXTBOX
-974
-981
-1044
-999
+969
+975
+1039
+993
 Elevation
 12
 0.0
@@ -3121,6 +3121,28 @@ dynamic-display?
 0
 1
 -1000
+
+INPUTBOX
+14
+1033
+80
+1093
+var-mut-prob-factor
+1
+1
+0
+Number
+
+INPUTBOX
+83
+1033
+156
+1093
+var-grad-prob-factor
+1
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?

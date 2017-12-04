@@ -46,8 +46,13 @@ to go-caribou-var-cal
   let varProb item 0 datIn
   let convergence item 1 datIn
   let soln-success item 2 datIn
-  if (random-num 1) <= varProb [ 
+
+  
+  ;;trigger evolution event if varProb is beaten by random-roll.
+  if (random-num 1) <= varProb [
     set mutatedVars? 1
+    
+    ;;perform recombination first if number soln with fitness > 1 is > 1
     
     ;;create temporary lists without current fitness and soln value for purpose of
     ;;weeding out current soln from recombination pool.
@@ -65,13 +70,8 @@ to go-caribou-var-cal
       ]
     ]
     
-    let recombRoll random-num 1
-    let threshold (length t-car-var-soln-list) / (length car-var-soln-list)
-    if recombRoll > threshold [ ]
-    
-    ifelse length t-car-var-soln-list > 1   
+    if length t-car-var-soln-list > 1   
     [  
-      ;if recombRoll > ( soln-success / ( max t-car-var-soln-fit-list )) [
       ;;recomb caribou variable calibration solutions.
       set recombined? 1
       let var-genome-1 0
@@ -81,21 +81,115 @@ to go-caribou-var-cal
       let prob-recomb-list build-prob-list t-car-var-soln-fit-list 
       ;;now select one of the list randomly for crossing
       set var-genome-1 select-weighted-val prob-recomb-list t-car-var-soln-list
-      set var-genome-2 caribouVarCal
+      set var-genome-2 select-weighted-val prob-recomb-list t-car-var-soln-list
       
       ;;now, we can run the recombination procedure. 
       set caribouVarCal cross-var-genome var-genome-1 var-genome-2
-      
-      ;]
-    ]
-    [
-      
+
     ]
     
-    mutate-caribou-variables
+    let probMut 0
+    let probGrad 0
+    let del-soln-success 0
+    
+;    set probMut var-mut-prob-factor * soln-success
+;    set probGrad var-grad-prob-factor * 1 / soln-success
+    set probMut soln-success
+    carefully [ set probGrad 1 / soln-success ] [ set probGrad 1 ]
+    ;;slice last 5 solution success values (or approximately last 50 years of simulation time)
+    ;;following code is WIP for trying to kick out of local minima and maxima.
+;    if (length car-var-soln-list >= 5) [
+;      set del-soln-success sublist car-var-soln-list (length car-var-soln-list - 5) (length car-var-soln-list)
+;      let mean-soln-success mean del-soln-success
+;      let sd-soln-success standard-deviation del-soln-success
+;      ifelse mean-soln-success != 0 and (sd-soln-success / mean-soln-success) != 0
+;      [ 
+;        let probGradMod 1 / ( sd-soln-success / mean-soln-success )
+;      ]
+;      [
+;        let probGradMod 0 
+;      ]
+;    ]
+;    set probGrad probGrad + probGradMod
+
+
+    let mutCheck False
+    let gradCheck False
+    
+    while [ (mutCheck = False or gradCheck = False) and (mutCheck != True and gradCheck != True) ][
+     if random-num 1 <= probMut [ set mutCheck True ]
+     if random-num 1 <= probGrad [ set gradCheck True ] 
+    ]
+    
+    ifelse mutCheck
+    [
+      ;;perform point mutation
+      mutate-caribou-variables
+    ]
+    [
+      ;;perform gradient mutation
+      gradient-caribou-variables
+    ]
+        
   ]
  
   if exportCaribouData? [ export-var-data mutatedVars? recombined? varProb convergence oldCaribouVarCal soln-success ]
+end
+
+to gradient-caribou-variables
+  let grad-list caribouVarCal
+  let globalVars [ "decay-rate" "energy-gain" "ndvi-weight" "caribou-veg-factor" "caribou-rough-factor" "caribou-insect-factor" 
+    "caribou-modifier-factor" "caribou-deflection-factor" "caribou-precip-factor" ] 
+  let ref-list globalVars
+  
+  while [ length grad-list > 0 ] [
+    let grad-size random (length grad-list)
+    let grad-mod [ ]
+    let ref-mod [ ]
+    let pos-list [ ]
+    repeat grad-size [ 
+      let rand-item random length grad-list
+      
+      set grad-mod lput item rand-item grad-list grad-mod
+      set ref-mod lput item rand-item ref-list ref-mod
+      set pos-list lput position (item rand-item ref-list) ref-list globalVars
+      
+      set grad-list remove-item rand-item grad-list
+      set ref-list remove-item rand-item ref-list
+    ]
+    
+    ;;now modify the variable values in grad-mod.
+    let mutateAmt (random-num 2) - 1
+    let new-vals [ ]
+    foreach grad-mod [
+      ;let 
+      set new-vals lput (? + mutateAmt) new-vals
+    ]
+    
+    foreach new-vals [
+     if ? > 1 [ set ? 1 ]
+     if ? < 0 [ set ? 0 ] 
+    ]
+    
+  ]
+  
+;  repeat num-gradients [
+;   let grad-mod [ ]
+;   repeat gradSize [ set grad-mod lput item (random (length grad-list - 1)) grad-list grad-mod ]
+;  ]
+ 
+  let mutateAmt (random-num 2) - 1
+  let randItem (random length caribouVarCal)
+  let oldVal item randItem caribouVarCal
+  let newVal oldVal + mutateAmt
+  
+  while [ newVal <= 0 or newVal >= 1 ] [
+    set mutateAmt (random-num 2) - 1
+    set oldVal item randItem caribouVarCal
+    set newVal oldVal + mutateAmt   
+  ]
+  
+  set caribouVarCal replace-item randItem caribouVarCal newVal
 end
 
 to-report cross-var-genome [ genome-1 genome-2 ]
