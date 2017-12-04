@@ -176,7 +176,9 @@ globals
   ;;;; insect modifier
   insect-needs-reset
   insect-season
-
+  hunter-harvest-total
+  hunter-trip-control
+  hunter-fcm-list
   hunter-streams-restriction
   caribou-harvest-selection-list
   caribou-harvest-fRanks-list
@@ -542,6 +544,7 @@ to setup
   ]
 
   set hunter-streams-restriction (0.025 * (max [streams] of patches))
+  set hunter-trip-control 123
   if use-hunters? [
     setup-caribou-harvests
     build-caribou-harvest-lists
@@ -661,6 +664,10 @@ to go
       if calibrateCaribouVar? [ go-caribou-var-cal ]
 
       if(is-training?) [ update-caribou-fcm ]
+
+      if(export-hunter-data?) [ export-hunter-data 1 ];export hutner data at year end
+      set hunter-harvest-total 0
+      if(hunter-training?) [ update-hunter-fcms ]
 
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
@@ -1304,12 +1311,12 @@ to-report select-weighted-val [ prob-list selection-list ]
 end
 
 to build-caribou-harvest-lists
+  set caribou-harvest-selection-list [ ]
+  set caribou-harvest-fRanks-list [ ]
   ask caribou-harvests
   [
-     set caribou-harvest-selection-list [ ]
-     set caribou-harvest-fRanks-list [ ]
      set caribou-harvest-selection-list lput who caribou-harvest-selection-list
-     set caribou-harvest-fRanks-list lput (20 - ([frequency-rank] of self)) caribou-harvest-fRanks-list
+     set caribou-harvest-fRanks-list lput (20 - frequency-rank) caribou-harvest-fRanks-list
   ]
 end
 
@@ -1317,31 +1324,34 @@ to build-caribou-harvest-prob-list
   set caribou-harvest-probability-list build-prob-list caribou-harvest-fRanks-list
 end
 
-to output-hunter-data
-   ;per trip
-   ask hunters
+to export-hunter-data [mode]
+   ;per trip, mode = 0
+   if(mode = 0)
    [
-     set data-output []
-     set data-output lput spent-time data-output
-     set data-output lput ([who] of self) data-output
-     set data-output lput prey-caught data-output
-     set data-output lput harvest-patch data-output
+     file-open "hunter-trip-data.txt"
+     ask hunters
+     [
+       file-print ""
+       file-write word spent-time ","
+       file-write word ([who] of self) ","
+       file-write word prey-caught ","
+       file-write harvest-patch
+     ]
+     file-close
    ]
-   file-open "trip-data.txt"
-   ask hunters [file-write data-output]
-   file-close
-
-   ;per year
-   ask hunters
+   ;per year, mode = 1
+   if(mode = 1)
    [
-     set data-output []
-     set data-output lput year data-output
-     set data-output lput ([who] of self) data-output
-     set data-output lput harvest-amount data-output
+     file-open "hunter-year-data.txt"
+     ask hunters
+     [
+       file-write word year ","
+       file-write word ([who] of self) ","
+       file-write word harvest-amount ","
+       file-write matrix:to-row-list hunter-fcm-matrix
+     ]
+     file-close
    ]
-   file-open "year-data.txt"
-   ask hunters [file-write data-output]
-   file-close
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -1800,7 +1810,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0.287
+0.556
 1
 0
 Number
@@ -1811,7 +1821,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.283
+0.665
 1
 0
 Number
@@ -1832,7 +1842,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.953
+0.8969999999999999
 1
 0
 Number
@@ -1843,7 +1853,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.135
+0.9049999999999999
 1
 0
 Number
@@ -1920,7 +1930,7 @@ INPUTBOX
 726
 841
 decay-rate
-0.616
+0.911
 1
 0
 Number
@@ -1986,7 +1996,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0.174
+0.013000000000000012
 1
 0
 Number
@@ -2356,7 +2366,7 @@ SWITCH
 458
 show-caribou-utility-non-para?
 show-caribou-utility-non-para?
-0
+1
 1
 -1000
 
@@ -2426,11 +2436,11 @@ SLIDER
 hunter-population
 hunter-population
 0
-100
-3
+35
+10
 1
 1
-NIL
+hunters
 HORIZONTAL
 
 SLIDER
@@ -2441,9 +2451,9 @@ SLIDER
 hunter-vision
 hunter-vision
 0
-20
+5
 3
-1
+0.5
 1
 * 2.2 km
 HORIZONTAL
@@ -2970,7 +2980,7 @@ MONITOR
 1323
 415
 Hunter Success
-sum ([harvest-amount] of hunters)
+hunter-harvest-total
 2
 1
 11
@@ -2997,7 +3007,7 @@ SWITCH
 711
 use-hunters?
 use-hunters?
-1
+0
 1
 -1000
 
@@ -3112,6 +3122,26 @@ NIL
 HORIZONTAL
 
 SWITCH
+
+1330
+381
+1489
+414
+hunter-training?
+hunter-training?
+1
+1
+-1000
+
+SWITCH
+1330
+346
+1516
+379
+export-hunter-data?
+export-hunter-data?
+1
+
 144
 297
 293

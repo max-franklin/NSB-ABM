@@ -174,7 +174,7 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
       
       set y x + 1
       
-      if y >= length fcm-adja-list
+      if y >= length fcm-adja-list 
       [ set fcm-agentnum-list lput counter fcm-agentnum-list
         set fcm-success-list lput avg-success fcm-success-list ]
       

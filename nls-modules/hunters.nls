@@ -61,6 +61,7 @@ hunters-own [
              
              ;data
              boat-return 
+             local-search 
              return-to-river
              prev-motor-state
              distance-to-prey
@@ -105,12 +106,14 @@ hunters-own [
              boat-t
              hike-t-0
              hike-t-1
-             
+             hunter-counter
              number-of-trips
              number-of-hunters 
              data-output
-             
+             distance-land-centroid
+             num-riw
              patch-list-riw
+             patch-temp-riw
              x1-riw 
              y1-riw
              x2-riw
@@ -118,8 +121,7 @@ hunters-own [
              slope-riw 
              x-riw 
              y-riw 
-             num-riw
-  
+             new-trip?
              sensory-print
              internal-print
              raw-internal-print
@@ -133,7 +135,6 @@ hunters-own [
 
 to setup-hunter-nls
   reset-ticks
-  kill-caribou
   kill-hunters
   initialize-FCM-hunters
   new-hunters
@@ -142,8 +143,26 @@ end
 to go-hunters-nls
   ask hunters 
   [
-    ;if (trip-length < 1) [ die ]
-    execute-FCM 
+    if(trip-length = 0)
+    [ 
+      export-hunter-data 0
+      set new-trip? true 
+    ] 
+    if(new-trip? = true)
+    [
+     set hunter-counter hunter-trip-control
+     while[hunter-counter > 0]
+     [
+       set hunter-counter hunter-counter - 1
+       if (hunter-counter = 0) 
+       [ 
+         reset-hunters 0 
+         set new-trip? false
+       ]  
+     ]
+    ]
+    if (new-trip? = false)
+    [ execute-FCM ]
   ]
 end
 
@@ -154,40 +173,56 @@ to new-hunters
     set color white
     set size 3
     setxy 3 1
+    set number-of-trips 13
     set boat-speed 30
     set hike-speed 5
     set river-memory []
-    set home-patch patch-here
+    set home-patch patch 3 1 
     set trip-length trip-length-max
     set spent-time 0
     set harvest-amount 0
     set hunter-density 0
     set patch-sum 0
     set-hunter-sensory-ranges
-    ;print-hunter-matrices
     set-initial-centroids
     set prey-caught false
     set return false 
     let done false
     set return-to-river false
-    set-hunter-FCMs
+    set boat-return false
+    set local-search false
+    set new-trip? false
+    set-hunter-matrices
   ]
   set home-patch-global patch 3 1
 end
 
-to reset-hunters 
+to reset-hunters [ mode ]
+   ;per trip for mode = 0 
+   ;per year for mode = 1 
+   ifelse (mode = 0)
+   [
+     set number-of-trips (number-of-trips - 1)
+   ]
+   [
+     reset-hunter-matrices
+     set number-of-trips 13
+     set harvest-amount 0
+   ]
+   if(patch-here != home-patch) [ setxy 3 1 ] 
    set river-memory []
+   set target-river-patch-r 0
    set trip-length trip-length-max
    set spent-time 0
-   set harvest-amount 0
    set hunter-density 0
    set patch-sum 0
    set-initial-centroids
    set prey-caught false
+   set local-search false
    set return false 
+   set boat-return false
    let done false
    set return-to-river false
-   ;reset fcm
 end
 
 to set-hunter-sensory-ranges 
@@ -228,7 +263,7 @@ to initialize-FCM-hunters
                                               [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1 -1 ]
                                               [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0 ]
                                               [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  1  0 ]
-                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  0  0  1.75 ]
+                                              [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1  0  0  2.5 ]
                                               [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0 -1 ]
                                               [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
                                               [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
@@ -247,9 +282,18 @@ to initialize-FCM-hunters
   print-global-matrices
 end
 
-to set-hunter-FCMs
+to set-hunter-matrices
     set hunter-fcm-matrix global-fcm-matrix
     set hunter-fcm-sensory global-fcm-sensory
+    set hunter-fcm-sensory-test hunter-fcm-sensory
+    set hunter-fcm-internal global-fcm-internal
+    set hunter-fcm-motor global-fcm-motor
+    set sensory-print matrix:pretty-print-text hunter-fcm-sensory
+    set internal-print matrix:pretty-print-text hunter-fcm-internal
+    set motor-print matrix:pretty-print-text hunter-fcm-motor
+end
+
+to reset-hunter-matrices
     set hunter-fcm-sensory-test hunter-fcm-sensory
     set hunter-fcm-internal global-fcm-internal
     set hunter-fcm-motor global-fcm-motor
@@ -274,7 +318,7 @@ to set-hunter-fcm-sensory
   set sensory-hunter-density-low (1 - (ternary-funct hunter-density-low hunter-density-high hunter-density))
   set sensory-hunter-density-high ternary-funct hunter-density-low hunter-density-high hunter-density 
   
-  set sensory-rivers-in-way ternary-funct rivers-in-way rivers-in-way number-of-rivers-in-way
+  set sensory-rivers-in-way ternary-funct 0 rivers-in-way number-of-rivers-in-way-new
   
   matrix:set hunter-fcm-sensory 0 0 sensory-prey-close
   matrix:set hunter-fcm-sensory 0 1 sensory-prey-far 
@@ -294,25 +338,19 @@ end
 
 to set-hunter-fcm-raw-internal
   set hunter-fcm-raw-internal matrix:times hunter-fcm-sensory hunter-fcm-internal 
-
   set internal-print matrix:pretty-print-text hunter-fcm-internal
   set raw-internal-print matrix:pretty-print-text hunter-fcm-raw-internal
 end
 
 to set-hunter-act-internal
   set hunter-fcm-act-internal matrix:map logistic-funct hunter-fcm-raw-internal
-
   set act-internal-print matrix:pretty-print-text hunter-fcm-act-internal
 end
 
 to set-hunter-fcm-motor
   set hunter-fcm-motor-results matrix:times hunter-fcm-act-internal hunter-fcm-motor 
-
   set motor-print matrix:pretty-print-text hunter-fcm-motor
- ; matrix:set hunter-fcm-motor-results 0 3 .75
-  set motor-results-print matrix:pretty-print-text hunter-fcm-motor-results
-
-  
+  set motor-results-print matrix:pretty-print-text hunter-fcm-motor-results 
 end
 
 to set-motor-concept
@@ -336,6 +374,7 @@ to set-motor-concept
 end
 
 to run-motor-function
+  
   if motor-concept-index = 0
   [
     ;print prev-motor-state
@@ -343,10 +382,11 @@ to run-motor-function
     set prev-motor-state 0
     set foot-travel false
     set boat-travel false
+    set boat-return false
     set return false
     set hunt true
-    if(target-river-patch-r != 0)
-    [set return-to-river true]
+    ;if(target-river-patch-r != 0)
+    ;[set return-to-river true]
     hunt-funct
   ]
   if motor-concept-index = 1
@@ -356,19 +396,23 @@ to run-motor-function
     set prev-motor-state 1
     set hunt false
     set boat-travel false
+    set boat-return false
     set return false
     set foot-travel true
-    if(target-river-patch-r != 0)
-    [set return-to-river true]
+    ;if(target-river-patch-r != 0)
+    ;[set return-to-river true]
     foot-travel-funct ([patch-here] of target-land-centroid)
   ]
   if motor-concept-index = 2 ;CHECK TO RETURN BACK TO RIVER PATCH 
   [
     ;print prev-motor-state
+    if([connected?] of patch-here = 0 and empty? [river-set] of patch-here = true) [set return-to-river true]
+    if([connected?] of patch-here = true and empty? [river-set] of patch-here = false) [set return-to-river false]
     set prev-motor-state 2
     set hunt false
     set foot-travel false
     set return false
+    set boat-return false
     set boat-travel true
     boat-travel-funct target-river-patch-r ;pass in returning patch 
   ]
@@ -381,8 +425,7 @@ to run-motor-function
     set boat-travel false
     set foot-travel false
     set return true
-    if(target-river-patch-r != 0)
-    [set return-to-river true]
+    if(patch-here = target-river-patch-r) [set boat-return true]
     return-home
   ]
   
@@ -405,14 +448,15 @@ to execute-FCM
 end
 
 to hunt-funct
+  if(prey != nobody)[ 
   head-towards-prey
   catch-prey
   move-forward
-  spend-trip-length
+  ]
 end
 
 to foot-travel-funct [target]
-  ifelse(patch-here != target) ;Travel to destination 
+  ifelse(patch-here != target) ;IF LOCAL SEARCH FALSE     ;Travel to destination 
   [
      ifelse(member? target neighbors = false)
      [
@@ -430,6 +474,7 @@ to foot-travel-funct [target]
         set patch-sum (patch-sum + 1)
         face target
         move-to target
+        ;set local search true
      ]
   ]
   [  ;Local search 
@@ -441,9 +486,6 @@ to foot-travel-funct [target]
 end
 
 to foot-travel-return-funct [target]
-  ;print "Foot return."
-  if(patch-here != target)
-  [
      ifelse(member? target neighbors = false)
      [
         set land-p min-one-of neighbors with [ocean = 0 and (streams < hunter-streams-restriction) and ([distance target] of self < [distance target] of myself )] [wetness]
@@ -461,48 +503,54 @@ to foot-travel-return-funct [target]
         face target
         move-to target
      ]
-  ]
 end
 
 to boat-travel-funct [target-r]
-  if(patch-here = target-r) [set return-to-river false]
+  ;ifelse(patch-here = target-r) 
+  ;[set return-to-river false]
+  ;[set return-to-river true]
+  if(boat-return = true and [connected?] of patch-here = 0 and empty? [river-set] of patch-here = true) [set return-to-river true]
+
   ifelse(return-to-river = false)
    [    
-     ifelse(target-r != 0 and member? target-r neighbors)
+     ;ifelse(target-r != 0 and member? target-r neighbors)
+     ;[
+     ;  face target-r
+     ;  move-to target-r
+     ;]
+     ;[ 
+     ifelse (target-river-patch-r != 0)
      [
-       face target-r
-       move-to target-r
+       if(river-to-follow != [river-set] of target-river-patch-r)
+       [set river-to-follow [river-set] of target-river-patch-r]
      ]
-     [ 
+     [
+       if(river-to-follow != [river-set] of target-river-patch)
+       [set river-to-follow [river-set] of target-river-patch]
+     ]
        set river-memory lput patch-here river-memory
        let target neighbors with [connected? = true and not member? self [river-memory] of myself 
-                             and (list-intersect ([river-to-follow] of myself) river-set) ] ;and not member of my memory
+                             and (list-intersect ([river-to-follow] of myself) river-set) ] 
        set target max-one-of target [elevation]
-       carefully [ face target move-to target ];move-to target
+       carefully [ face target move-to target ]
        [
-         move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor] ;;;;;;;;;
-         ;move-to min-one-of neighbors [pycor]
+         move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor]
          set target neighbors with [connected? = true and not member? self [river-memory] of myself 
                                 and (list-intersect ([river-to-follow] of myself) river-set)] 
          set target max-one-of target [elevation]
          if target != NOBODY
          [ face target move-to target ]
        ]
-     ]
+     ;]
    ]
    [
-     ifelse (target-r != 0)
-     [  
-        foot-travel-return-funct target-r
-     ]
-     [
-       foot-travel-return-funct home-patch 
-     ]
+     if (target-r = 0)
+     [ set target-r home-patch ] 
+     foot-travel-return-funct target-r
    ]
 end 
 
 to boat-travel-return-funct
-  ;print "Boat return"
   set river-memory []
   set river-memory lput patch-here river-memory
   let target neighbors with [connected? = true and not member? self [river-memory] of myself and ( [distance home-patch-global] of self < [distance home-patch] of myself )
@@ -535,17 +583,17 @@ to set-hunter-density
 end
 
 to head-towards-prey
-  if(prey != nobody)[ set heading towards prey ]
+  set heading towards prey 
 end
 
 to catch-prey
-   ;set catch-probability ( random-float 1 )
    if (distance prey <= 0.5)
    [
+     set hunter-harvest-total hunter-harvest-total + 1
      set prey-caught true
      set num-harvests-global (num-harvests-global + 1)
      set harvest-amount (harvest-amount + 1)
-     set harvest-patch [who] of patch-here
+     set harvest-patch [patch-id] of patch-here
    ]
 end
 
@@ -555,12 +603,29 @@ to move-forward
    set patch-sum (patch-sum + 1)
 end
 
+to-report number-of-rivers-in-way-new
+  set num-riw 0
+  if (xcor != [xcor] of target-land-centroid and ycor != [ycor] of target-land-centroid)
+  [
+    set distance-land-centroid (distance target-land-centroid)
+    set x-riw 0 
+    while[x-riw <= distance-land-centroid]
+    [
+      set patch-temp-riw patch-at-heading-and-distance (towards target-land-centroid) x-riw
+      if(empty? [river-set] of patch-temp-riw = false or [connected?] of patch-temp-riw = true)
+      [set num-riw (num-riw + 1)] 
+      set x-riw x-riw + 1
+    ]
+  ]
+  report num-riw
+end 
+
 to-report number-of-rivers-in-way
   ;establish line between me and my land destination, find how many streams patches are in that set
   set patch-list-riw []
   set num-riw 0
-  set x1-riw [xcor] of myself 
-  set y1-riw [ycor] of myself
+  set x1-riw xcor
+  set y1-riw ycor
   set x2-riw [xcor] of target-land-centroid
   set y2-riw [ycor] of target-land-centroid 
   set slope-riw (y2-riw - y1-riw)/(x2-riw - x1-riw)
@@ -636,27 +701,25 @@ to set-travel-cost-evaluation
   set boat-t (boat-dist / boat-speed)                                      ;time to boat to river patch
   set hike-t-0 (hike-dist-0 / hike-speed)                                  ;time to hike from me to destination 
   set hike-t-1 (hike-dist-1 / hike-speed) 
-  ifelse(hike-t-0 != 0)                                 ;time to hike from river patch to destination 
+  ifelse(hike-t-0 != 0)                                                    ;time to hike from river patch to destination 
   [set travel-heuristic (hike-t-0 - (boat-t + hike-t-1)) / hike-t-0]
   [set travel-heuristic 0]
-end
-
-to explore-funct
-  go-hunters
 end
 
 to return-home
   ifelse(target-river-patch-r != 0)
   [
-    if(patch-here = target-river-patch-r) [set boat-return true]
+    if(patch-here = target-river-patch-r)[set boat-return true]
     ifelse(boat-return = true)
-       [boat-travel-return-funct]
-       [foot-travel-return-funct target-river-patch-r]
-    spend-trip-length
+    [
+      boat-travel-return-funct
+    ]
+    [
+      foot-travel-return-funct target-river-patch-r
+    ]
   ]
   [ 
     foot-travel-return-funct home-patch 
-    spend-trip-length
   ]
 end
 
@@ -671,7 +734,7 @@ to print-trip-length
 end 
 
 to check-target-river-centroid ;check the centroid you're at for the target 
-   if (member? target-river-centroid caribou-harvests in-radius (.25 * hunter-vision));centroids-here != nobody or 
+   if (member? target-river-centroid caribou-harvests in-radius (.25 * hunter-vision))
    [ 
       ask target-river-centroid [ ht ]  
       set river-memory []
@@ -680,7 +743,6 @@ to check-target-river-centroid ;check the centroid you're at for the target
 end
 
 to set-target-land-centroid ;set the land destination 
-   ;set target-land-centroid one-of caribou-harvests with [frequency-rank < hunter-centroid-selection]
    set target-land-centroid caribou-harvest (select-weighted-val caribou-harvest-probability-list caribou-harvest-selection-list)
 end
 
@@ -697,6 +759,8 @@ end
 
 to save-target-river-patch 
   set target-river-patch-r min-one-of patches with [connected? = true and empty? river-set = false] [distance myself]
+  set river-to-follow [river-set] of target-river-patch-r
+  set return-to-river true
 end
 
 to-report ternary-funct [ low high sense]
@@ -711,10 +775,6 @@ to-report logistic-funct [ x ]
   report ( 1 / ( 1 + e ^ ( -1 * x )))
 end
 
-to kill-caribou
-  ask caribou [ die ]
-end
-
 to kill-hunters
   ask hunters [ die ]
 end
@@ -723,7 +783,6 @@ end
 to rest
   rt random-float 360
 end
-
 
 to print-hunter-matrices
   print "Sensory matrix:"
@@ -753,84 +812,6 @@ to print-global-matrices
   print global-internal-print
   print "Global motor matrix:"
   print global-motor-print
-end
-
-;RANDOM WALK
-to random-walk
-  rt random-float 360
-  let done false
-  if (patch-ahead 1 != nobody)
-  [
-    set done true
-  ]
-  ifelse done = true
-  [fd 1]
-  [random-walk]
-end
-
-;STRAIGHT WALK
-to straight-walk
-  let right-turn random-float 5
-  let left-turn random-float 5
-  make-turn right-turn left-turn
-  let done false
-  if (patch-ahead 1 != nobody)
-  [
-    set done true
-  ]
-  ifelse done = true
-  [fd 1]
-  [straight-walk]
-end
-
-;MAKE TURN
-; turn right or left based on the larger turn angle
-to make-turn [rturn lturn]  ; turtle procedure
-  ifelse rturn > lturn
-  [ rt rturn ]
-  [ lt lturn ]
-end
-
-to go-hunters
-     ifelse ( ticks mod 4 = 0 )
-     [ random-walk ]
-     [ straight-walk ]
-     spend-trip-length
-end
-
-to go-caribou-hunter-nls
-  ask caribou
-  [
-     ifelse ( ticks mod 4 = 0 )
-     [ random-walk ]
-     [ straight-walk ]
-  ]
-end
-
-;MAKE NEW CARIBOU POPULATION
-to new-caribou
-  reset-ticks
-  create-caribou 0;caribou-population-hunter-nls
-  [
-    set color white
-    set size 1.25
-    let done false
-    let x 0
-    let y 0
-    while [done != true]
-    [
-       set x random-xcor
-       set y random-ycor
-       ask patch-at x y
-       [
-         if (patch x y != nobody)
-         [
-           set done true
-         ]
-       ]
-    ]
-    setxy x y
-  ]
 end
 
 to update-hunter-fcms
@@ -873,7 +854,7 @@ to update-hunter-fcms
       
       ;;now, can reference "reset" code procedure here to make sure they're all back at Nuiqsut
       ;;for the next year of the simulation.
-      
+      reset-hunters 1
     ]
   
   
@@ -881,3 +862,4 @@ to update-hunter-fcms
   
   
 end
+
