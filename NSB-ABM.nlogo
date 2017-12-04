@@ -176,7 +176,9 @@ globals
   ;;;; insect modifier
   insect-needs-reset
   insect-season
-
+  hunter-harvest-total
+  hunter-trip-control
+  hunter-fcm-list
   hunter-streams-restriction
   caribou-harvest-selection-list
   caribou-harvest-fRanks-list
@@ -441,6 +443,7 @@ to setup
   clear-all
   set seed -2147483648 + random-num (2147483648 * 2)
   random-seed seed
+  random-seed 0
   set time-of-year 0
   set max-roughness 442.442
   set hour 0
@@ -541,7 +544,9 @@ to setup
     setup-caribou-fcm-data
   ]
 
+
   set hunter-streams-restriction (0.025 * (max [streams] of patches))
+  set hunter-trip-control 123
   if use-hunters? [
     setup-caribou-harvests
     build-caribou-harvest-lists
@@ -549,7 +554,6 @@ to setup
     initialize-FCM-hunters
     setup-hunter-nls
   ]
-
 
 end
 
@@ -661,6 +665,11 @@ to go
       if calibrateCaribouVar? [ go-caribou-var-cal ]
 
       if(is-training?) [ update-caribou-fcm ]
+
+
+      if(export-hunter-data?) [ export-hunter-data 1 ];export hutner data at year end
+      set hunter-harvest-total 0
+      if(hunter-training?) [ update-hunter-fcms ]
 
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
@@ -1304,12 +1313,15 @@ to-report select-weighted-val [ prob-list selection-list ]
 end
 
 to build-caribou-harvest-lists
+  set caribou-harvest-selection-list [ ]
+  set caribou-harvest-fRanks-list [ ]
   ask caribou-harvests
   [
-     set caribou-harvest-selection-list [ ]
-     set caribou-harvest-fRanks-list [ ]
-     set caribou-harvest-selection-list lput who caribou-harvest-selection-list
-     set caribou-harvest-fRanks-list lput (20 - ([frequency-rank] of self)) caribou-harvest-fRanks-list
+;    set caribou-harvest-selection-list [ ]
+;    set caribou-harvest-fRanks-list [ ]
+    set caribou-harvest-selection-list lput who caribou-harvest-selection-list
+    set caribou-harvest-fRanks-list lput (20 - frequency-rank) caribou-harvest-fRanks-list
+;    set caribou-harvest-fRanks-list lput (20 - ([frequency-rank] of self)) caribou-harvest-fRanks-list
   ]
 end
 
@@ -1317,31 +1329,34 @@ to build-caribou-harvest-prob-list
   set caribou-harvest-probability-list build-prob-list caribou-harvest-fRanks-list
 end
 
-to output-hunter-data
-   ;per trip
-   ask hunters
+to export-hunter-data [mode]
+   ;per trip, mode = 0
+   if(mode = 0)
    [
-     set data-output []
-     set data-output lput spent-time data-output
-     set data-output lput ([who] of self) data-output
-     set data-output lput prey-caught data-output
-     set data-output lput harvest-patch data-output
+     file-open "hunter-trip-data.txt"
+     ask hunters
+     [
+       file-print ""
+       file-write word spent-time ","
+       file-write word ([who] of self) ","
+       file-write word prey-caught ","
+       file-write harvest-patch
+     ]
+     file-close
    ]
-   file-open "trip-data.txt"
-   ask hunters [file-write data-output]
-   file-close
-
-   ;per year
-   ask hunters
+   ;per year, mode = 1
+   if(mode = 1)
    [
-     set data-output []
-     set data-output lput year data-output
-     set data-output lput ([who] of self) data-output
-     set data-output lput harvest-amount data-output
+     file-open "hunter-year-data.txt"
+     ask hunters
+     [
+       file-write word year ","
+       file-write word ([who] of self) ","
+       file-write word harvest-amount ","
+       file-write matrix:to-row-list hunter-fcm-matrix
+     ]
+     file-close
    ]
-   file-open "year-data.txt"
-   ask hunters [file-write data-output]
-   file-close
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -2427,7 +2442,7 @@ hunter-population
 hunter-population
 0
 100
-3
+10
 1
 1
 NIL
@@ -2997,7 +3012,7 @@ SWITCH
 711
 use-hunters?
 use-hunters?
-1
+0
 1
 -1000
 
@@ -3118,7 +3133,7 @@ SWITCH
 330
 dynamic-display?
 dynamic-display?
-0
+1
 1
 -1000
 
@@ -3143,6 +3158,28 @@ var-grad-prob-factor
 1
 0
 Number
+
+SWITCH
+1182
+676
+1353
+709
+export-hunter-data?
+export-hunter-data?
+1
+1
+-1000
+
+SWITCH
+1356
+675
+1515
+708
+hunter-training?
+hunter-training?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
