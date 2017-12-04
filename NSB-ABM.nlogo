@@ -4,7 +4,7 @@
 ;https://drive.google.com/a/alaska.edu/file/d/0B6Qg-B9DYEuKVE5EQldZMjUtRlE/view?usp=sharing
 
 
-extensions [ gis array matrix table csv]
+extensions [ gis array matrix table csv profiler]
 
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
            "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
@@ -27,12 +27,27 @@ directed-link-breed [ cent-links cent-link ]
 
 globals
 [
+  npGridId
+  npGridQual
+  pGridId
+  pGridQual
+
   seed
   caribouVarCal ;;list containing values of caribou related variables that need to be calibrated.
 
   fcm-store
   ticks-store
   bio-en-store
+
+  np-centroid-layer-152
+  np-centroid-layer-166
+  np-centroid-layer-180
+  np-centroid-layer-194
+  np-centroid-layer-208
+  np-centroid-layer-222
+  np-centroid-layer-236
+  np-centroid-layer-250
+  p-centroid-layer-152
 
 ;GIS DATA
   np-centroid-network
@@ -236,6 +251,8 @@ patches-own
   coast
   ;needed?
   ;bool-ocean
+
+  patch-historic-utility-caribou
 ]
 
 caribou-harvests-own
@@ -440,10 +457,17 @@ to setup
     set np-grid-id 0
     set p-grid-id 0 ]
 
+  let counter 1
+  let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set patch-id counter] set counter counter + 1 set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
+  setup-cent-layers
+  setup-grid-layers
+
+  set np-centroid-network np-centroid-layer-152
+  set p-centroid-network p-centroid-layer-152
+
   centroid-read
   grid-read
-  ;centroid-weight-io
-  centroid-weight-master-io
 
   set season 1
   setup-deflectors
@@ -483,6 +507,7 @@ to setup
   setup-patch-list
   setup-insect
   set-precipitation-data-list
+  go-precipitation
   if(is-random?)
   [
    caribou-random-fcm
@@ -509,8 +534,7 @@ to setup
   set fcm-store lput (length caribou-fcm-adja-list) fcm-store
 
   test-flow
-  let counter 1
-  let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set patch-id counter] set counter counter + 1 set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
+
 
 
   if calibrateCaribouVar? [ setup-caribou-var-cal ]
@@ -600,6 +624,23 @@ to setup-deflectors
 
 end
 
+to profile-test
+  let profileOut "profiler-dat.txt"
+  profiler:reset
+  profiler:start
+
+  ;setup-grid-layers
+  setup
+  while [ year != 2 ] [ go ]
+
+
+  profiler:stop
+  print profiler:report
+  file-open profileOut
+  file-print profiler:report
+  file-close-all
+end
+
 ;Go, wraps to other go's
 to go
  ; set day (ticks mod 365)
@@ -630,9 +671,7 @@ to go
 
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
-      ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
-
-      if export-centroids? [ centroid-export ]
+      ;ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
       set year year + 1
 
@@ -668,9 +707,13 @@ to go
 
     ]
 
-    ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
+    ;ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
-    ;centroid-export
+    if export-centroids? [ centroid-export ]
+    swap-centroid-layers
+
+    go-precipitation
+
   ]
 
   go-deflectors
@@ -683,12 +726,12 @@ to go
   [
     go-caribou
   ]
-  go-precipitation
+
   update-caribou-utility
   update-para-utility
   update-non-para-utility
   update-moose-utility
-  go-dynamic-display
+  if dynamic-display? [ go-dynamic-display ]
 
   if exportCaribouData?[ export-caribou-state-data ]
 
@@ -2285,7 +2328,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.684
+0.163
 1
 0
 Number
@@ -2336,7 +2379,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.17800000000000005
+0.096
 0.01
 1
 NIL
@@ -2348,7 +2391,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-38.60000000000001
+22.5
 1
 0
 Number
@@ -2649,7 +2692,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-0
+1
 1
 -1000
 
@@ -2660,7 +2703,7 @@ SWITCH
 1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-0
+1
 1
 -1000
 
@@ -2975,7 +3018,7 @@ SWITCH
 954
 exportCaribouData?
 exportCaribouData?
-0
+1
 1
 -1000
 
@@ -3079,6 +3122,7 @@ NIL
 HORIZONTAL
 
 SWITCH
+
 1330
 381
 1489
@@ -3097,6 +3141,14 @@ SWITCH
 export-hunter-data?
 export-hunter-data?
 1
+
+144
+297
+293
+330
+dynamic-display?
+dynamic-display?
+0
 1
 -1000
 

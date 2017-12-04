@@ -1,0 +1,31 @@
+; Creates and manages snapshots of the environment in memory to be used by agents for Q-Based Learning
+
+to setup-patch-history-caribou
+  ;patch list of old utility values
+  ask patches [
+    
+    set patch-historic-utility-caribou [ 0 0 0 0 0 0 0 0 0 0 0 0 ]
+  ]
+end
+
+
+
+;use min and max step for an epoch (simulation year in our case) / 12
+to patch-capture [minSteps maxSteps currentStep]
+  let range (maxSteps - minSteps)
+  let adjStep (currentStep - minStep)
+  
+  let memoryChunkSize ceiling(range / 12)
+  let indexMemory floor(adjStemp / memoryChunkSize)
+  
+  ask patches
+  [
+    replace-item indexMemory patch-historic-utility-caribou caribou-utility-non-para
+  ]
+  
+end
+
+;simplified movement for q learning
+to q-move
+
+end

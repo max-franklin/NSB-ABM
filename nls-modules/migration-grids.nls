@@ -158,7 +158,30 @@ to build-migration-grid
 
 end
 
-to grid-read
+to setup-grid-layers
+  set npGridId []
+  file-open "data/migration-grids/grids-ids-non-para.txt"
+  while [not file-at-end?] [ set npGridId lput file-read npGridId ]
+  file-close-all
+  
+  set npGridQual []
+  file-open "data/migration-grids/grids-qual-non-para.txt"
+  while [not file-at-end?] [ set npGridQual lput file-read npGridQual ]
+  file-close-all
+  
+  set pGridId []
+  file-open "data/migration-grids/grids-ids-para.txt"
+  while [not file-at-end?] [ set pGridId lput file-read pGridId ]
+  file-close-all
+  
+  set pGridQual []
+  file-open "data/migration-grids/grids-qual-para.txt"
+  while [not file-at-end?] [ set pGridQual lput file-read pGridQual ]
+  file-close-all
+end
+
+to old-grid-read
+  ;;procedure is purely around for testing comparison at this point.
   if day < 250 [
     ;show day
     ;show (day - 12) mod 14
@@ -216,8 +239,109 @@ to grid-read
   ifelse display-grids? = true [ display-npgrids] [ask grids [ht] ]
 end
 
+to grid-read
+  let day-list [ 166 180 194 208 222 236 250 ]
+  
+  let pos position (day + 14) day-list
+  
+  show pos
+  
+  if pos != false [
+    
+    ask patches [
+      ifelse item pos day-list = 166 [
+        set np-grid-id item (patch-id - 1) (item pos npGridId)
+        set gnpid item (patch-id - 1) (item pos npGridQual)
+        
+        
+        set p-grid-id item (patch-id - 1) (item pos pGridId)
+        set gpid item (patch-id - 1) (item pos pGridQual)
+        
+      ]
+      [
+        set np-grid-id item (patch-id - 1) (item pos npGridId)
+        set gnpid item (patch-id - 1) (item pos npGridQual)
+      ]
+    ]
+    
+    spawn-grid-centers
+    
+  ]
+  
+  
+  ifelse display-grids? = true [ display-npgrids] [ask grids [ht] ]
+end
+
+to fix-grid-read
+  let day-list [ 166 180 194 208 222 236 250 ]
+  
+  foreach day-list [
+    let dat [ ]
+    let target-file word "data/migration-grids/grids-ids-non-para-" ?
+    set target-file word target-file ".txt"
+    
+    set dat file-read-rep target-file dat
+    
+    
+    let fix-file "data/migration-grids/grids-ids-non-para.txt"
+    ;set fix-file word fix-file ".txt"
+    file-open fix-file
+    file-write dat
+    file-close-all
+    
+    
+    set dat [ ]
+    set target-file word "data/migration-grids/grids-qaul-non-para-" ?
+    set target-file word target-file ".txt"
+    
+    set dat file-read-rep target-file dat
+    
+    
+    set fix-file "data/migration-grids/grids-qual-non-para.txt"
+    file-open fix-file
+    file-write dat
+    file-close-all
+    
+    if ? = 166 [
+      
+      set dat [ ]
+      set target-file word "data/migration-grids/grids-ids-para-" ?
+      set target-file word target-file ".txt"
+      
+      set dat file-read-rep target-file dat
+      
+      
+      set fix-file "data/migration-grids/grids-ids-para.txt"
+      file-open fix-file
+      file-write dat
+      file-close-all
+      
+      
+      set dat [ ]
+      set target-file word "data/migration-grids/grids-qaul-para-" ?
+      set target-file word target-file ".txt"
+      
+      set dat file-read-rep target-file dat
+      
+      
+      set fix-file "data/migration-grids/grids-qual-para.txt"
+      file-open fix-file
+      file-write dat
+      file-close-all
+      
+    ]
+  ]
+end
+
+to-report file-read-rep [ target-file idDat ]
+  file-open target-file
+  while [ not file-at-end? ] [ set idDat lput file-read idDat ]
+  file-close-all
+  
+  report idDat
+end
+
 to spawn-grid-centers
-  ;procedure adds about 5-8 s sim time (for one season), can export to data files and import to speed things up, if necessary.
   ask grids [die]
   let max-id max [np-grid-id] of patches
   let x 1 ;ids of 0 correspond to non-grids
