@@ -307,7 +307,7 @@ to select-fcms
       set fcm-adja select-weighted-val prob-list caribou-fcm-adja-list
     ]
    
-   if caribou-mutate? [ mutate-genome caribou-mutate-prob fcm-adja ]
+   if caribou-mutate? [ set fcm-adja mutate-genome caribou-mutate-prob fcm-adja ]
 
   ]
   
@@ -429,7 +429,7 @@ to update-caribou-fcm
         set fcm-adja select-weighted-val prob-list caribou-fcm-adja-list
       ]
       
-      if caribou-mutate? [ mutate-genome caribou-mutate-prob fcm-adja ]
+      if caribou-mutate? [ set fcm-adja mutate-genome caribou-mutate-prob fcm-adja ]
       ;set fcm-adja matrix:copy fcm-adja-base ; Adj
       ;removing this procedure for the time being.
       ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
@@ -498,7 +498,7 @@ to update-caribou-fcm
 end
 
 
-to mutate-genome [ mutate-prob fcm-matrix ] 
+to-report mutate-genome [ mutate-prob fcm-matrix ] 
   
   ;let point-mut-prob 0.05 ;probability of the genome undergoing a point mutation.
   let random-roll (1 + random 100) / 100
@@ -510,23 +510,36 @@ to mutate-genome [ mutate-prob fcm-matrix ]
     ;now select a random column
     let ran-col random (item 1 (matrix:dimensions fcm-matrix))
     
-    set fcm-adja matrix:set-and-report fcm-adja ran-row ran-col mut-val 
+    let rand 0
+    if mutation-method = "fuzzy-logic" [ set rand (-1 + ((1 + random 2000) / 1000 ) ) ] ;fuzzy logic system 
+    if mutation-method = "trivalent" [ set rand (- 1 + random 3) ];trivalent system 
+    if mutation-method = "pentavalent" [
+      let roll random 2
+      ifelse roll = 0
+      [ set rand (- 1 + random 3) ]
+      [ set rand ((- 1 + random 3) / 2) ]
+      ;report rand ;pentavalent system
+    ]
+    
+    set fcm-matrix matrix:set-and-report fcm-matrix ran-row ran-col rand
+    
   ]
+  report fcm-matrix
 
 end
   
-to-report mut-val
-  if mutation-method = "fuzzy-logic" [ let rand (-1 + ((1 + random 2000) / 1000 ) ) report rand ] ;fuzzy logic system 
-  if mutation-method = "trivalent" [ let rand (- 1 + random 3) report rand ];trivalent system 
-  if mutation-method = "pentavalent" [
-    let rand 0
-    let roll random 2
-    ifelse roll = 0
-      [ set rand (- 1 + random 3) ]
-      [ set rand ((- 1 + random 3) / 2) ]
-    report rand ;pentavalent system
-  ]
-end
+;to-report mut-val
+;  if mutation-method = "fuzzy-logic" [ let rand (-1 + ((1 + random 2000) / 1000 ) ) report rand ] ;fuzzy logic system 
+;  if mutation-method = "trivalent" [ let rand (- 1 + random 3) report rand ];trivalent system 
+;  if mutation-method = "pentavalent" [
+;    let rand 0
+;    let roll random 2
+;    ifelse roll = 0
+;      [ set rand (- 1 + random 3) ]
+;      [ set rand ((- 1 + random 3) / 2) ]
+;    report rand ;pentavalent system
+;  ]
+;end
 
 to-report random-fcm [x]
   report (random-float 10) - 5

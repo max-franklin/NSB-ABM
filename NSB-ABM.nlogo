@@ -1814,7 +1814,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0.287
+0.819
 1
 0
 Number
@@ -1825,7 +1825,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.283
+0.699
 1
 0
 Number
@@ -1846,7 +1846,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.953
+0.814
 1
 0
 Number
@@ -1857,7 +1857,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.135
+0.613
 1
 0
 Number
@@ -1934,7 +1934,7 @@ INPUTBOX
 726
 841
 decay-rate
-0.616
+0.035
 1
 0
 Number
@@ -2000,7 +2000,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0.174
+0.801
 1
 0
 Number
@@ -2332,7 +2332,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.163
+0.502
 1
 0
 Number
@@ -2383,7 +2383,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.096
+0.778
 0.01
 1
 NIL
@@ -2395,7 +2395,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-22.5
+68
 1
 0
 Number
@@ -3011,7 +3011,7 @@ SWITCH
 711
 use-hunters?
 use-hunters?
-0
+1
 1
 -1000
 
@@ -3050,7 +3050,7 @@ SWITCH
 455
 hunter-recombine?
 hunter-recombine?
-0
+1
 1
 -1000
 
@@ -3061,7 +3061,7 @@ SWITCH
 492
 hunter-mutate?
 hunter-mutate?
-0
+1
 1
 -1000
 
@@ -3176,7 +3176,7 @@ SWITCH
 708
 hunter-training?
 hunter-training?
-0
+1
 1
 -1000
 
