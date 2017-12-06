@@ -23,7 +23,7 @@ to setup-caribou-var-cal
     [
       ;;set caribouVarCal starting values..
       set caribouVarCal lput decay-rate caribouVarCal
-      set caribouVarCal lput energy-gain-factor caribouVarCal
+      set caribouVarCal lput (energy-gain-factor / 100) caribouVarCal
       set caribouVarCal lput ndvi-weight caribouVarCal
       set caribouVarCal lput caribou-veg-factor caribouVarCal
       set caribouVarCal lput caribou-rough-factor caribouVarCal

@@ -443,7 +443,6 @@ to setup
   clear-all
   set seed -2147483648 + random-num (2147483648 * 2)
   random-seed seed
-  random-seed 0
   set time-of-year 0
   set max-roughness 442.442
   set hour 0
@@ -2697,7 +2696,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-1
+0
 1
 -1000
 
@@ -2708,7 +2707,7 @@ SWITCH
 1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-1
+0
 1
 -1000
 
@@ -3051,7 +3050,7 @@ SWITCH
 455
 hunter-recombine?
 hunter-recombine?
-1
+0
 1
 -1000
 
@@ -3062,7 +3061,7 @@ SWITCH
 492
 hunter-mutate?
 hunter-mutate?
-1
+0
 1
 -1000
 
@@ -3177,7 +3176,7 @@ SWITCH
 708
 hunter-training?
 hunter-training?
-1
+0
 1
 -1000
 
