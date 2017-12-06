@@ -130,6 +130,8 @@ to go-caribou-var-cal
       ;;perform gradient mutation
       gradient-caribou-variables
     ]
+    
+    assign-variable-values
         
   ]
  
@@ -147,12 +149,12 @@ to gradient-caribou-variables
     let grad-mod [ ]
     let ref-mod [ ]
     let pos-list [ ]
-    repeat grad-size [ 
+    repeat (grad-size + 1) [ 
       let rand-item random length grad-list
       
       set grad-mod lput item rand-item grad-list grad-mod
       set ref-mod lput item rand-item ref-list ref-mod
-      set pos-list lput position (item rand-item ref-list) ref-list globalVars
+      set pos-list lput position (item rand-item ref-list) globalVars pos-list
       
       set grad-list remove-item rand-item grad-list
       set ref-list remove-item rand-item ref-list
@@ -160,15 +162,15 @@ to gradient-caribou-variables
     
     ;;now modify the variable values in grad-mod.
     let mutateAmt (random-num 2) - 1
-    let new-vals [ ]
+    let new-val 0
+    let i 0
     foreach grad-mod [
       ;let 
-      set new-vals lput (? + mutateAmt) new-vals
-    ]
-    
-    foreach new-vals [
-     if ? > 1 [ set ? 1 ]
-     if ? < 0 [ set ? 0 ] 
+      set new-val ? + mutateAmt
+      if new-val > 1 [ set new-val 1 ]
+      if new-val < 0 [ set new-val 0 ]
+      set caribouVarCal replace-item (item i pos-list) caribouVarCal new-val
+      set i i + 1
     ]
     
   ]
@@ -177,19 +179,6 @@ to gradient-caribou-variables
 ;   let grad-mod [ ]
 ;   repeat gradSize [ set grad-mod lput item (random (length grad-list - 1)) grad-list grad-mod ]
 ;  ]
- 
-  let mutateAmt (random-num 2) - 1
-  let randItem (random length caribouVarCal)
-  let oldVal item randItem caribouVarCal
-  let newVal oldVal + mutateAmt
-  
-  while [ newVal <= 0 or newVal >= 1 ] [
-    set mutateAmt (random-num 2) - 1
-    set oldVal item randItem caribouVarCal
-    set newVal oldVal + mutateAmt   
-  ]
-  
-  set caribouVarCal replace-item randItem caribouVarCal newVal
 end
 
 to-report cross-var-genome [ genome-1 genome-2 ]
