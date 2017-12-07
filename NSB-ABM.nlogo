@@ -1814,7 +1814,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0
+0.861
 1
 0
 Number
@@ -1825,7 +1825,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0
+0.238
 1
 0
 Number
@@ -1846,7 +1846,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.7070000000000001
+0.9930000000000001
 1
 0
 Number
@@ -1857,7 +1857,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.125
+0.649
 1
 0
 Number
@@ -1934,7 +1934,7 @@ INPUTBOX
 726
 841
 decay-rate
-0.125
+1
 1
 0
 Number
@@ -2000,7 +2000,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0
+0.999
 1
 0
 Number
@@ -2332,7 +2332,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.579
+0
 1
 0
 Number
@@ -2370,7 +2370,7 @@ SWITCH
 458
 show-caribou-utility-non-para?
 show-caribou-utility-non-para?
-0
+1
 1
 -1000
 
@@ -2395,7 +2395,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-0
+100
 1
 0
 Number
@@ -2423,10 +2423,10 @@ debug-fcm?
 -1000
 
 TEXTBOX
-1198
-650
-1266
-673
+1268
+654
+1336
+677
 HUNTERS
 11
 0.0
@@ -2440,11 +2440,11 @@ SLIDER
 hunter-population
 hunter-population
 0
-100
-10
+35
+35
 1
 1
-NIL
+hunters
 HORIZONTAL
 
 SLIDER
@@ -2456,7 +2456,7 @@ hunter-vision
 hunter-vision
 0
 20
-3
+2
 1
 1
 * 2.2 km
@@ -2836,10 +2836,10 @@ NIL
 1
 
 INPUTBOX
-1052
-573
-1291
-648
+767
+574
+1006
+649
 new-file
 WetnessSumsAfter.txt
 1
@@ -2847,10 +2847,10 @@ WetnessSumsAfter.txt
 String
 
 BUTTON
-1300
-616
-1393
-649
+1015
+617
+1108
+650
 Open File
 file-open new-file
 NIL
@@ -2864,10 +2864,10 @@ NIL
 1
 
 BUTTON
-1399
-578
-1493
-611
+1114
+579
+1208
+612
 Close File
 file-close\n
 NIL
@@ -2881,10 +2881,10 @@ NIL
 1
 
 PLOT
-818
-359
-1204
-566
+819
+362
+1567
+569
 Hunter State Flux
 NIL
 NIL
@@ -2902,10 +2902,10 @@ PENS
 "Return " 1.0 0 -6917194 true "" "plot count hunters with [prev-motor-state = 3]"
 
 BUTTON
-1294
-578
-1395
-611
+1009
+579
+1110
+612
 Write to File
 file-open new-file \nask hunters [file-write wetness-sum / (patch-sum * 1.006791152)]\nfile-close
 NIL
@@ -2927,7 +2927,7 @@ maximum-hunter-density
 maximum-hunter-density
 0
 10
-3
+1
 1
 1
 hunters/caribou group
@@ -2979,10 +2979,10 @@ caribou
 HORIZONTAL
 
 MONITOR
-1214
-370
-1323
-415
+1500
+10
+1609
+55
 Hunter Success
 sum ([harvest-amount] of hunters)
 2
@@ -3011,7 +3011,7 @@ SWITCH
 711
 use-hunters?
 use-hunters?
-1
+0
 1
 -1000
 
@@ -3022,15 +3022,15 @@ SWITCH
 954
 exportCaribouData?
 exportCaribouData?
-0
+1
 1
 -1000
 
 BUTTON
-1400
-616
-1480
-649
+1115
+617
+1195
+650
 line test
   let patch-list-t []\n  let num-t 0\n  let x1-t 3\n  let y1-t 1\n  let x2-t -4\n  let y2-t -30\n  let d-x (x2-t - x1-t)\n  let d-y (y2-t - y1-t)\n  let slope-t d-y / d-x\n  ifelse (abs d-x >  abs d-y)\n  [\n     let x-t x1-t\n     let y-t 0\n     ifelse (x2-t > x1-t)\n     [\n        while[x-t <= x2-t]\n        [\n          set y-t (slope-t * (x-t - x1-t) + y1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set x-t (x-t + 1)\n        ]\n     ]\n     [\n        while[x-t >= x2-t]\n        [\n          set y-t (slope-t * (x-t - x1-t) + y1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set x-t (x-t - 1)\n        ]\n     ]\n   ]  \n   [\n     let y-t y1-t\n     let x-t 0\n     ifelse (y2-t > y1-t)\n     [\n        while[y-t <= y2-t]\n        [;\n          set x-t ((y-t - y1-t) / slope-t + x1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set y-t (y-t + 1)\n        ]\n     ]\n     [\n        while[y-t >= y2-t]\n        [;\n          set x-t ((y-t - y1-t) / slope-t + x1-t)\n          set patch-list-t lput (patch x-t y-t) patch-list-t\n          set y-t (y-t - 1)\n        ]\n     ]\n   ]\n  foreach patch-list-t\n  [\n      ask ? \n      [\n         set pcolor red\n         if(streams > (0.025 * (max [streams] of patches)) or empty? river-set = false and pxcor != 3 and pycor != 1)\n         [set pcolor white]\n      ]\n  ]
 NIL
@@ -3044,24 +3044,24 @@ NIL
 1
 
 SWITCH
-1214
-422
-1391
-455
+1406
+573
+1567
+606
 hunter-recombine?
 hunter-recombine?
-1
+0
 1
 -1000
 
 SWITCH
-1214
-459
-1368
-492
+1406
+610
+1560
+643
 hunter-mutate?
 hunter-mutate?
-1
+0
 1
 -1000
 
@@ -3096,30 +3096,30 @@ NIL
 HORIZONTAL
 
 SLIDER
-1214
-494
-1400
-527
+1216
+573
+1402
+606
 hunter-recomb-prob
 hunter-recomb-prob
 0
 1
-0.2
+0.5
 .1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1214
-528
-1395
-561
+1216
+607
+1402
+640
 hunter-mutate-prob
 hunter-mutate-prob
 0
 1
-0.1
+0.5
 .1
 1
 NIL
@@ -3176,9 +3176,27 @@ SWITCH
 708
 hunter-training?
 hunter-training?
-1
+0
 1
 -1000
+
+PLOT
+1282
+10
+1496
+160
+Number Unique Hunter FCMs
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plotxy (year) (length hunter-fcm-adja-list)"
 
 @#$#@#$#@
 ## WHAT IS IT?

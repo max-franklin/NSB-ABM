@@ -212,6 +212,7 @@ to reset-hunters [ mode ]
    if(patch-here != home-patch) [ setxy 3 1 ] 
    set river-memory []
    set target-river-patch-r 0
+   set target-river-patch 0
    set trip-length trip-length-max
    set spent-time 0
    set hunter-density 0
@@ -285,7 +286,6 @@ end
 to set-hunter-matrices
     set hunter-fcm-matrix global-fcm-matrix
     set hunter-fcm-sensory global-fcm-sensory
-    set hunter-fcm-sensory-test hunter-fcm-sensory
     set hunter-fcm-internal global-fcm-internal
     set hunter-fcm-motor global-fcm-motor
     set sensory-print matrix:pretty-print-text hunter-fcm-sensory
@@ -294,9 +294,9 @@ to set-hunter-matrices
 end
 
 to reset-hunter-matrices
-    set hunter-fcm-sensory-test hunter-fcm-sensory
-    set hunter-fcm-internal global-fcm-internal
-    set hunter-fcm-motor global-fcm-motor
+    set hunter-fcm-internal matrix:submatrix hunter-fcm-matrix 0 11 11 19
+    set hunter-fcm-motor matrix:submatrix hunter-fcm-matrix 11 19 19 23
+    
     set sensory-print matrix:pretty-print-text hunter-fcm-sensory
     set internal-print matrix:pretty-print-text hunter-fcm-internal
     set motor-print matrix:pretty-print-text hunter-fcm-motor
@@ -385,8 +385,7 @@ to run-motor-function
     set boat-return false
     set return false
     set hunt true
-    ;if(target-river-patch-r != 0)
-    ;[set return-to-river true]
+    set local-search false
     hunt-funct
   ]
   if motor-concept-index = 1
@@ -399,8 +398,6 @@ to run-motor-function
     set boat-return false
     set return false
     set foot-travel true
-    ;if(target-river-patch-r != 0)
-    ;[set return-to-river true]
     foot-travel-funct ([patch-here] of target-land-centroid)
   ]
   if motor-concept-index = 2 ;CHECK TO RETURN BACK TO RIVER PATCH 
@@ -414,17 +411,20 @@ to run-motor-function
     set return false
     set boat-return false
     set boat-travel true
-    boat-travel-funct target-river-patch-r ;pass in returning patch 
+    set local-search false
+    ifelse (target-river-patch-r != 0)
+    [ boat-travel-funct target-river-patch-r ] ;pass in returning patch 
+    [ boat-travel-funct target-river-patch ]
   ]
   if motor-concept-index = 3
   [
-    ;print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ]
     set prev-motor-state 3
     set hunt false
     set boat-travel false
     set foot-travel false
     set return true
+    set local-search false
     if(patch-here = target-river-patch-r) [set boat-return true]
     return-home
   ]
@@ -456,7 +456,8 @@ to hunt-funct
 end
 
 to foot-travel-funct [target]
-  ifelse(patch-here != target) ;IF LOCAL SEARCH FALSE     ;Travel to destination 
+  if(patch-here = target) [set local-search true] ;IF LOCAL SEARCH FALSE     ;Travel to destination 
+  ifelse (local-search = false)
   [
      ifelse(member? target neighbors = false)
      [
@@ -506,44 +507,16 @@ to foot-travel-return-funct [target]
 end
 
 to boat-travel-funct [target-r]
-  ;ifelse(patch-here = target-r) 
-  ;[set return-to-river false]
-  ;[set return-to-river true]
-  if(boat-return = true and [connected?] of patch-here = 0 and empty? [river-set] of patch-here = true) [set return-to-river true]
-
+  if([connected?] of patch-here = 0 and empty? [river-set] of patch-here = true) [set return-to-river true]
+  if([connected?] of patch-here = true and empty? [river-set] of patch-here = false and ([river-set] of patch-here != [river-set] of target-r)) [set return-to-river true]
   ifelse(return-to-river = false)
-   [    
-     ;ifelse(target-r != 0 and member? target-r neighbors)
-     ;[
-     ;  face target-r
-     ;  move-to target-r
-     ;]
-     ;[ 
-     ifelse (target-river-patch-r != 0)
-     [
-       if(river-to-follow != [river-set] of target-river-patch-r)
-       [set river-to-follow [river-set] of target-river-patch-r]
-     ]
-     [
-       if(river-to-follow != [river-set] of target-river-patch)
-       [set river-to-follow [river-set] of target-river-patch]
-     ]
+  [
        set river-memory lput patch-here river-memory
        let target neighbors with [connected? = true and not member? self [river-memory] of myself 
                              and (list-intersect ([river-to-follow] of myself) river-set) ] 
        set target max-one-of target [elevation]
        carefully [ face target move-to target ]
        [
-         
-;         MOVE-TO expected input to be an agent but got NOBODY instead.
-;           error while hunter 4545 running MOVE-TO
-;           called by procedure BOAT-TRAVEL-FUNCT (C:\Users\Bianca\Documents\NSB-ABM\nls-modules\hunters.nls)
-;           called by procedure RUN-MOTOR-FUNCTION (C:\Users\Bianca\Documents\NSB-ABM\nls-modules\hunters.nls)
-;           called by procedure EXECUTE-FCM (C:\Users\Bianca\Documents\NSB-ABM\nls-modules\hunters.nls)
-;           called by procedure GO-HUNTERS-NLS (C:\Users\Bianca\Documents\NSB-ABM\nls-modules\hunters.nls)
-;           called by procedure GO
-;           called by Button 'Go' 
-        
          move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor]
          set target neighbors with [connected? = true and not member? self [river-memory] of myself 
                                 and (list-intersect ([river-to-follow] of myself) river-set)] 
@@ -551,7 +524,6 @@ to boat-travel-funct [target-r]
          if target != NOBODY
          [ face target move-to target ]
        ]
-     ;]
    ]
    [
      if (target-r = 0)
