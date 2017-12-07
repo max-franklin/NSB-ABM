@@ -525,9 +525,9 @@ to setup
   set ticks-store [ ]
   set bio-en-store [ ]
 
-  reset-ticks
 
-  set ticks-store lput ticks ticks-store
+;  set ticks-store lput ticks ticks-store
+  set ticks-store lput 0 ticks-store
   set bio-en-store lput mean [bioenergy] of caribou bio-en-store
 
   set fcm-store [ ]
@@ -553,6 +553,9 @@ to setup
     initialize-FCM-hunters
     setup-hunter-nls
   ]
+
+  reset-ticks
+
 
 end
 
@@ -1814,7 +1817,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0.861
+0
 1
 0
 Number
@@ -1825,7 +1828,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.238
+0
 1
 0
 Number
@@ -1846,7 +1849,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.9930000000000001
+0.9239999999999999
 1
 0
 Number
@@ -1857,7 +1860,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.649
+0
 1
 0
 Number
@@ -1934,7 +1937,7 @@ INPUTBOX
 726
 841
 decay-rate
-1
+0
 1
 0
 Number
@@ -2000,7 +2003,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0.999
+0
 1
 0
 Number
@@ -2332,7 +2335,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0
+0.8059999999999998
 1
 0
 Number
@@ -2383,7 +2386,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0
+0.33499999999999996
 0.01
 1
 NIL
@@ -2395,7 +2398,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-100
+0
 1
 0
 Number
@@ -3104,7 +3107,7 @@ hunter-recomb-prob
 hunter-recomb-prob
 0
 1
-0.5
+0.1
 .1
 1
 NIL
@@ -3119,7 +3122,7 @@ hunter-mutate-prob
 hunter-mutate-prob
 0
 1
-0.5
+0.2
 .1
 1
 NIL

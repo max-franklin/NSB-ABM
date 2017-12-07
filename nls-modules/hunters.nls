@@ -247,6 +247,7 @@ end
 
 
 to initialize-FCM-hunters
+  set hunter-fcm-adja-list [ ]
   set global-fcm-matrix matrix:from-row-list [[ 0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0  0  0 ]
                                               [ 0  0  0  0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0 ]
                                               [ 0  0  0  0  0  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0 ]

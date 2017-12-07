@@ -200,6 +200,10 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
       
       set x x + 1
     ]
+    set hunter-fcm-adja-list fcm-adja-list
+    set hunter-fcm-agentnum-list fcm-agentnum-list
+    set hunter-fcm-success-list fcm-success-list
+    
   ]
   
   
