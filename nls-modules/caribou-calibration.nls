@@ -10,6 +10,7 @@ to setup-caribou-var-cal
   set car-var-soln-fit-list [ ]
   set car-var-soln-list [ ]
   set caribouVarCal [ ] 
+  set caribou-var-E-diff [ ]
   ifelse randomCaribouVarStart?
     [
       ;print "testing to see if random assignment occurs."
@@ -46,31 +47,44 @@ to go-caribou-var-cal
   let varProb item 0 datIn
   let convergence item 1 datIn
   let soln-success item 2 datIn
-
+  let fitDiff item 3 datIn
+  
+ 
   
   ;;trigger evolution event if varProb is beaten by random-roll.
   if (random-num 1) <= varProb [
     set mutatedVars? 1
     
+    set caribou-var-E-diff lput fitDiff caribou-var-E-diff
+    
+    let maxSuccess max caribou-var-E-diff
+    
+    let relSuccess map [ ? / maxSuccess ]  caribou-var-E-diff
+    
+    set car-var-soln-fit-list lput soln-success car-var-soln-fit-list
+    set car-var-soln-list lput caribouVarCal car-var-soln-list 
+    
     ;;perform recombination first if number soln with fitness > 1 is > 1
     
     ;;create temporary lists without current fitness and soln value for purpose of
     ;;weeding out current soln from recombination pool.
-    ;let t-car-var-soln-fit-list car-var-soln-fit-list 
-    ;let t-car-var-soln-list car-var-soln-list 
-    set car-var-soln-fit-list lput soln-success car-var-soln-fit-list
-    set car-var-soln-list lput caribouVarCal car-var-soln-list 
+ 
+;    let t-car-var-soln-list [ ]
+;    let t-car-var-soln-fit-list [ ]
+;    let i 0
+;    foreach car-var-soln-fit-list [
+;      if ?  > 0 [
+;        set t-car-var-soln-fit-list lput ? t-car-var-soln-fit-list
+;        set t-car-var-soln-list lput (item i car-var-soln-list) t-car-var-soln-list 
+;      ]
+;      set i i + 1
+;    ]
     
-    let t-car-var-soln-list [ ]
-    let t-car-var-soln-fit-list [ ]
-    foreach car-var-soln-fit-list [
-      if item ? car-var-soln-fit-list > 0 [
-        set t-car-var-soln-fit-list item ? car-var-soln-fit-list
-        set t-car-var-soln-list item ? car-var-soln-list
-      ]
-    ]
-    
-    if length t-car-var-soln-list > 1   
+;    if length t-car-var-soln-list > 1   
+
+    ;;each time an evolution event occurs, recombination will occur defacto if there are at least two solutions.
+    ;;may edit this later to be a probabilistic event...
+    if length caribou-var-E-diff > 1
     [  
       ;;recomb caribou variable calibration solutions.
       set recombined? 1
@@ -78,10 +92,10 @@ to go-caribou-var-cal
       let var-genome-2 0
       
       ;;build a probability list first for weighted selection.
-      let prob-recomb-list build-prob-list t-car-var-soln-fit-list 
-      ;;now select one of the list randomly for crossing
-      set var-genome-1 select-weighted-val prob-recomb-list t-car-var-soln-list
-      set var-genome-2 select-weighted-val prob-recomb-list t-car-var-soln-list
+      let prob-recomb-list build-prob-list caribou-var-E-diff 
+      ;;now select boths of the lists randomly for crossing
+      set var-genome-1 select-weighted-val prob-recomb-list car-var-soln-list
+      set var-genome-2 select-weighted-val prob-recomb-list car-var-soln-list
       
       ;;now, we can run the recombination procedure. 
       set caribouVarCal cross-var-genome var-genome-1 var-genome-2
@@ -135,7 +149,7 @@ to go-caribou-var-cal
         
   ]
  
-  if exportCaribouData? [ export-var-data mutatedVars? recombined? varProb convergence oldCaribouVarCal soln-success ]
+  if exportCaribouData? [ export-var-data mutatedVars? recombined? varProb convergence oldCaribouVarCal soln-success  ]
 end
 
 to gradient-caribou-variables
@@ -145,7 +159,8 @@ to gradient-caribou-variables
   let ref-list globalVars
   
   while [ length grad-list > 0 ] [
-    let grad-size random (length grad-list)
+;    let grad-size random (length grad-list)
+    let grad-size 2
     let grad-mod [ ]
     let ref-mod [ ]
     let pos-list [ ]
@@ -161,7 +176,8 @@ to gradient-caribou-variables
     ]
     
     ;;now modify the variable values in grad-mod.
-    let mutateAmt (random-num 2) - 1
+    ;;choosing a smaller mutate amount to reduce "jumpiness" of gradient evolution function.
+    let mutateAmt ((random-num 1) - 0.5)
     let new-val 0
     let i 0
     foreach grad-mod [
@@ -182,7 +198,7 @@ to gradient-caribou-variables
 end
 
 to-report cross-var-genome [ genome-1 genome-2 ]
-  let test? true
+  let test? false
   
   let len-snip-1 random (length genome-1)
   let snip-1 sublist genome-1 0 len-snip-1
@@ -307,7 +323,7 @@ to assign-variable-values
 end
 
 to-report calculate-var-prob 
-  let test? false
+  let test? true
   let datOut [ ]
   let convergence length caribou-fcm-adja-list
   set convergence 1 - ( convergence / caribou-group-amt );;divide by initial number of unique caribou FCMs to normalize the variable.
@@ -317,12 +333,16 @@ to-report calculate-var-prob
   let highE 947000
   let midE (lowE + highE) / 2
   let rng highE - lowE
-  let var 1
+  let var 5
   let fitness 0
   let avgSeasonE mean [ bioenergy-success ] of caribou
-  ;let avgSeasonE lowE
+
+;let avgSeasonE highE + 4.9 * rng
+;let avgSeasonE lowE
   
   let diff abs(midE - avgSeasonE)
+  
+  ;set caribou-var-E-diff lput diff caribou-var-E-diff
   
   ifelse avgSeasonE <= (highE + (var * rng) ) and avgSeasonE >= (lowE - (var * rng) )
   [
@@ -361,6 +381,7 @@ to-report calculate-var-prob
   set datOut lput varProb datOut
   set datOut lput convergence datOut
   set datOut lput fitness datOut
+  set datOut lput diff datOut
   
   report datOut
   
@@ -370,4 +391,54 @@ end
 
 to-report random-num [ num ]
   report random ((num * 1000) + 1) / 1000
+end
+
+to testcon
+
+;  set mutatedVars? 1
+  let recombined? 0
+  ;set car-var-soln-fit-list lput soln-success car-var-soln-fit-list
+  ;set car-var-soln-list lput caribouVarCal car-var-soln-list 
+  
+  ;;perform recombination first if number soln with fitness > 1 is > 1
+  
+  ;;create temporary lists without current fitness and soln value for purpose of
+  ;;weeding out current soln from recombination pool.
+  ;let t-car-var-soln-fit-list car-var-soln-fit-list 
+  ;let t-car-var-soln-list car-var-soln-list 
+  show caribouVarCal
+  let t-car-var-soln-list [ ]
+  let t-car-var-soln-fit-list [ ]
+  let i 0
+  foreach car-var-soln-fit-list [
+    if ?  > 0 [
+      set t-car-var-soln-fit-list lput ? t-car-var-soln-fit-list
+      set t-car-var-soln-list lput (item i car-var-soln-list) t-car-var-soln-list 
+    ]
+    set i i + 1
+  ]
+  
+  show t-car-var-soln-fit-list
+  show t-car-var-soln-list
+  
+  if length t-car-var-soln-list > 1   
+    [  
+      ;;recomb caribou variable calibration solutions.
+      set recombined? 1
+      let var-genome-1 0
+      let var-genome-2 0
+      
+      ;;build a probability list first for weighted selection.
+      let prob-recomb-list build-prob-list t-car-var-soln-fit-list 
+      ;;now select one of the list randomly for crossing
+      set var-genome-1 select-weighted-val prob-recomb-list t-car-var-soln-list
+      set var-genome-2 select-weighted-val prob-recomb-list t-car-var-soln-list
+      
+      ;;now, we can run the recombination procedure. 
+      set caribouVarCal cross-var-genome var-genome-1 var-genome-2
+      
+    ]
+    
+   show recombined?
+   show caribouVarCal
 end
