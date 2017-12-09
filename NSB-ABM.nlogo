@@ -1818,7 +1818,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-1
+0.11199999999999999
 1
 0
 Number
@@ -1829,7 +1829,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.9189999999999999
+0.48
 1
 0
 Number
@@ -1850,7 +1850,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.30399999999999994
+0.45299999999999996
 1
 0
 Number
@@ -1861,7 +1861,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.30399999999999994
+1
 1
 0
 Number
@@ -2004,7 +2004,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-1
+0.722
 1
 0
 Number
@@ -2336,7 +2336,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-1
+0.605
 1
 0
 Number
@@ -2387,7 +2387,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.30399999999999994
+0.203
 0.01
 1
 NIL
@@ -2399,7 +2399,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-91.89999999999999
+59.8
 1
 0
 Number
@@ -3078,8 +3078,8 @@ caribou-mutate-prob
 caribou-mutate-prob
 0
 1
-0.1
-.1
+0.15
+.05
 1
 NIL
 HORIZONTAL
@@ -3212,6 +3212,21 @@ random-hunter-fcm?
 1
 1
 -1000
+
+SLIDER
+188
+1064
+368
+1097
+prob-var-recombination
+prob-var-recombination
+0
+1
+0.5
+.01
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
