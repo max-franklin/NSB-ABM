@@ -414,14 +414,12 @@ to run-motor-function
   ]
   if motor-concept-index = 3
   [
-    if prev-motor-state = 2 [ save-target-river-patch ]
     set prev-motor-state 3
     set hunt false
     set boat-travel false
     set foot-travel false
     set return true
     set local-search false
-    ;if(patch-here = target-river-patch-r) [set boat-return true]
     return-home
   ]
   
@@ -503,7 +501,7 @@ to foot-travel-return-funct [target]
 end
 
 to boat-travel-funct [target-r]
-  if([connected?] of patch-here = 0 and empty? [river-set] of patch-here = true) [set return-to-river true]
+  if(empty? [river-set] of patch-here = true) [set return-to-river true]
   if([connected?] of patch-here = true and empty? [river-set] of patch-here = false and ([river-set] of patch-here != [river-set] of target-r)) [set return-to-river true]
   ifelse(return-to-river = false)
   [
@@ -687,8 +685,6 @@ end
 to return-home
   ifelse(target-river-patch-r != 0)
   [
-    ;if(patch-here = target-river-patch-r)[set boat-return true]
-    ;if(empty? [river-set] of patch-here = true) [set return-to-river true]
     if(patch-here = target-river-patch-r or (empty? [river-set] of patch-here = false and ([river-set] of patch-here = [river-set] of target-river-patch-r))) 
     [set boat-return true]
     ifelse(boat-return = true)
