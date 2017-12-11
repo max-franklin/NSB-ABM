@@ -145,7 +145,7 @@ to go-hunters-nls
   [
     if(trip-length = 0)
     [ 
-      export-hunter-data 0
+      if export-hunter-data? [export-hunter-data 0]
       set new-trip? true 
     ] 
     if(new-trip? = true)
@@ -378,7 +378,6 @@ to run-motor-function
   
   if motor-concept-index = 0
   [
-    ;print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 0
     set foot-travel false
@@ -391,7 +390,6 @@ to run-motor-function
   ]
   if motor-concept-index = 1
   [
-    ;print prev-motor-state
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 1
     set hunt false
@@ -403,9 +401,6 @@ to run-motor-function
   ]
   if motor-concept-index = 2 ;CHECK TO RETURN BACK TO RIVER PATCH 
   [
-    ;print prev-motor-state
-    if([connected?] of patch-here = 0 and empty? [river-set] of patch-here = true) [set return-to-river true]
-    if([connected?] of patch-here = true and empty? [river-set] of patch-here = false) [set return-to-river false]
     set prev-motor-state 2
     set hunt false
     set foot-travel false
@@ -426,7 +421,7 @@ to run-motor-function
     set foot-travel false
     set return true
     set local-search false
-    if(patch-here = target-river-patch-r) [set boat-return true]
+    ;if(patch-here = target-river-patch-r) [set boat-return true]
     return-home
   ]
   
@@ -508,8 +503,9 @@ to foot-travel-return-funct [target]
 end
 
 to boat-travel-funct [target-r]
-  if([connected?] of patch-here = 0 and empty? [river-set] of patch-here = true) [set return-to-river true]
+  if(empty? [river-set] of patch-here = true) [set return-to-river true]
   if([connected?] of patch-here = true and empty? [river-set] of patch-here = false and ([river-set] of patch-here != [river-set] of target-r)) [set return-to-river true]
+  if([connected?] of patch-here = true and empty? [river-set] of patch-here = false and ([river-set] of patch-here = [river-set] of target-r)) [set return-to-river false]
   ifelse(return-to-river = false)
   [
        set river-memory lput patch-here river-memory
@@ -531,6 +527,14 @@ to boat-travel-funct [target-r]
      [ set target-r home-patch ] 
      foot-travel-return-funct target-r
    ]
+  ; MOVE-TO expected input to be an agent but got NOBODY instead.
+;error while hunter 4544 running MOVE-TO
+  ;called by procedure BOAT-TRAVEL-FUNCT (/Users/henrithomas/Desktop/Work/UAA/NSB-ABM/nls-modules/hunters.nls)
+  ;called by procedure RUN-MOTOR-FUNCTION (/Users/henrithomas/Desktop/Work/UAA/NSB-ABM/nls-modules/hunters.nls)
+  ;called by procedure EXECUTE-FCM (/Users/henrithomas/Desktop/Work/UAA/NSB-ABM/nls-modules/hunters.nls)
+  ;called by procedure GO-HUNTERS-NLS (/Users/henrithomas/Desktop/Work/UAA/NSB-ABM/nls-modules/hunters.nls)
+  ;called by procedure GO
+  ;called by Button 'Go'
 end 
 
 to boat-travel-return-funct
@@ -692,7 +696,10 @@ end
 to return-home
   ifelse(target-river-patch-r != 0)
   [
-    if(patch-here = target-river-patch-r)[set boat-return true]
+    ;if(patch-here = target-river-patch-r)[set boat-return true]
+    ;if(empty? [river-set] of patch-here = true) [set return-to-river true]
+    if(patch-here = target-river-patch-r or (empty? [river-set] of patch-here = false and ([river-set] of patch-here = [river-set] of target-river-patch-r))) 
+    [set boat-return true]
     ifelse(boat-return = true)
     [
       boat-travel-return-funct

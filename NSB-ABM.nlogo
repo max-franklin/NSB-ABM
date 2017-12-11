@@ -1339,9 +1339,9 @@ to export-hunter-data [mode]
      ask hunters
      [
        file-print ""
-       file-write word spent-time ","
-       file-write word ([who] of self) ","
-       file-write word prey-caught ","
+       file-write spent-time
+       file-write ([who] of self)
+       file-write prey-caught
        file-write harvest-patch
      ]
      file-close
@@ -1352,9 +1352,10 @@ to export-hunter-data [mode]
      file-open "hunter-year-data.txt"
      ask hunters
      [
-       file-write word year ","
-       file-write word ([who] of self) ","
-       file-write word harvest-amount ","
+       file-print ""
+       file-write year
+       file-write ([who] of self)
+       file-write harvest-amount
        file-write matrix:to-row-list hunter-fcm-matrix
      ]
      file-close
@@ -1817,7 +1818,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0
+0.289
 1
 0
 Number
@@ -1828,7 +1829,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0
+0.016
 1
 0
 Number
@@ -1849,7 +1850,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.9239999999999999
+0.143
 1
 0
 Number
@@ -1860,7 +1861,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0
+0.97
 1
 0
 Number
@@ -1937,7 +1938,7 @@ INPUTBOX
 726
 841
 decay-rate
-0
+0.459
 1
 0
 Number
@@ -2003,7 +2004,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0
+0.487
 1
 0
 Number
@@ -2303,7 +2304,7 @@ SWITCH
 1063
 is-training?
 is-training?
-0
+1
 1
 -1000
 
@@ -2335,7 +2336,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.8059999999999998
+0.877
 1
 0
 Number
@@ -2362,7 +2363,7 @@ SWITCH
 424
 show-caribou-utility-para?
 show-caribou-utility-para?
-1
+0
 1
 -1000
 
@@ -2386,7 +2387,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.33499999999999996
+0.219
 0.01
 1
 NIL
@@ -2398,7 +2399,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-0
+33
 1
 0
 Number
@@ -2548,10 +2549,10 @@ display-grids?
 -1000
 
 MONITOR
-1211
-168
-1313
-213
+1499
+12
+1601
+57
 mean sim time
 mean avg-sim-time
 17
@@ -2699,7 +2700,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-0
+1
 1
 -1000
 
@@ -2886,13 +2887,13 @@ NIL
 PLOT
 819
 362
-1567
+1493
 569
 Hunter State Flux
 NIL
 NIL
-0.0
-10.0
+120000.0
+140000.0
 0.0
 11.0
 true
@@ -2930,7 +2931,7 @@ maximum-hunter-density
 maximum-hunter-density
 0
 10
-1
+2
 1
 1
 hunters/caribou group
@@ -2982,10 +2983,10 @@ caribou
 HORIZONTAL
 
 MONITOR
-1500
-10
-1609
-55
+1497
+166
+1606
+211
 Hunter Success
 sum ([harvest-amount] of hunters)
 2
@@ -3001,7 +3002,7 @@ local-search-radius
 local-search-radius
 0
 10
-5
+3
 1
 1
 patches
@@ -3200,6 +3201,24 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plotxy (year) (length hunter-fcm-adja-list)"
+
+PLOT
+1283
+166
+1495
+334
+Total Success of Hunters
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot sum ([harvest-amount] of hunters)"
 
 @#$#@#$#@
 ## WHAT IS IT?
