@@ -35,10 +35,6 @@ globals
   seed
   caribouVarCal ;;list containing values of caribou related variables that need to be calibrated.
 
-  fcm-store
-  ticks-store
-  bio-en-store
-
   np-centroid-layer-152
   np-centroid-layer-166
   np-centroid-layer-180
@@ -523,17 +519,6 @@ to setup
   [ set grid-util-non-para 0
     set grid-util-para 0 ]
 
-  set ticks-store [ ]
-  set bio-en-store [ ]
-
-
-;  set ticks-store lput ticks ticks-store
-  set ticks-store lput 0 ticks-store
-  set bio-en-store lput mean [bioenergy] of caribou bio-en-store
-
-  set fcm-store [ ]
-  set fcm-store lput (length caribou-fcm-adja-list) fcm-store
-
   test-flow
 
 
@@ -679,9 +664,6 @@ to go
       ;ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
       set year year + 1
-
-      set fcm-store lput (length caribou-fcm-adja-list) fcm-store
-
       set day 152
 
       ;if year = 200 [ stop ] ; can be deleted, just for network recording.
@@ -745,9 +727,6 @@ to go
   ]
 
   tick
-
-  set ticks-store lput ticks ticks-store
-  set bio-en-store lput mean [bioenergy] of caribou bio-en-store
 end
 
 to setup-caribou-state-data
@@ -1819,7 +1798,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0.289
+0.054
 1
 0
 Number
@@ -1830,7 +1809,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.016
+0.331
 1
 0
 Number
@@ -1851,7 +1830,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.143
+0.941
 1
 0
 Number
@@ -1862,7 +1841,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.97
+0.943
 1
 0
 Number
@@ -1939,7 +1918,7 @@ INPUTBOX
 726
 841
 decay-rate
-0.459
+0.291
 1
 0
 Number
@@ -2005,7 +1984,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0.487
+0.311
 1
 0
 Number
@@ -2305,7 +2284,7 @@ SWITCH
 1063
 is-training?
 is-training?
-1
+0
 1
 -1000
 
@@ -2337,7 +2316,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.877
+0.893
 1
 0
 Number
@@ -2388,7 +2367,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.219
+0.52
 0.01
 1
 NIL
@@ -2400,7 +2379,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-33
+53.6
 1
 0
 Number
@@ -2576,7 +2555,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plotxy (year) (length caribou-fcm-adja-list)"
+"default" 1.0 0 -16777216 true "" "if display-plots? [ plotxy (year) (length caribou-fcm-adja-list) ]"
 
 PLOT
 1078
@@ -2594,7 +2573,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plotxy ticks mean [bioenergy-success] of caribou"
+"default" 1.0 0 -16777216 true "" "if display-plots? [plotxy ticks mean [bioenergy-success] of caribou]"
 
 PLOT
 818
@@ -2612,11 +2591,11 @@ true
 true
 "" ""
 PENS
-"Evade" 1.0 0 -16777216 true "" "plotxy ticks count caribou with [state = 0]"
-"Interforage" 1.0 0 -1264960 true "" "plotxy ticks count caribou with [state = 1]"
-"Taxi/migrate" 1.0 0 -13791810 true "" "plotxy ticks count caribou with [state = 2]"
-"Rest" 1.0 0 -1184463 true "" "plotxy ticks count caribou with [state = 3]"
-"Intraforage" 1.0 0 -6459832 true "" "plotxy ticks count caribou with [state = 4]"
+"Evade" 1.0 0 -16777216 true "" "if display-plots? [ plotxy ticks count caribou with [state = 0] ]"
+"Interforage" 1.0 0 -1264960 true "" "if display-plots? [ plotxy ticks count caribou with [state = 1] ]"
+"Taxi/migrate" 1.0 0 -13791810 true "" "if display-plots? [ plotxy ticks count caribou with [state = 2] ]"
+"Rest" 1.0 0 -1184463 true "" "if display-plots? [  plotxy ticks count caribou with [state = 3] ]"
+"Intraforage" 1.0 0 -6459832 true "" "if display-plots? [ plotxy ticks count caribou with [state = 4] ]"
 
 INPUTBOX
 203
@@ -2701,7 +2680,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-1
+0
 1
 -1000
 
@@ -2901,10 +2880,10 @@ true
 true
 "" ""
 PENS
-"Hunt" 1.0 0 -16777216 true "" "plot count hunters with [prev-motor-state = 0]"
-"Foot Travel " 1.0 0 -2139308 true "" "plot count hunters with [prev-motor-state = 1]"
-"Boat Travel " 1.0 0 -11085214 true "" "plot count hunters with [prev-motor-state = 2]"
-"Return " 1.0 0 -6917194 true "" "plot count hunters with [prev-motor-state = 3]"
+"Hunt" 1.0 0 -16777216 true "" "if display-plots? [ plot count hunters with [prev-motor-state = 0] ]"
+"Foot Travel " 1.0 0 -2139308 true "" "if display-plots? [ plot count hunters with [prev-motor-state = 1] ]"
+"Boat Travel " 1.0 0 -11085214 true "" "if display-plots? [ plot count hunters with [prev-motor-state = 2] ]"
+"Return " 1.0 0 -6917194 true "" "if display-plots? [ plot count hunters with [prev-motor-state = 3] ]"
 
 BUTTON
 1045
@@ -2984,9 +2963,9 @@ caribou
 HORIZONTAL
 
 MONITOR
-1497
+1428
 166
-1606
+1537
 211
 Hunter Success
 sum ([harvest-amount] of hunters)
@@ -3201,7 +3180,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "carefully [plotxy (year) (length hunter-fcm-adja-list)] []"
+"default" 1.0 0 -16777216 true "" "if display-plots? [ carefully [plotxy (year) (length hunter-fcm-adja-list)] [] ]"
 
 SWITCH
 1251
@@ -3230,9 +3209,9 @@ NIL
 HORIZONTAL
 
 PLOT
-1283
+1214
 166
-1495
+1426
 334
 Total Success of Hunters
 NIL
@@ -3245,7 +3224,18 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot sum ([harvest-amount] of hunters)"
+"default" 1.0 0 -16777216 true "" "if display-plots? [ plot sum ([harvest-amount] of hunters) ]"
+
+SWITCH
+1457
+240
+1601
+273
+display-plots?
+display-plots?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -133,49 +133,12 @@ to go-caribou-var-cal
         
       ]
     ]
-    
-    let probMut 0
-    let probGrad 0
-    let del-soln-success 0
-    
-;    set probMut var-mut-prob-factor * soln-success
-;    set probGrad var-grad-prob-factor * 1 / soln-success
-    set probMut soln-success
-    carefully [ set probGrad 1 / soln-success ] [ set probGrad 1 ]
-    ;;slice last 5 solution success values (or approximately last 50 years of simulation time)
-    ;;following code is WIP for trying to kick out of local minima and maxima.
-;    if (length car-var-soln-list >= 5) [
-;      set del-soln-success sublist car-var-soln-list (length car-var-soln-list - 5) (length car-var-soln-list)
-;      let mean-soln-success mean del-soln-success
-;      let sd-soln-success standard-deviation del-soln-success
-;      ifelse mean-soln-success != 0 and (sd-soln-success / mean-soln-success) != 0
-;      [ 
-;        let probGradMod 1 / ( sd-soln-success / mean-soln-success )
-;      ]
-;      [
-;        let probGradMod 0 
-;      ]
-;    ]
-;    set probGrad probGrad + probGradMod
+   
+    let probMut soln-success
 
-
-    let mutCheck False
-    let gradCheck False
-    
-    while [ (mutCheck = False or gradCheck = False) and (mutCheck != True and gradCheck != True) ][
-     if random-num 1 <= probMut [ set mutCheck True ]
-     if random-num 1 <= probGrad [ set gradCheck True ] 
-    ]
-    
-    ifelse mutCheck
-    [
-      ;;perform point mutation
-      mutate-caribou-variables
-    ]
-    [
-      ;;perform gradient mutation
-      gradient-caribou-variables
-    ]
+    ifelse random-num 1 <= probMut 
+    [ mutate-caribou-variables ] ;;high chance of mutating if high soln success.
+    [ gradient-caribou-variables ] ;;high chance of gradient mutation if low soln success.
     
     assign-variable-values
         
@@ -239,7 +202,7 @@ to-report cross-var-genome [ genome-1 genome-2 ]
   
   let genome-out snip-1
   foreach snip-2 [
-   set genome-out lput item ? snip-2 genome-out
+   set genome-out lput ? genome-out
   ]
   
   ;;quickly check to make sure we didn't botch the process..
@@ -395,7 +358,7 @@ to-report calculate-var-prob ;;calculates the probability of variable calibratio
     ] 
   ]
 
-  let x 0.5 let y 1
+  let x 0.5 let y 0.85
   
   let varProb (y * convergence) - (x * fitness)
   
@@ -423,53 +386,4 @@ end
 
 to-report random-num [ num ]
   report random ((num * 1000) + 1) / 1000
-end
-
-to testcon
-  let maxSuccess max caribou-var-E-diff
-    
-    let relSuccess map [ maxSuccess - ? ] caribou-var-E-diff
-
-let t-car-var-soln-list car-var-soln-list
-      let soln-list [ ]
-      let success-list [ ]
-      
-      ;;If variable solution population greater than 10, restrict possible solutions for recombination to the 10 best
-      ;;possible solutions. This is to prevent the gene pool from being filled with hundreds of duds. Note that this
-      ;;also means the gradient and point mutations are performed only on the 10 best possible solutions, which means
-      ;;there may be a chance that the solution process will stall out at a local minima. To combat this, a probability
-      ;;of recombination is introduced to allow new solutions a greater degree of workspace time before they are phased
-      ;;out.
-      if length relSuccess > 10 [
-        repeat 10 [
-          let m max relSuccess
-          let pos position m relSuccess
-          
-          set soln-list lput (item pos t-car-var-soln-list) soln-list
-          set success-list lput (item pos relSuccess) success-list
-          
-          set relSuccess remove-item pos relSuccess
-          set t-car-var-soln-list remove-item pos t-car-var-soln-list
-        ]  ]
-      
-      ;;each time an evolution event occurs, recombination will occur defacto if there are at least two solutions.
-      ;;may edit this later to be a probabilistic event...
-      ;    if length t-car-var-soln-list > 1   
-      if length soln-list > 1
-      [  
-        ;;recomb caribou variable calibration solutions.
-;        set recombined? 1
-        let var-genome-1 0
-        let var-genome-2 0
-        
-        ;;build a probability list first for weighted selection.
-        let prob-recomb-list build-prob-list success-list
-        ;;now select boths of the lists randomly for crossing
-        set var-genome-1 select-weighted-val prob-recomb-list soln-list
-        set var-genome-2 select-weighted-val prob-recomb-list soln-list
-        
-        ;;now, we can run the recombination procedure. 
-        set caribouVarCal cross-var-genome var-genome-1 var-genome-2
-        
-      ]
 end
