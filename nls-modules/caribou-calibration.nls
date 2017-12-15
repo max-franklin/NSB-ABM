@@ -11,7 +11,16 @@ to setup-caribou-var-cal
   set car-var-soln-list [ ]
   set caribouVarCal [ ] 
   set caribou-var-E-diff [ ]
-  ifelse randomCaribouVarStart?
+  ifelse import-caribou-var?
+  [
+    file-open "data/caribou-var-import.txt"
+    while [ not file-at-end? ] [
+      set caribouVarCal lput file-read caribouVarCal
+    ]
+    file-close
+  ]
+  [
+    ifelse randomCaribouVarStart?
     [
       ;print "testing to see if random assignment occurs."
       ;;need to do: check to see if any division by zero errors will occur in caribou utility functions due to random number gen.
@@ -33,6 +42,7 @@ to setup-caribou-var-cal
       set caribouVarCal lput caribou-deflection-factor caribouVarCal
       set caribouVarCal lput caribou-precip-factor caribouVarCal
     ]
+  ]
   
     
   assign-variable-values 

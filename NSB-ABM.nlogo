@@ -9,7 +9,7 @@ extensions [ gis array matrix table csv profiler]
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
            "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
   "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"
-  "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls" "nls-modules/caribou-calibration.nls" ]
+  "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls" "nls-modules/caribou-calibration.nls" "nls-modules/kde-sample.nls" ]
 
 
 breed [moose a-moose]
@@ -523,7 +523,7 @@ to setup
 
 
 
-  if calibrateCaribouVar? [ setup-caribou-var-cal ]
+  setup-caribou-var-cal
   if exportCaribouData? [
     setup-caribou-state-data
     setup-caribou-fcm-data
@@ -539,6 +539,10 @@ to setup
     initialize-FCM-hunters
     setup-hunter-nls
   ]
+
+
+  setup-caribou-kde-file
+  setup-hunter-kde-file
 
   reset-ticks
 
@@ -726,6 +730,8 @@ to go
     go-hunters-nls
   ]
 
+  collect-caribou-coordinates
+  collect-hunter-coordinates
   tick
 end
 
@@ -1798,7 +1804,7 @@ INPUTBOX
 655
 740
 caribou-veg-factor
-0.054
+0.109
 1
 0
 Number
@@ -1809,7 +1815,7 @@ INPUTBOX
 729
 740
 caribou-rough-factor
-0.331
+0.28
 1
 0
 Number
@@ -1830,7 +1836,7 @@ INPUTBOX
 804
 739
 caribou-insect-factor
-0.941
+0.436
 1
 0
 Number
@@ -1841,7 +1847,7 @@ INPUTBOX
 878
 739
 caribou-modifier-factor
-0.943
+0.321
 1
 0
 Number
@@ -1862,10 +1868,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-12
-739
-177
-773
+8
+770
+173
+804
 Random Centroids
 ask caribou [set current-centroid (random 5 + 1)]
 NIL
@@ -1879,10 +1885,10 @@ NIL
 0
 
 BUTTON
-12
-705
-176
-739
+8
+736
+172
+770
 Change Attraction
 ask caribou [set centroid-attraction set-centroid-attraction]
 NIL
@@ -1896,10 +1902,10 @@ NIL
 0
 
 BUTTON
-12
-671
-136
-705
+8
+702
+132
+736
 Display Pens
 ask caribou\n[\nlet a random 5\nlet b random 5\nifelse (a = b) [pen-down] [pen-up]\n]
 NIL
@@ -1918,7 +1924,7 @@ INPUTBOX
 726
 841
 decay-rate
-0.291
+0.781
 1
 0
 Number
@@ -1957,10 +1963,10 @@ caribou-max-elevation
 Number
 
 INPUTBOX
-42
-591
-114
-651
+5
+637
+77
+697
 diffuse-amt
 0
 1
@@ -1968,10 +1974,10 @@ diffuse-amt
 Number
 
 INPUTBOX
-120
-592
-186
-652
+83
+638
+149
+698
 elevation-scale
 0
 1
@@ -1984,7 +1990,7 @@ INPUTBOX
 952
 739
 caribou-deflection-factor
-0.311
+0.506
 1
 0
 Number
@@ -2203,10 +2209,10 @@ Elevation
 1
 
 TEXTBOX
-68
-570
-218
-588
+31
+616
+181
+634
 ?? Insect Vals ??
 12
 0.0
@@ -2234,10 +2240,10 @@ hour
 11
 
 INPUTBOX
-12
-776
-176
-836
+8
+807
+172
+867
 centroid-attraction-max
 0.55
 1
@@ -2245,10 +2251,10 @@ centroid-attraction-max
 Number
 
 INPUTBOX
-13
-841
-174
-901
+9
+872
+170
+932
 centroid-attraction-min
 0.04
 1
@@ -2256,10 +2262,10 @@ centroid-attraction-min
 Number
 
 INPUTBOX
-13
-906
-174
-966
+9
+937
+170
+997
 caribou-cent-dist-cutoff
 20
 1
@@ -2267,10 +2273,10 @@ caribou-cent-dist-cutoff
 Number
 
 INPUTBOX
-14
-967
-173
-1027
+10
+998
+169
+1058
 caribou-util-cutoff
 0.2
 1
@@ -2316,7 +2322,7 @@ INPUTBOX
 1019
 739
 caribou-precip-factor
-0.893
+0.158
 1
 0
 Number
@@ -2367,7 +2373,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.52
+0.631
 0.01
 1
 NIL
@@ -2379,7 +2385,7 @@ INPUTBOX
 654
 842
 energy-gain-factor
-53.6
+42.9
 1
 0
 Number
@@ -2680,7 +2686,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-0
+1
 1
 -1000
 
@@ -2691,7 +2697,7 @@ SWITCH
 1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-0
+1
 1
 -1000
 
@@ -3121,10 +3127,10 @@ dynamic-display?
 -1000
 
 INPUTBOX
-14
-1033
-80
-1093
+10
+1064
+76
+1124
 var-mut-prob-factor
 1
 1
@@ -3132,10 +3138,10 @@ var-mut-prob-factor
 Number
 
 INPUTBOX
-83
-1033
-156
-1093
+79
+1064
+152
+1124
 var-grad-prob-factor
 1
 1
@@ -3234,6 +3240,39 @@ SWITCH
 display-plots?
 display-plots?
 1
+1
+-1000
+
+SWITCH
+151
+529
+283
+562
+collect-kde?
+collect-kde?
+0
+1
+-1000
+
+SWITCH
+375
+1066
+560
+1099
+import-caribou-var?
+import-caribou-var?
+0
+1
+-1000
+
+SWITCH
+182
+1099
+370
+1132
+import-caribou-fcm?
+import-caribou-fcm?
+0
 1
 -1000
 

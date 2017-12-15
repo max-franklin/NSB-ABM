@@ -1,0 +1,59 @@
+to setup-caribou-kde-file
+  if collect-kde? [
+    let file-out "control-scenario-caribou-kde-data.txt"
+    if file-exists? file-out [ file-delete file-out ]
+    file-open file-out
+    file-write "ticks"
+    file-write "who"
+    file-write "xcor"
+    file-write "ycor"
+    file-close
+  ]
+end
+
+to setup-hunter-kde-file
+  if collect-kde? [
+    let file-out "control-scenario-hunter-kde-data.txt"
+    if file-exists? file-out [ file-delete file-out ]
+    file-open file-out
+    file-write "ticks"
+    file-write "who"
+    file-write "xcor"
+    file-write "ycor"
+    file-close
+  ]
+end
+
+to collect-caribou-coordinates
+  if collect-kde? [
+    let file-out "control-scenario-caribou-kde-data.txt"
+    file-open file-out
+    
+    ask caribou [
+      file-print ""
+      file-write ticks
+      file-write who
+      file-write xcor
+      file-write ycor
+    ]
+    
+    file-close
+  ]
+end
+
+to collect-hunter-coordinates
+  if collect-kde? [
+    let file-out "control-scenario-hunter-kde-data.txt"
+    file-open file-out
+    
+    ask hunters [
+      file-print ""
+      file-write ticks
+      file-write who
+      file-write xcor
+      file-write ycor
+    ]
+    
+    file-close
+  ]
+end

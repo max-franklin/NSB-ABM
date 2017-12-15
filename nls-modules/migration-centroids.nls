@@ -146,9 +146,11 @@ to select-centroid
   
   set last-centroid current-centroid
   let grid-target grid current-grid
+  let last-color 0
   
   let nonTarget patches with [ member? [patch-id] of self [cent-memory] of myself ]  
-  set nonTarget patches with [ any? nonTarget in-radius 2 ] ask nonTarget [set pcolor red] 
+  set nonTarget patches with [ any? nonTarget in-radius 2 ] 
+  ask nonTarget [ set last-color pcolor set pcolor red] 
   let target patches with [ not any? nonTarget in-radius 0 ]
 
   let last-np-cent [np-network-id] of last-centroid
@@ -194,6 +196,8 @@ to select-centroid
     
     mod-np-network
   ]
+  
+  ask nonTarget [ set pcolor last-color ] 
 end
 
 to mod-cent-target [ targets ] ;caribou procedure

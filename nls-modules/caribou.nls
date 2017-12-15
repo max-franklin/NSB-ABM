@@ -9,239 +9,366 @@
 to setup-caribou
 
   
-  
-  let caribou-group-number floor(caribou-amt / caribou-group-amt)
-
-;  ;set base fcm
-;  set base-fcm-caribou matrix:make-identity 7
-;  matrix:set-row base-fcm-caribou 0 [0 0 0 0.5 -0.5 0 0] ;util low
-;  matrix:set-row base-fcm-caribou 1 [0 0 0 -0.5 0.5 0 0] ;util high
-;  matrix:set-row base-fcm-caribou 2 [0 0 0 0 -0.5 0.5 -0.5] ;cent close
-;  matrix:set-row base-fcm-caribou 3 [0 0 0 0 0 0 0.5]   ;cent far
-;  matrix:set-row base-fcm-caribou 4 [0 0 0 0 0 0 0]
-;  matrix:set-row base-fcm-caribou 5 [0 0 0 0 0 0 0]
-;  matrix:set-row base-fcm-caribou 6 [0 0 0 0 0 0 0]
-
-
-  set fcm-adja-base matrix:make-constant 21 11 0
-   ;initialize the adjacency list to predefined values
-;  matrix:set-row fcm-adja-base 0  [  4  0  0.1  0  -1  1  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 1  [  -4  0  0  0  0.5  -0.5  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 2  [  0  0.5  -0.1  0.1  0.5  -0.5  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 3  [  0  0  0.2  -0.2  -0.7  0.7  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 4  [  0.4  4  0  0  -2.2  2.2  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 5  [  0  -1  0.2  -0.2  1.5  -1.5  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 6  [  0  -0.2  -0.3  0.3  1.1  -1.1  0  0  0  2.6  0  ]
-;  matrix:set-row fcm-adja-base 7  [  0  0.2  1  -1  -1.1  1.1  0  0  0  -4  0  ]
-;  matrix:set-row fcm-adja-base 8  [  2  0  0  0  -1  1  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 9  [  -2  0  0  0  0.5  -0.5  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 10  [  0.5  0  0  0  0  0  3.5  -0.8  -1  -1  -1  ]
-;  matrix:set-row fcm-adja-base 11  [  0  0.3  0  0  0  0  -0.8  2.1  -0.5  4  -1.8  ]
-;  matrix:set-row fcm-adja-base 12  [  0  0  0.1  0  0  0  -0.1  0.5  -0.2  -0.3  -0.2  ]
-;  matrix:set-row fcm-adja-base 13  [  0  0  0  0.1  0  0  0  -0.5  0.2  0.3  0.2  ]
-;  matrix:set-row fcm-adja-base 14  [  0  0  0  0  0  0  -0.1  -0.8  1.5  0.8  0.7  ]
-;  matrix:set-row fcm-adja-base 15  [  0  0  0  0  0  0  0.4  1  -1.2  -0.7  -0.7  ]
-;  matrix:set-row fcm-adja-base 16  [  0  0  0  0  0  0  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 17  [  0  0  0  0  0  0  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 18  [  0  0  0  0  0  0  0  0  0.2  0  0  ]
-;  matrix:set-row fcm-adja-base 19  [  0  0  0  0  0  0  0  0  0  0  0  ]
-;  matrix:set-row fcm-adja-base 20  [  0  0  0  0  0  0  0  0  0  0  0  ]
-;  
-  matrix:set-row fcm-adja-base 0  [  1.00  0.00  0.10  0.00  -1    1.00  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 1  [  -1    0.00  0.00  0.00  0.50  -0.5  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 2  [  0.00  0.50  -0.1  0.10  0.50  -0.5  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 3  [  0.00  0.00  0.20  -0.2  -0.7  0.70  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 4  [  0.40  1.00  0.00  0.00  -2.2  2.20  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 5  [  0.00  -1    0.20  -0.2  1.50  -1.5  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 6  [  0.00  -0.2  -0.3  0.30  1.10  -1.1  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 7  [  0.00  0.20  1.00  -1    -1.1  1.10  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 8  [  2.00  0.00  0.00  0.00  -1.00  1.00  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 9  [  -2.00  0.00  0.00  0.00  0.50  -0.50  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 10  [  0.00  0.00  0.00  0.00  0.00  0.00  1.50  -0.8  -1    -1      -1  ]
-  matrix:set-row fcm-adja-base 11  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.8  2.10  -0.5  1.00  -1.8  ]
-  matrix:set-row fcm-adja-base 12  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.1  0.50  -0.2  -0.3  -0.2  ]
-  matrix:set-row fcm-adja-base 13  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  -0.5  0.20  0.30  0.20  ]
-  matrix:set-row fcm-adja-base 14  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.1  -0.8  1.50  0.80  0.70  ]
-  matrix:set-row fcm-adja-base 15  [  0.00  0.00  0.00  0.00  0.00  0.00  0.40  1.00  -1.2  -0.7  -0.7  ]
-  matrix:set-row fcm-adja-base 16  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 17  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 18  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 19  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
-  matrix:set-row fcm-adja-base 20  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
-
-
- set fcm-adja-base matrix:make-constant 21 11 0 ;For making a random map to mutate.
-  
-  
-  create-caribou caribou-group-amt
+  ifelse import-caribou-fcm? 
   [
-    ;;initialize state memory list: positions from 0:4 = evade, interforage, taxi/migrate, rest, intraforage
-    ;;numbers stored in list are the amount of ticks for a given year the caribou has spent in the different
-    ;;states.
-    set state-memory []
-    repeat 5 [ set state-memory lput 0 state-memory ]
-    set grid-memory []
-    set cent-memory []
-    repeat 15 [ set grid-memory lput 0 grid-memory ] ;reduced memory to reduce chance of running out of possible targets.
-    repeat 15 [ set cent-memory lput 0 cent-memory ]
-
-    set last-state-migrate false
-    set allowed-to-remember false
-    set color blue + 2
-    let rxcor random-xcor
-    let rycor random-ycor
-    let gen-rand (random 100 + 1)
-    
-    ifelse(gen-rand < 42.5) ; average number bulls per 100 females
-    [
-      set caribou-class 0
-    ]
-    [
-      set caribou-class 1
-    ]
-    
-    if (caribou-class = 1)
-    [
-      set gen-rand (random 100 + 1)
-      if(gen-rand < (caribou-para * 100))
+    set fcm-adja-base matrix:make-constant 21 11 0 ;;purely for maintaining base fcm dimensions (for the sake of code stability)
+    let file-in "data/caribou-fcm-import.txt"
+    let caribou-group-number floor(caribou-amt / caribou-group-amt)
+    file-open file-in
+    while [not file-at-end?] [
+      let num-caribou file-read
+      let matrix file-read
+      create-caribou num-caribou
       [
-        set caribou-class 2
+        ;;initialize state memory list: positions from 0:4 = evade, interforage, taxi/migrate, rest, intraforage
+        ;;numbers stored in list are the amount of ticks for a given year the caribou has spent in the different
+        ;;states.
+        set state-memory []
+        repeat 5 [ set state-memory lput 0 state-memory ]
+        set grid-memory []
+        set cent-memory []
+        repeat 15 [ set grid-memory lput 0 grid-memory ] ;reduced memory to reduce chance of running out of possible targets.
+        repeat 15 [ set cent-memory lput 0 cent-memory ]
+        
+        set last-state-migrate false
+        set allowed-to-remember false
+        set color blue + 2
+        let rxcor random-xcor
+        let rycor random-ycor
+        let gen-rand (random 100 + 1)
+        
+        ifelse(gen-rand < 42.5) ; average number bulls per 100 females
+        [
+          set caribou-class 0
+        ]
+        [
+          set caribou-class 1
+        ]
+        
+        if (caribou-class = 1)
+        [
+          set gen-rand (random 100 + 1)
+          if(gen-rand < (caribou-para * 100))
+          [
+            set caribou-class 2
+          ]
+        ]
+        
+        ;forage intra-patch
+        set fga-amt 135 / 2195 ;SemeniukVal * 3 / patch width&height in meters
+                               ;forage inter-patch
+        set fge-amt 1350 / 2195 ; move-towards new patch, set as goal, check if reached, clear goal.
+                                ;migrate/taxi
+        set mg-amt-min 3000 / 2195
+        set mg-amt-max 6000 / 2195
+        
+        
+        ;fcm setup
+        
+        set fcm-mat-sensor matrix:make-constant 10 1 0
+        set fcm-mat-conc-delta matrix:make-constant 11 1 0; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
+        
+        set fcm-adja matrix:from-row-list matrix; Adj
+        
+                                                   ;TODO Evaluate real values
+        set close-range 1.0;  ex: 1.2
+        set far-range 6; ex: 1.8
+        set fcm-sigmoid-scalar 1
+        
+        
+        ;taxi based on upto 3 patches away
+        
+        
+        ;;Attraction factor to migrate
+        set attraction-factor 15
+        set test-migration 0
+        set last-patches array:from-list n-values 45 [0]
+        set last-patch-index 0
+        
+        set last-taxi-vals array:from-list n-values 10 [0]
+        set last-taxi-index 0
+        
+        set last-forage-vals array:from-list n-values 10 [0]
+        set last-forage-index 0
+        
+        ;placement of caribou
+        while[rxcor < -63 or rxcor > 63]
+        [
+          set rxcor random-xcor
+        ]
+        
+        while[rycor < -63 or rycor > 63]
+        [
+          set rycor random-ycor
+        ]
+        ;Size is radius of herd
+        set radius caribou-radius
+        set shape "circle 2"
+        set size radius
+        
+        ;set current-centroid one-of centroids
+        
+        set centroid-attraction set-centroid-attraction
+        
+        set group-size caribou-group-amt
+        set fd-amt 0.25 ;place holder overwritten in go-caribou
+        while [not check-location rxcor rycor]
+        [
+          set rxcor random-xcor
+          set rycor random-ycor
+        ]
+        setxy rxcor rycor
+        
+        ;set by group population
+        set weight (132 * caribou-group-number)
+        set bioenergy-success (27.5 * 1000)
+        set bioenergy (27.5 * 1000);* caribou-group-number * 1000) ; In kJ
+        set bioenergy-upper (33 * 1000) ;caribou-group-number * 1000) ; kJ
+        set bioenergy-lower (22 * 1000) ;caribou-group-number) * 1000; kJ
+        
+        reset-caribou-centroids
       ]
     ]
     
-    ;forage intra-patch
-    set fga-amt 135 / 2195 ;SemeniukVal * 3 / patch width&height in meters
-    ;forage inter-patch
-    set fge-amt 1350 / 2195 ; move-towards new patch, set as goal, check if reached, clear goal.
-    ;migrate/taxi
-    set mg-amt-min 3000 / 2195
-    set mg-amt-max 6000 / 2195
-
-
-    ;fcm setup
-
-    set fcm-mat-sensor matrix:make-constant 10 1 0
-    set fcm-mat-conc-delta matrix:make-constant 11 1 0; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
-    caribou-random-fcm
-    set fcm-adja matrix:copy fcm-adja-base ; Adj
-    
-    ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
-    
-    ;mutate-genome caribou-mutate-prob
-
-    ;TODO Evaluate real values
-    set close-range 1.0;  ex: 1.2
-    set far-range 6; ex: 1.8
-    set fcm-sigmoid-scalar 1
-
-
-    ;taxi based on upto 3 patches away
-
-
-    ;;Attraction factor to migrate
-    set attraction-factor 15
-    set test-migration 0
-    set last-patches array:from-list n-values 45 [0]
-    set last-patch-index 0
-
-    set last-taxi-vals array:from-list n-values 10 [0]
-    set last-taxi-index 0
-
-    set last-forage-vals array:from-list n-values 10 [0]
-    set last-forage-index 0
-
-    ;placement of caribou
-    while[rxcor < -63 or rxcor > 63]
-    [
-      set rxcor random-xcor
-    ]
-
-    while[rycor < -63 or rycor > 63]
-    [
-      set rycor random-ycor
-    ]
-    ;Size is radius of herd
-    set radius caribou-radius
-    set shape "circle 2"
-    set size radius
-
-    ;set current-centroid one-of centroids
-
-    set centroid-attraction set-centroid-attraction
-
-    set group-size caribou-group-amt
-    set fd-amt 0.25 ;place holder overwritten in go-caribou
-   while [not check-location rxcor rycor]
-   [
-     set rxcor random-xcor
-     set rycor random-ycor
-   ]
-    setxy rxcor rycor
-
-    ;set by group population
-    set weight (132 * caribou-group-number)
-    set bioenergy-success (27.5 * 1000)
-    set bioenergy (27.5 * 1000);* caribou-group-number * 1000) ; In kJ
-    set bioenergy-upper (33 * 1000) ;caribou-group-number * 1000) ; kJ
-    set bioenergy-lower (22 * 1000) ;caribou-group-number) * 1000; kJ
-
-      ;;Edges
-  ;array:set graph-edges 0 1.0
-
-;  set cog-map matrix:make-identity 7
-
-
-  ;;WIP;;
-  ;;FCM-caribou end states
-  ;Perception
-  ; util-low                    ; 0
-  ; util-high (inverse of low)  ; 1
-  ; cent-close                  ; 2
-  ; cent-far                    ; 3
-  ;Action
-  ; change-cent/taxi state      ; 4
-  ; forage-state/               ; 5
-  ; cent-attraction             ; 6
-
-;  matrix:set-row cog-map 0 [0 0 0 1 -1 0 0] ;util low
-;  matrix:set-row cog-map 1 [0 0 0 -1 1 0 0] ;util high
-;  matrix:set-row cog-map 2 [0 0 0 0 -1 1 -1] ;cent close
-;  matrix:set-row cog-map 3 [0 0 0 0 0 0 1]   ;cent far
-;  matrix:set-row cog-map 4 [0 0 0 0 0 0 0] ;change cent/taxi
-;  matrix:set-row cog-map 5 [0 0 0 0 0 0 0] ;forage
-;  matrix:set-row cog-map 6 [0 0 0 0 0 0 0] ; cent attraction
-;   set cog-map matrix:copy base-fcm-caribou
-;
-;   let rand (random-float (mutate-amt * 2) - mutate-amt)
-;   matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
-;
-;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-;   matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
-;
-;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-;   matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
-;
-;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-;   matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
-;
-;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-;   matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
-;
-;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-;   matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
-;
-;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-;   matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
-;
-;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-;   matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
-
-;if(is-training?)
-;[
-;  setxy -12 -27
-;]
-    reset-caribou-centroids
+    file-close 
   ]
+  [
+    let caribou-group-number floor(caribou-amt / caribou-group-amt)
+    
+    ;  ;set base fcm
+    ;  set base-fcm-caribou matrix:make-identity 7
+    ;  matrix:set-row base-fcm-caribou 0 [0 0 0 0.5 -0.5 0 0] ;util low
+    ;  matrix:set-row base-fcm-caribou 1 [0 0 0 -0.5 0.5 0 0] ;util high
+    ;  matrix:set-row base-fcm-caribou 2 [0 0 0 0 -0.5 0.5 -0.5] ;cent close
+    ;  matrix:set-row base-fcm-caribou 3 [0 0 0 0 0 0 0.5]   ;cent far
+    ;  matrix:set-row base-fcm-caribou 4 [0 0 0 0 0 0 0]
+    ;  matrix:set-row base-fcm-caribou 5 [0 0 0 0 0 0 0]
+    ;  matrix:set-row base-fcm-caribou 6 [0 0 0 0 0 0 0]
+    
+    
+    set fcm-adja-base matrix:make-constant 21 11 0
+    ;initialize the adjacency list to predefined values
+    ;  matrix:set-row fcm-adja-base 0  [  4  0  0.1  0  -1  1  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 1  [  -4  0  0  0  0.5  -0.5  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 2  [  0  0.5  -0.1  0.1  0.5  -0.5  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 3  [  0  0  0.2  -0.2  -0.7  0.7  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 4  [  0.4  4  0  0  -2.2  2.2  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 5  [  0  -1  0.2  -0.2  1.5  -1.5  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 6  [  0  -0.2  -0.3  0.3  1.1  -1.1  0  0  0  2.6  0  ]
+    ;  matrix:set-row fcm-adja-base 7  [  0  0.2  1  -1  -1.1  1.1  0  0  0  -4  0  ]
+    ;  matrix:set-row fcm-adja-base 8  [  2  0  0  0  -1  1  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 9  [  -2  0  0  0  0.5  -0.5  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 10  [  0.5  0  0  0  0  0  3.5  -0.8  -1  -1  -1  ]
+    ;  matrix:set-row fcm-adja-base 11  [  0  0.3  0  0  0  0  -0.8  2.1  -0.5  4  -1.8  ]
+    ;  matrix:set-row fcm-adja-base 12  [  0  0  0.1  0  0  0  -0.1  0.5  -0.2  -0.3  -0.2  ]
+    ;  matrix:set-row fcm-adja-base 13  [  0  0  0  0.1  0  0  0  -0.5  0.2  0.3  0.2  ]
+    ;  matrix:set-row fcm-adja-base 14  [  0  0  0  0  0  0  -0.1  -0.8  1.5  0.8  0.7  ]
+    ;  matrix:set-row fcm-adja-base 15  [  0  0  0  0  0  0  0.4  1  -1.2  -0.7  -0.7  ]
+    ;  matrix:set-row fcm-adja-base 16  [  0  0  0  0  0  0  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 17  [  0  0  0  0  0  0  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 18  [  0  0  0  0  0  0  0  0  0.2  0  0  ]
+    ;  matrix:set-row fcm-adja-base 19  [  0  0  0  0  0  0  0  0  0  0  0  ]
+    ;  matrix:set-row fcm-adja-base 20  [  0  0  0  0  0  0  0  0  0  0  0  ]
+    ;  
+    matrix:set-row fcm-adja-base 0  [  1.00  0.00  0.10  0.00  -1    1.00  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 1  [  -1    0.00  0.00  0.00  0.50  -0.5  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 2  [  0.00  0.50  -0.1  0.10  0.50  -0.5  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 3  [  0.00  0.00  0.20  -0.2  -0.7  0.70  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 4  [  0.40  1.00  0.00  0.00  -2.2  2.20  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 5  [  0.00  -1    0.20  -0.2  1.50  -1.5  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 6  [  0.00  -0.2  -0.3  0.30  1.10  -1.1  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 7  [  0.00  0.20  1.00  -1    -1.1  1.10  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 8  [  2.00  0.00  0.00  0.00  -1.00  1.00  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 9  [  -2.00  0.00  0.00  0.00  0.50  -0.50  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 10  [  0.00  0.00  0.00  0.00  0.00  0.00  1.50  -0.8  -1    -1      -1  ]
+    matrix:set-row fcm-adja-base 11  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.8  2.10  -0.5  1.00  -1.8  ]
+    matrix:set-row fcm-adja-base 12  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.1  0.50  -0.2  -0.3  -0.2  ]
+    matrix:set-row fcm-adja-base 13  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  -0.5  0.20  0.30  0.20  ]
+    matrix:set-row fcm-adja-base 14  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.1  -0.8  1.50  0.80  0.70  ]
+    matrix:set-row fcm-adja-base 15  [  0.00  0.00  0.00  0.00  0.00  0.00  0.40  1.00  -1.2  -0.7  -0.7  ]
+    matrix:set-row fcm-adja-base 16  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 17  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 18  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 19  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
+    matrix:set-row fcm-adja-base 20  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
+    
+    
+    set fcm-adja-base matrix:make-constant 21 11 0 ;For making a random map to mutate.
+    
+    
+    create-caribou caribou-group-amt
+    [
+      ;;initialize state memory list: positions from 0:4 = evade, interforage, taxi/migrate, rest, intraforage
+      ;;numbers stored in list are the amount of ticks for a given year the caribou has spent in the different
+      ;;states.
+      set state-memory []
+      repeat 5 [ set state-memory lput 0 state-memory ]
+      set grid-memory []
+      set cent-memory []
+      repeat 15 [ set grid-memory lput 0 grid-memory ] ;reduced memory to reduce chance of running out of possible targets.
+      repeat 15 [ set cent-memory lput 0 cent-memory ]
+      
+      set last-state-migrate false
+      set allowed-to-remember false
+      set color blue + 2
+      let rxcor random-xcor
+      let rycor random-ycor
+      let gen-rand (random 100 + 1)
+      
+      ifelse(gen-rand < 42.5) ; average number bulls per 100 females
+      [
+        set caribou-class 0
+      ]
+      [
+        set caribou-class 1
+      ]
+      
+      if (caribou-class = 1)
+      [
+        set gen-rand (random 100 + 1)
+        if(gen-rand < (caribou-para * 100))
+        [
+          set caribou-class 2
+        ]
+      ]
+      
+      ;forage intra-patch
+      set fga-amt 135 / 2195 ;SemeniukVal * 3 / patch width&height in meters
+                             ;forage inter-patch
+      set fge-amt 1350 / 2195 ; move-towards new patch, set as goal, check if reached, clear goal.
+                              ;migrate/taxi
+      set mg-amt-min 3000 / 2195
+      set mg-amt-max 6000 / 2195
+      
+      
+      ;fcm setup
+      
+      set fcm-mat-sensor matrix:make-constant 10 1 0
+      set fcm-mat-conc-delta matrix:make-constant 11 1 0; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
+      caribou-random-fcm
+      set fcm-adja matrix:copy fcm-adja-base ; Adj
+      
+                                             ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
+      
+                                             ;mutate-genome caribou-mutate-prob
+      
+                                             ;TODO Evaluate real values
+      set close-range 1.0;  ex: 1.2
+      set far-range 6; ex: 1.8
+      set fcm-sigmoid-scalar 1
+      
+      
+      ;taxi based on upto 3 patches away
+      
+      
+      ;;Attraction factor to migrate
+      set attraction-factor 15
+      set test-migration 0
+      set last-patches array:from-list n-values 45 [0]
+      set last-patch-index 0
+      
+      set last-taxi-vals array:from-list n-values 10 [0]
+      set last-taxi-index 0
+      
+      set last-forage-vals array:from-list n-values 10 [0]
+      set last-forage-index 0
+      
+      ;placement of caribou
+      while[rxcor < -63 or rxcor > 63]
+      [
+        set rxcor random-xcor
+      ]
+      
+      while[rycor < -63 or rycor > 63]
+      [
+        set rycor random-ycor
+      ]
+      ;Size is radius of herd
+      set radius caribou-radius
+      set shape "circle 2"
+      set size radius
+      
+      ;set current-centroid one-of centroids
+      
+      set centroid-attraction set-centroid-attraction
+      
+      set group-size caribou-group-amt
+      set fd-amt 0.25 ;place holder overwritten in go-caribou
+      while [not check-location rxcor rycor]
+      [
+        set rxcor random-xcor
+        set rycor random-ycor
+      ]
+      setxy rxcor rycor
+      
+      ;set by group population
+      set weight (132 * caribou-group-number)
+      set bioenergy-success (27.5 * 1000)
+      set bioenergy (27.5 * 1000);* caribou-group-number * 1000) ; In kJ
+      set bioenergy-upper (33 * 1000) ;caribou-group-number * 1000) ; kJ
+      set bioenergy-lower (22 * 1000) ;caribou-group-number) * 1000; kJ
+      
+                                      ;;Edges
+                                      ;array:set graph-edges 0 1.0
+      
+                                      ;  set cog-map matrix:make-identity 7
+      
+      
+                                      ;;WIP;;
+                                      ;;FCM-caribou end states
+                                      ;Perception
+                                      ; util-low                    ; 0
+                                      ; util-high (inverse of low)  ; 1
+                                      ; cent-close                  ; 2
+                                      ; cent-far                    ; 3
+                                      ;Action
+                                      ; change-cent/taxi state      ; 4
+                                      ; forage-state/               ; 5
+                                      ; cent-attraction             ; 6
+      
+                                      ;  matrix:set-row cog-map 0 [0 0 0 1 -1 0 0] ;util low
+                                      ;  matrix:set-row cog-map 1 [0 0 0 -1 1 0 0] ;util high
+                                      ;  matrix:set-row cog-map 2 [0 0 0 0 -1 1 -1] ;cent close
+                                      ;  matrix:set-row cog-map 3 [0 0 0 0 0 0 1]   ;cent far
+                                      ;  matrix:set-row cog-map 4 [0 0 0 0 0 0 0] ;change cent/taxi
+                                      ;  matrix:set-row cog-map 5 [0 0 0 0 0 0 0] ;forage
+                                      ;  matrix:set-row cog-map 6 [0 0 0 0 0 0 0] ; cent attraction
+                                      ;   set cog-map matrix:copy base-fcm-caribou
+                                      ;
+                                      ;   let rand (random-float (mutate-amt * 2) - mutate-amt)
+                                      ;   matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
+                                      ;
+                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                      ;   matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
+                                      ;
+                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                      ;   matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
+                                      ;
+                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                      ;   matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
+                                      ;
+                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                      ;   matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
+                                      ;
+                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                      ;   matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
+                                      ;
+                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                      ;   matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
+                                      ;
+                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
+                                      ;   matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
+      
+                                      ;if(is-training?)
+                                      ;[
+                                      ;  setxy -12 -27
+                                      ;]
+      reset-caribou-centroids
+    ]
+  ]
+  
+  
+ 
 end
 
 to go-caribou
