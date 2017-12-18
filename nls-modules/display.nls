@@ -22,6 +22,10 @@ to display-vegetation
   ask patches [if (vegetation-type = 9) [set pcolor (green - 2) ]]
 end
 
+to display-caribou-paths
+  ask patches [set pcolor scale-color red caribou-popularity 0 (qp-route-threshold) ]
+end
+
 to display-streams
   let offsetMin 0
   let offsetMax -125500

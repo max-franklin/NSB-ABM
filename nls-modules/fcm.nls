@@ -102,6 +102,7 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
         set compStateMem (map + compStateMem state-memory)
       ]
       
+     
       ;;now find amount of time spent in foraging states.
       let fgTime 100 * ((item 1 compStateMem + item 4 compStateMem) / (sum compStateMem))
       

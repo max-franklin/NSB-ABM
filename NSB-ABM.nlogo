@@ -21,6 +21,7 @@ breed [centroids centroid]
 breed [grids grid]
 breed [deflectors deflector]
 breed [mem-markers mem-mark]
+breed [ghostcaribou a-ghost-caribou]
 breed [hunters hunter]
 breed [caribou-harvests caribou-harvest] ;centroids for caribou harvest
 directed-link-breed [ cent-links cent-link ]
@@ -149,7 +150,15 @@ globals
   ;;magic centroid number - A hack to allow comparison with centriod number
   magic-centroid
 
+  ;; Q-Look Ahead ;;
+  q-look-ahead
 
+  ;; Q-Path ;;
+  ;qp-popularity
+  ;qp-decay-rate
+  ;qp-route-threshold
+  ;qp-detection-range
+  ;qp-attraction
 
   ;;;;; HENRI'S GLOBALS ;;;;;
   mosquito-sigma
@@ -217,6 +226,9 @@ patches-own
   precipitation-amt
   prec-paint
 
+  ;;Q Path ;;
+  caribou-popularity
+  caribou-route
 
   ;;Utility Values
   ;caribou
@@ -637,6 +649,7 @@ end
 ;Go, wraps to other go's
 to go
  ; set day (ticks mod 365)
+ display-caribou-paths
   set hour hour + 1.5
   if(hour = 24)
   [
@@ -730,6 +743,10 @@ to go
     go-hunters-nls
   ]
 
+  ask patches
+  [
+    set caribou-popularity (caribou-popularity - qp-decay-rate)
+  ]
   collect-caribou-coordinates
   collect-hunter-coordinates
   tick
@@ -2530,7 +2547,7 @@ SWITCH
 560
 display-grids?
 display-grids?
-0
+1
 1
 -1000
 
@@ -2632,7 +2649,7 @@ SWITCH
 952
 use-q
 use-q
-1
+0
 1
 -1000
 
@@ -2664,7 +2681,7 @@ SWITCH
 770
 caribou-mutate?
 caribou-mutate?
-0
+1
 1
 -1000
 
@@ -2675,7 +2692,7 @@ SWITCH
 806
 caribou-recombine?
 caribou-recombine?
-0
+1
 1
 -1000
 
@@ -3250,7 +3267,7 @@ SWITCH
 562
 collect-kde?
 collect-kde?
-0
+1
 1
 -1000
 
@@ -3272,9 +3289,81 @@ SWITCH
 1132
 import-caribou-fcm?
 import-caribou-fcm?
-0
+1
 1
 -1000
+
+INPUTBOX
+1624
+578
+1785
+638
+qp-attraction
+0.01
+1
+0
+Number
+
+INPUTBOX
+1625
+642
+1786
+702
+qp-detection-range
+4
+1
+0
+Number
+
+INPUTBOX
+1624
+707
+1785
+767
+qp-popularity
+1
+1
+0
+Number
+
+INPUTBOX
+1798
+708
+1959
+768
+qp-decay-rate
+0.03
+1
+0
+Number
+
+INPUTBOX
+1793
+643
+1954
+703
+qp-route-threshold
+40
+1
+0
+Number
+
+BUTTON
+1689
+395
+1875
+428
+NIL
+display-caribou-paths
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?

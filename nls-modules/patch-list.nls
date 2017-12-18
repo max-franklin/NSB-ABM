@@ -56,6 +56,28 @@ to-report patch-list-caribou-para-wrapper [curr-x curr-y attraction target]
 
 end
 
+to-report patch-list-caribou-phero-para-wrapper [curr-x curr-y cent-attraction cent-target phero-attraction phero-target]
+ 
+
+  build-patch-list curr-x curr-y
+  remove-nonwalkable-patches caribou-max-elevation caribou-max-wetness
+  patch-list-normal-caribou-util-para
+  
+  ;Attract to Centroid
+  patch-list-add-attraction cent-attraction cent-target
+  
+  ;Attract to pheromone route
+  patch-list-add-attraction phero-attraction phero-target
+  
+
+
+  let p patch-list-probable
+  ;clear the patch-list by calling setup
+  setup-patch-list
+  report p
+
+end
+
 to-report patch-list-caribou-non-para-wrapper [curr-x curr-y attraction target]
  
 
@@ -70,6 +92,28 @@ to-report patch-list-caribou-non-para-wrapper [curr-x curr-y attraction target]
   report p
 
 end
+
+to-report patch-list-caribou-phero-non-para-wrapper [curr-x curr-y cent-attraction cent-target phero-attraction phero-target]
+ 
+
+  build-patch-list curr-x curr-y
+  remove-nonwalkable-patches caribou-max-elevation caribou-max-wetness
+  patch-list-normal-caribou-util-non-para
+  
+  ;Attract to Centroid
+  patch-list-add-attraction cent-attraction cent-target
+  
+  ;Attract to pheromone route
+  patch-list-add-attraction phero-attraction phero-target
+  
+
+  let p patch-list-probable
+  ;clear the patch-list by calling setup
+  setup-patch-list
+  report p
+
+end
+
 
 ;Add patches to the patch list by coordinates and existence
 to add-patch-list [x y ex]
@@ -310,7 +354,6 @@ to patch-list-add-attraction [attraction target]
   ; Add the attraction amount to the patch closes to the target
   if (not(short-index = -1))
   [
-    ;TODO: verify this corrected the error by changing i -> short-index
     array:set patch-list-utility short-index (array:item patch-list-utility short-index + attraction)
   ]
   ; Renormalize the utility values
@@ -409,6 +452,8 @@ to-report patch-list-probable
   report patch 0 0
 
 end
+
+
 
 to reset-patch-list
 

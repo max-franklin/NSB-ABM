@@ -952,13 +952,19 @@ to go-caribou-q
     ;close-range ;  ex: 1.2
     ;far-range ; ex: 1.8
     ;fcm-sigmoid-scalar
+    
+    ask patch-here 
+    [
+      set caribou-popularity (caribou-popularity + qp-popularity)
+    ]
 
 ;wraps into the ternary function
-
     let close-hunt (min-one-of hunters [distance myself] )
-    let hunt-dist-raw distance close-hunt
+    let hunt-dist 1000
+    if close-hunt != nobody
+    [set hunt-dist fcm-ternary 0.25 0.75 (distance close-hunt)]
     
-    let hunt-dist fcm-ternary 0.25 0.75 hunt-dist-raw
+
     let food-dist 0
     let bioenergy-amt 0
     let local-food 0
@@ -991,7 +997,10 @@ to go-caribou-q
       set local-food fcm-ternary 0.50 1 local-quantity ;Foe Close = 0 invert this valuse
      
       let close-disturb (min-one-of hunters [distance myself] )
-      let disturb-dist-raw distance close-hunt
+      let disturb-dist-raw 1000
+      ifelse(close-hunt != NOBODY)
+      [set disturb-dist-raw distance close-hunt]
+      [set disturb-dist-raw 1000]
      
       set disturb-dist fcm-ternary 1 3 disturb-dist-raw
     ]
@@ -1015,7 +1024,10 @@ to go-caribou-q
       set local-food (fcm-ternary 0.50 1 local-quantity)
      
       let close-disturb (min-one-of hunters [distance myself] )
-      let disturb-dist-raw distance close-hunt
+      let disturb-dist-raw 1000
+      ifelse(close-hunt != NOBODY)
+      [set disturb-dist-raw distance close-hunt]
+      [set disturb-dist-raw 1000]
      
       set disturb-dist (fcm-ternary 1 3 disturb-dist-raw)
      
@@ -1100,7 +1112,9 @@ to go-caribou-q
       ;other-state-found used to get around if-else limitations
       if(state = 4) ;intra forage
       [
-        set fd-amt fga-amt
+        ;set fd-amt fga-amt
+        ;UNCOMMENT ABOVE AFTER TESTING
+        set fd-amt fge-amt
         set bank-intra bank-intra - 1
         
         set energy-loss  2.82 ; foraging expense
@@ -1210,10 +1224,33 @@ to go-caribou-q
       
       ifelse(caribou-class = 2 and (day > 151 and day < 167))
         [
-          set p patch-list-caribou-non-para-wrapper xcor ycor centroid-attraction current-centroid
+          let route-patches patches in-radius qp-detection-range ;set from global slider
+          let route-pheromone max-one-of route-patches [caribou-popularity]
+          let p-pheromone-amt [caribou-popularity] of route-pheromone
+          
+          ifelse(p-pheromone-amt > qp-route-threshold)
+          [
+            set p patch-list-caribou-phero-non-para-wrapper xcor ycor centroid-attraction current-centroid qp-attraction route-pheromone
+          ]
+          [ 
+            set p patch-list-caribou-non-para-wrapper xcor ycor centroid-attraction current-centroid
+          ]
         ]
         [
-          set p patch-list-caribou-para-wrapper xcor ycor centroid-attraction current-centroid
+          ;all other times of year, do this.
+          
+          ;find route if it exists
+          let route-patches patches in-radius qp-detection-range ;set from global slider
+          let route-pheromone max-one-of route-patches [caribou-popularity]
+          let p-pheromone-amt [caribou-popularity] of route-pheromone
+                    
+          ifelse(p-pheromone-amt > qp-route-threshold)
+          [
+            set p patch-list-caribou-phero-para-wrapper xcor ycor centroid-attraction current-centroid qp-attraction route-pheromone
+          ]
+          [
+            set p patch-list-caribou-para-wrapper xcor ycor centroid-attraction current-centroid
+          ]
         ]
       face p
       set previous-patch p
@@ -1307,9 +1344,10 @@ to go-caribou-q
     set net-soutt matrix:make-constant 1 4 0
 
     set close-hunt (min-one-of hunters [distance myself] )
-    set hunt-dist-raw distance close-hunt
+    set hunt-dist 1000
+    if close-hunt != nobody
+    [set hunt-dist fcm-ternary 0.25 0.75 (distance close-hunt)]
     
-    set hunt-dist fcm-ternary 0.25 0.75 hunt-dist-raw
     set food-dist 0
     set bioenergy-amt 0
     set local-food 0
@@ -1341,7 +1379,10 @@ to go-caribou-q
       set local-food fcm-ternary 0.50 1 local-quantity ;Foe Close = 0 invert this valuse
      
       let close-disturb (min-one-of hunters [distance myself] )
-      let disturb-dist-raw distance close-hunt
+      let disturb-dist-raw 1000
+      ifelse(close-hunt != NOBODY)
+      [set disturb-dist-raw distance close-hunt]
+      [set disturb-dist-raw 1000]
      
       set disturb-dist fcm-ternary 1 3 disturb-dist-raw
     ]
@@ -1365,14 +1406,16 @@ to go-caribou-q
       set local-food (fcm-ternary 0.50 1 local-quantity)
      
       let close-disturb (min-one-of hunters [distance myself] )
-      let disturb-dist-raw distance close-hunt
+      let disturb-dist-raw 1000
+      ifelse(close-hunt != NOBODY)
+      [set disturb-dist-raw distance close-hunt]
+      [set disturb-dist-raw 1000]
      
       set disturb-dist (fcm-ternary 1 3 disturb-dist-raw)
      
     ]
     
     ;Feed Forward Again in new state to get Q_t+1
-
     
     ;net-xt
     matrix:set net-xt 0 0 hunt-dist
