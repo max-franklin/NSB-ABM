@@ -503,7 +503,7 @@ to foot-travel-return-funct [target]
 end
 
 to boat-travel-funct [target-r]
-  if([connected?] of patch-here = 0 and empty? [river-set] of patch-here = true) [set return-to-river true]
+  if(empty? [river-set] of patch-here = true) [set return-to-river true]
   if([connected?] of patch-here = true and empty? [river-set] of patch-here = false and ([river-set] of patch-here != [river-set] of target-r)) [set return-to-river true]
   ifelse(return-to-river = false)
   [
