@@ -85,6 +85,15 @@ let pmatrix (item precipitation-matrix-number precipitation-data-list)
   ask patches [if(not ( (precipitation-amt <= 0) or (precipitation-amt >= 0))) [set precipitation-amt 0]]
 end
 
+to test-precipitation-layer
+  set precipitation-dataset gis:load-dataset "/Users/MaxwellFranklin/Documents/NSB-ABM/test.asc"
+  gis:set-sampling-method precipitation-dataset "BILINEAR"
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of precipitation-dataset))
+  gis:apply-raster precipitation-dataset precipitation-amt
+  
+  ask patches [if(not ( (precipitation-amt <= 0) or (precipitation-amt >= 0))) [set precipitation-amt 0]]
+end
+
 
 ;Monthly Precipitation Data
 to set-precipitation-data-list

@@ -603,17 +603,47 @@ end
 
 
 to setup-deflectors
-  ;create test deflector.
-  create-deflectors 1
-  [
-    setxy 0 0
-    set area-outer (3000 / 2195.35)
-    set area-inner 0
-    set deflect-amt 1
-    set has-applied false
-    set size 0
+  ;;create deflectors according to development sites: CD5 and Nuiqsut.
+  ;;create Nuiqsut
+  ;;Using Nuiqsut bounds on Google maps, coordinate center sits in a 3 mi x 3 mi (4828.032 m x 4828.032 m) square
+  if Nuiqsut? [
+    create-deflectors 1
+    [
+      let patch-x 0.38689265536723383
+      let patch-y 4.621468926553675
+      set xcor patch-x
+      set ycor patch-y
+      set shape "dot"
+      set label "NUIQSUT"
+      set color red
+      ;;set an area over which we consider to be 'developed'. Caribou agents should be able to sense this
+      ;;within 1 km buffer range if following similar setup as the Albert caribou ABM paper.
+      set area-outer (4828.032 / 2195.35)
+      set area-inner 0
+      set deflect-amt 1
+      set has-applied false
+      ht
+    ]
   ]
 
+  if CD5? [
+    create-deflectors 1
+    [
+      let patch-x -2.2409039548022633
+      let patch-y 8.624632768361579
+      set xcor patch-x
+      set ycor patch-y
+      set shape "dot"
+      set label "CD5"
+      set color red
+      ;;development bounds of CD5 still need to be selected.
+      set area-outer (3000 / 2195.35)
+      set area-inner 0
+      set deflect-amt 1
+      set has-applied false
+      ht
+    ]
+  ]
 
 end
 
@@ -3273,6 +3303,28 @@ SWITCH
 import-caribou-fcm?
 import-caribou-fcm?
 0
+1
+-1000
+
+SWITCH
+4
+563
+115
+596
+Nuiqsut?
+Nuiqsut?
+0
+1
+-1000
+
+SWITCH
+119
+564
+222
+597
+CD5?
+CD5?
+1
 1
 -1000
 
