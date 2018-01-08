@@ -1061,6 +1061,24 @@ to go-caribou-q
     set net-z2 matrix:map fcm-sigmoid-simple net-s2
     set net-sout matrix:times net-z2 a-net-wout
     
+    if(who = 258)
+    [
+      print "Weight 1"
+      print "============================================="
+      print matrix:pretty-print-text a-net-w1
+      print "============================================="
+      print "Weight 2"
+      print "============================================="
+      print matrix:pretty-print-text a-net-w2
+      print "============================================="
+      print "Result"
+      print "============================================="
+      print matrix:pretty-print-text net-sout
+      print "============================================="
+      print " "
+      
+    ]
+    
     let action restrictive-q-softmax net-sout ; action is our state
     ;Action necessary instead of using state directly?
     set state action
@@ -1081,32 +1099,6 @@ to go-caribou-q
     let cent-agents centroids with [cid = magic-centroid]
     let cent-agent one-of cent-agents
     let temp-dist (distance current-centroid)
-    
-    
-    ;Check banks
-;    if(state = 4 and bank-intra = 0)
-;    [
-;
-;      set state 3
-;    ]
-;    if(state = 3 and bank-rest = 0)
-;    [
-;
-;      set state 2
-;    ]
-;    if(state = 2 and bank-migrate = 0)
-;    [
-;
-;      set state 1
-;    ]
-;    if(state = 1 and bank-inter = 0)
-;    [
-;
-;      set state 4
-;    ]
-    
-
-
 
 
       ;other-state-found used to get around if-else limitations
@@ -1471,21 +1463,21 @@ to go-caribou-q
     set d2 matrix:times-element-wise d2 fp2
      
     ;let d1 matrix:times d2 (matrix:times (matrix:transpose net-w2) fp1)
-    let d1 matrix:times d2 (matrix:transpose net-w2)
+    let d1 matrix:times d2 (matrix:transpose a-net-w2)
     set d1 matrix:times-element-wise d1 fp1
     
     ;update weights
     ;place our q-value (q-loss) into a matrix the same dimension as the output layer, then take this 
    
-    set net-w1 matrix:times (matrix:times (matrix:transpose net-x) d1) (-1 * Q-rate)
-    set net-w2 matrix:times (matrix:times (matrix:transpose net-z1) d2) (-1 * Q-rate)
+    set a-net-w1 matrix:times (matrix:times (matrix:transpose net-x) d1) (-1 * Q-rate)
+    set a-net-w2 matrix:times (matrix:times (matrix:transpose net-z1) d2) (-1 * Q-rate)
     
     let q-out matrix:make-constant 1 4 1
     matrix:set q-out 0 (state - 1) q-loss
     
-    set net-wout matrix:times(matrix:times (matrix:transpose net-z2) q-out) (-1 * Q-rate)
+    set a-net-wout matrix:times(matrix:times (matrix:transpose net-z2) q-out) (-1 * Q-rate)
     ]
- 
+  
 
 end
 
@@ -1503,7 +1495,14 @@ to-report matrix-element-sum [matin]
   
   report matSum
 end
+
+
 to setup-caribou-q
+
+  set a-net-w1 matrix:make-constant 9 9 1
+  set a-net-w2 matrix:make-constant 9 9 1
+  set a-net-wout matrix:make-constant 9 4 1
+  
   ask caribou 
   [ 
     ;initialize weights to 1
@@ -1580,3 +1579,86 @@ to-report restrictive-q-softmax [matin]
   
   
 end
+
+
+;Replacement Function;
+
+to q-decide [speed-scale] ; Value should be 0-1 ; should be called by agent
+  let available neighbors with [ocean = 0 and wetness < caribou-max-wetness and elevation < caribou-max-elevation] 
+  
+  let non-para patches with [member? self (sort-on [caribou-utility-non-para] available)]
+  let para sort-on [caribou-utility-para] available 
+  
+  show non-para
+  
+  let list-non-para sort([caribou-utility-non-para] of non-para)
+  let list-para ([caribou-utility-para] of non-para)
+  
+  show "Raw List"
+  show list-non-para
+  let percentage-non-para [ ]
+  let percentage-para [ ]
+  
+  foreach list-non-para
+  [
+    set percentage-non-para lput (sum percentage-non-para + ?) percentage-non-para
+  ]
+  
+  foreach list-para
+  [
+    set percentage-para lput (sum percentage-para + ?) percentage-para
+  ]
+  
+  show "Cumulative List"
+  show percentage-non-para
+  let random-non-para (random-float (max percentage-non-para))
+  let random-para (random-float (max percentage-para))
+  
+  show "Random"
+  show random-non-para
+  
+  let filter-non-para filter [ ? > random-non-para ] percentage-non-para
+  let filter-para filter [ ? > random-para ] percentage-para
+  show "Filter"
+  show filter-non-para
+  ;;TODO;;PARNUT. vs NONPARN HERE
+  
+  ;get our found weighted random patch
+  let found-item (first filter-non-para)
+  
+  ;get the index of the found patch in the cumulative list
+  let index-item position found-item percentage-non-para
+  
+  ;get the patch that the index represents in the patch list that was returned
+  
+  let non-para-agents-list [ ]
+  ask non-para
+  [
+    set non-para-agents-list lput self non-para-agents-list
+  ]
+  show "Found Index"
+ 
+  show index-item
+  show non-para-agents-list
+  
+  
+  let face-patch one-of patches
+  let i 0
+  foreach non-para-agents-list
+  [
+    if( i = index-item)
+    [
+      set face-patch (patches with [member? ? non-para])
+    ]
+    
+    set i (i + 1)
+  ]
+  
+  ;let face-patch item index-item non-para
+  face (one-of face-patch)
+  
+  fd (2 * speed-scale)
+  
+
+end
+

@@ -669,7 +669,7 @@ to go
 
       if calibrateCaribouVar? [ go-caribou-var-cal ]
 
-      if(is-training?) [ update-caribou-fcm ]
+      if(is-training? and not use-q) [ update-caribou-fcm ]
 
 
       if(export-hunter-data?) [ export-hunter-data 1 ];export hutner data at year end
@@ -1366,9 +1366,9 @@ to export-hunter-data [mode]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-293
+291
 10
-807
+805
 545
 64
 64
@@ -1393,10 +1393,10 @@ ticks
 30.0
 
 BUTTON
-73
-16
-147
-49
+5
+10
+79
+43
 Setup
 setup
 NIL
@@ -1621,7 +1621,7 @@ CHOOSER
 BoundsFile
 BoundsFile
 "data/ascBounds/CharDolly10Y.asc" "data/ascBounds/CharDolly12M.asc" "data/ascBounds/Cisco10Y.asc" "data/ascBounds/Cisco12M.asc" "data/ascBounds/MooseBounds10Y.asc" "data/ascBounds/MooseBounds12M.asc" "data/ascBounds/whitefish12m.asc" "data/ascBounds/whitefish10Y.asc"
-0
+1
 
 BUTTON
 286
@@ -1692,10 +1692,10 @@ NIL
 1
 
 BUTTON
-150
-17
-213
-50
+82
+11
+145
+44
 Go
 go
 T
@@ -1762,7 +1762,7 @@ caribou-group-amt
 caribou-group-amt
 0
 200
-50
+1
 1
 1
 NIL
@@ -1809,7 +1809,7 @@ set-centroid-attraction
 set-centroid-attraction
 0.01
 1
-0.1
+0.09
 0.01
 1
 NIL
@@ -1878,7 +1878,7 @@ caribou-modify-amt
 caribou-modify-amt
 0
 1
-1
+0.99
 0.01
 1
 NIL
@@ -2329,7 +2329,7 @@ SWITCH
 717
 caribouPopMod?
 caribouPopMod?
-1
+0
 1
 -1000
 
@@ -2366,7 +2366,7 @@ SWITCH
 424
 show-caribou-utility-para?
 show-caribou-utility-para?
-0
+1
 1
 -1000
 
@@ -2377,7 +2377,7 @@ SWITCH
 458
 show-caribou-utility-non-para?
 show-caribou-utility-non-para?
-1
+0
 1
 -1000
 
@@ -2637,7 +2637,7 @@ INPUTBOX
 326
 1017
 Q-rate
-0.001
+1.0E-5
 1
 0
 Number
@@ -3029,7 +3029,7 @@ SWITCH
 954
 exportCaribouData?
 exportCaribouData?
-0
+1
 1
 -1000
 
@@ -3139,7 +3139,7 @@ SWITCH
 330
 dynamic-display?
 dynamic-display?
-1
+0
 1
 -1000
 
@@ -3256,7 +3256,7 @@ SWITCH
 273
 display-plots?
 display-plots?
-1
+0
 1
 -1000
 
@@ -3355,6 +3355,23 @@ BUTTON
 428
 NIL
 display-caribou-paths
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+151
+10
+230
+43
+Go Once
+go
 NIL
 1
 T
