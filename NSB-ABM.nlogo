@@ -9,7 +9,7 @@ extensions [ gis array matrix table csv profiler]
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
            "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
   "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"
-  "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls" "nls-modules/caribou-calibration.nls" "nls-modules/kde-sample.nls" ]
+  "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls" "nls-modules/caribou-calibration.nls" "nls-modules/kde-sample.nls" "nls-modules/state-prediction.nls" ]
 
 
 breed [moose a-moose]
@@ -3381,6 +3381,45 @@ NIL
 NIL
 NIL
 1
+
+BUTTON
+162
+568
+262
+601
+Patch Select
+ask caribou [q-decide debug-scalar]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+INPUTBOX
+162
+602
+261
+662
+debug-scalar
+0.23
+1
+0
+Number
+
+INPUTBOX
+1759
+281
+1914
+341
+ghost-fd-input
+0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?

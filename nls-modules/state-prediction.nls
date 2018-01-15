@@ -1,0 +1,217 @@
+;Ghost used for running learning calculations
+breed [ghost-caribou a-ghost-caribou]
+
+globals
+[
+ ghost-min-day
+ ghost-max-day
+ ghost-day-divider 
+ ghost-season
+ 
+ 
+ ghost-weight1
+ ghost-weight2
+ ghost-weightOut
+ 
+ ghost-weight1-no-util
+ ghost-weight2-no-util
+ ghost-weightOut-no-util
+ 
+ ghost-learn-rate
+ 
+]
+
+ghost-caribou-own
+[
+ ghost-state-val
+ ghost-fd-amt
+ 
+ ;no-util indication no input layer with utility function
+ ghost-features
+ ghost-prev-features
+ ghost-features-no-util
+ 
+ ghost-s1
+ ghost-s2
+ 
+ ghost-outstate
+ ghost-outstate-no-util
+ ghost-total-error
+
+]
+
+to go-ghost-setup
+
+  set ghost-min-day 151
+  set ghost-max-day 258
+  set ghost-day-divider 10
+  
+  set ghost-weight1 matrix:make-constant 22 20 1
+  set ghost-weight2 matrix:make-constant 20 20 1
+  set ghost-weightOut matrix:make-constant 20 20 1
+  
+  set ghost-fd-amt ghost-fd-input
+  set heading (random 365)
+  
+end
+
+to go-ghost
+  
+    ;let offset ((ghost-max-day - ghost-min-day) / ghost-day-divider)
+    let range (ghost-max-day - ghost-min-day)
+    let section ((day - ghost-min-day) / range) * 10
+    set section (floor section)
+    set section (section / 10)
+    set ghost-season section
+    
+    ask ghost-caribou
+    [
+      ghost-feed-forward
+      
+      set ghost-prev-features ghost-features
+      
+      ghost-move     
+ 
+    ]
+  
+end
+
+to ghost-move ;0 fail 1 success
+  
+ set heading (random 365)
+ let tf 0
+ while [tf = 0]
+ [
+   ifelse (patch-at-heading-and-distance heading ghost-fd-amt != nobody)
+   [
+     let p patch-at-heading-and-distance heading ghost-fd-amt
+     
+     ifelse ( abs ([pxcor] of p) < 64 and abs ([pycor] of p) < 64)
+     [ 
+       set tf 1
+       fd ghost-fd-amt
+     ]
+     [
+       set heading (random 365)
+     ]
+   ]
+   [
+     set heading (random 365)
+   ]
+ ]
+
+     
+end
+
+to set-features
+  ask ghost-caribou
+  [
+    ;always set p starting from north patch
+    ;ORDER MATTERS
+    
+    let p0 patch-at 0 1
+    let p1 patch-at 1 1
+    let p2 patch-at 1 0
+    let p3 patch-at 1 -1
+    let p4 patch-at 0 -1
+    let p5 patch-at -1 -1
+    let p6 patch-at -1 0
+    let p7 patch-at -1 1
+    let c patch-here
+    
+    set ghost-features matrix:make-constant 1 22 0
+    
+    matrix:set ghost-features 0 0 [caribou-utility-non-para] of p0
+    matrix:set ghost-features 0 1 [caribou-utility-non-para] of p1
+    matrix:set ghost-features 0 2 [caribou-utility-non-para] of p2
+    matrix:set ghost-features 0 3 [caribou-utility-non-para] of p3
+    matrix:set ghost-features 0 4 [caribou-utility-non-para] of p4
+    matrix:set ghost-features 0 5 [caribou-utility-non-para] of p5
+    matrix:set ghost-features 0 6 [caribou-utility-non-para] of p6
+    matrix:set ghost-features 0 7 [caribou-utility-non-para] of p7
+    matrix:set ghost-features 0 8 [caribou-utility-non-para] of c
+    
+    let x-offset xcor - (floor xcor)
+    let y-offset ycor - (floor ycor)
+    
+    matrix:set ghost-features 0 9 x-offset
+    matrix:set ghost-features 0 10 y-offset
+    
+    matrix:set ghost-features 0 11 [elevation] of p0
+    matrix:set ghost-features 0 12 [elevation] of p1
+    matrix:set ghost-features 0 13 [elevation] of p2
+    matrix:set ghost-features 0 14 [elevation] of p3
+    matrix:set ghost-features 0 15 [elevation] of p4
+    matrix:set ghost-features 0 16 [elevation] of p5
+    matrix:set ghost-features 0 17 [elevation] of p6
+    matrix:set ghost-features 0 18 [elevation] of p7
+    matrix:set ghost-features 0 19 [elevation] of c
+    matrix:set ghost-features 0 20 heading
+    matrix:set ghost-features 0 22 ghost-season
+    
+    
+    ;set sub
+    set ghost-features-no-util matrix:submatrix ghost-features 0 9 1 22
+    
+  ]
+end
+
+
+to ghost-feed-forward
+  ask ghost-caribou
+  [
+    set ghost-s1 matrix:times ghost-features ghost-weight1
+    let ghost-z1 matrix:map LReLU ghost-s1
+    set ghost-s2 matrix:times ghost-z1 ghost-weight2
+    let ghost-z2 matrix:map LReLU ghost-s2
+    set ghost-outstate matrix:times ghost-z2 ghost-weightOut
+  ]
+end
+
+to ghost-backprop
+  ask ghost-caribou
+  [
+    let ghost-dout (matrix:minus ghost-outstate matrix:submatrix ghost-features 0 0 1 20)
+    set ghost-dout matrix:transpose ghost-dout
+  
+    ;get total error 
+    let single-list matrix:to-row-list ghost-dout
+    set single-list item 0 single-list
+    set ghost-total-error sum single-list
+    
+    let ghost-d2 (matrix:times ghost-dout ghost-weightOut)
+    set ghost-d2 matrix:times-element-wise ghost-d2 matrix:map LReLU-D ghost-s2
+    
+    let ghost-d1 (matrix:times ghost-d2 ghost-weight2)
+    set ghost-d1 matrix:times-element-wise ghost-d1 matrix:map LReLu-D ghost-s1
+    ;finish weight updates
+    let delta-weight1
+  ]
+end
+
+;Leaky ReLU activation and derivative
+to-report LReLU [x]
+  let result 0
+  
+  if (x < 0)
+  [ 
+    set result (x * 0.01)
+  ]
+  if (x > 0)
+  [
+    set result x
+  ]
+  
+  report result
+end
+
+to-report LReLU-D [x]
+  let result 1
+  if (x < 0)
+  [
+    set result 0.01
+  ]
+
+  report result  
+  
+end
