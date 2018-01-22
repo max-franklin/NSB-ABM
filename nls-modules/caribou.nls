@@ -1061,23 +1061,23 @@ to go-caribou-q
     set net-z2 matrix:map fcm-sigmoid-simple net-s2
     set net-sout matrix:times net-z2 a-net-wout
     
-    if(who = 258)
-    [
-      print "Weight 1"
-      print "============================================="
-      print matrix:pretty-print-text a-net-w1
-      print "============================================="
-      print "Weight 2"
-      print "============================================="
-      print matrix:pretty-print-text a-net-w2
-      print "============================================="
-      print "Result"
-      print "============================================="
-      print matrix:pretty-print-text net-sout
-      print "============================================="
-      print " "
-      
-    ]
+    ;if(who = 258)
+    ;[
+    ;  print "Weight 1"
+    ;  print "============================================="
+    ;  print matrix:pretty-print-text a-net-w1
+    ;  print "============================================="
+    ;  print "Weight 2"
+    ;  print "============================================="
+    ;  print matrix:pretty-print-text a-net-w2
+    ;  print "============================================="
+    ;  print "Result"
+    ;  print "============================================="
+    ;  print matrix:pretty-print-text net-sout
+    ;  print "============================================="
+    ;  print " "
+    ;  
+    ;]
     
     let action restrictive-q-softmax net-sout ; action is our state
     ;Action necessary instead of using state directly?

@@ -33,6 +33,8 @@ ghost-caribou-own
  
  ghost-s1
  ghost-s2
+ ghost-z1
+ ghost-z2
  
  ghost-outstate
  ghost-outstate-no-util
@@ -40,18 +42,32 @@ ghost-caribou-own
 
 ]
 
-to go-ghost-setup
-
+to setup-ghost-caribou
+  create-ghost-caribou 1
+  [
+    set ghost-fd-amt ghost-fd-input
+    set heading (random 365)
+  ]
   set ghost-min-day 151
   set ghost-max-day 258
   set ghost-day-divider 10
+  set ghost-learn-rate 0.001
+  
   
   set ghost-weight1 matrix:make-constant 22 20 1
   set ghost-weight2 matrix:make-constant 20 20 1
   set ghost-weightOut matrix:make-constant 20 20 1
   
-  set ghost-fd-amt ghost-fd-input
-  set heading (random 365)
+  set ghost-weight1 matrix:map randVal ghost-weight1
+  set ghost-weight2 matrix:map randVal ghost-weight2
+  set ghost-weightOut matrix:map randVal ghost-weightOut
+  
+  ghost-set-features
+  
+  ask ghost-caribou
+  [
+    set ghost-prev-features ghost-features
+  ]
   
 end
 
@@ -69,8 +85,10 @@ to go-ghost
       ghost-feed-forward
       
       set ghost-prev-features ghost-features
-      
-      ghost-move     
+      ;execute the move
+      ghost-move
+      ghost-set-features
+      ghost-backprop
  
     ]
   
@@ -103,7 +121,7 @@ to ghost-move ;0 fail 1 success
      
 end
 
-to set-features
+to ghost-set-features
   ask ghost-caribou
   [
     ;always set p starting from north patch
@@ -147,7 +165,7 @@ to set-features
     matrix:set ghost-features 0 18 [elevation] of p7
     matrix:set ghost-features 0 19 [elevation] of c
     matrix:set ghost-features 0 20 heading
-    matrix:set ghost-features 0 22 ghost-season
+    matrix:set ghost-features 0 21 ghost-season
     
     
     ;set sub
@@ -161,31 +179,77 @@ to ghost-feed-forward
   ask ghost-caribou
   [
     set ghost-s1 matrix:times ghost-features ghost-weight1
-    let ghost-z1 matrix:map LReLU ghost-s1
+    set ghost-z1 matrix:map LReLU ghost-s1
     set ghost-s2 matrix:times ghost-z1 ghost-weight2
-    let ghost-z2 matrix:map LReLU ghost-s2
+    set ghost-z2 matrix:map LReLU ghost-s2
     set ghost-outstate matrix:times ghost-z2 ghost-weightOut
+    
+    print "Forward"
+    print "=================================="
+    print matrix:dimensions ghost-features
+    print matrix:pretty-print-text ghost-features
+    print matrix:dimensions ghost-weight1
+    print matrix:pretty-print-text ghost-weight1
+    print matrix:dimensions ghost-s1
+    print matrix:pretty-print-text ghost-s1
+    print matrix:dimensions ghost-weight2
+    print matrix:pretty-print-text ghost-weight2
+    print matrix:dimensions ghost-s2
+    print matrix:pretty-print-text ghost-s2
+    print matrix:dimensions ghost-weightOut
+    print matrix:pretty-print-text ghost-weightOut
+    print matrix:dimensions ghost-outstate
+    print matrix:pretty-print-text ghost-outstate
+
+   
   ]
 end
 
 to ghost-backprop
   ask ghost-caribou
   [
-    let ghost-dout (matrix:minus ghost-outstate matrix:submatrix ghost-features 0 0 1 20)
-    set ghost-dout matrix:transpose ghost-dout
-  
+    ;executed after the move, the new features are the expected output. 0.5(Target - Actual)^2
+    let ghost-dout (matrix:minus matrix:submatrix ghost-features 0 0 1 20  ghost-outstate)
+    set ghost-dout (matrix:times-element-wise ghost-dout ghost-dout)
+    set ghost-dout (matrix:times-scalar ghost-dout 0.5)
+   ; set ghost-dout matrix:transpose ghost-dout
+    print matrix:dimensions ghost-dout
+    
     ;get total error 
     let single-list matrix:to-row-list ghost-dout
     set single-list item 0 single-list
-    set ghost-total-error sum single-list
+  ;  set ghost-total-error sum single-list
     
     let ghost-d2 (matrix:times ghost-dout ghost-weightOut)
     set ghost-d2 matrix:times-element-wise ghost-d2 matrix:map LReLU-D ghost-s2
     
     let ghost-d1 (matrix:times ghost-d2 ghost-weight2)
     set ghost-d1 matrix:times-element-wise ghost-d1 matrix:map LReLu-D ghost-s1
-    ;finish weight updates
-    let delta-weight1
+    
+    
+    ;Generate Deltas
+    let delta-weight1 matrix:times (matrix:transpose ghost-prev-features) ghost-d1
+    set delta-weight1 matrix:times-scalar delta-weight1 ghost-learn-rate
+    
+    let delta-weight2 matrix:times (matrix:transpose ghost-z1) ghost-d2
+    set delta-weight2 matrix:times-scalar delta-weight2 ghost-learn-rate
+    
+    let delta-weight3 matrix:times (matrix:transpose ghost-z2) ghost-dout
+    set delta-weight3 matrix:times-scalar delta-weight3 ghost-learn-rate
+   
+   ;DEBUG TEXT
+   print "DELTAS"
+   print "=================================="
+   print matrix:pretty-print-text ghost-dout
+   print matrix:pretty-print-text delta-weight1
+   print matrix:pretty-print-text delta-weight2
+   print matrix:pretty-print-text delta-weight3
+   
+   ;UPDATE WEIGHTS
+   set ghost-weight1 matrix:plus delta-weight1 ghost-weight1
+   set ghost-weight2 matrix:plus delta-weight2 ghost-weight2
+   set ghost-weightOut matrix:plus delta-weight3 ghost-weightOut
+    
   ]
 end
 
@@ -214,4 +278,8 @@ to-report LReLU-D [x]
 
   report result  
   
+end
+
+to-report randVal [x]
+  report random-float 1
 end

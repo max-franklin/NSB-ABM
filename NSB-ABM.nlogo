@@ -3421,6 +3421,24 @@ ghost-fd-input
 0
 Number
 
+PLOT
+1618
+104
+1818
+254
+State Error
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "[ghost-total-error] of ghost-caribou"
+
 @#$#@#$#@
 ## WHAT IS IT?
 
