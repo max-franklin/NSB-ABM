@@ -1,0 +1,1 @@
+ "ticks" "who" "xcor" "ycor"

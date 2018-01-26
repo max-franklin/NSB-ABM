@@ -63,6 +63,24 @@ globals
   patch-whitefish-dataset
   patch-caribou-harvest-dataset
 
+  ;Boundaries for Development
+  patch-boundary-beartooth
+  patch-boundary-beecheypoint
+  patch-boundary-colvilleriver
+  patch-boundary-dewline
+  patch-boundary-duckisland
+  patch-boundary-greatermoosestooth
+  patch-boundary-kuparukriver
+  patch-boundary-liberty
+  patch-boundary-milnepoint
+  patch-boundary-nikaitchuq
+  patch-boundary-northstar
+  patch-boundary-oooguruk
+  patch-boundary-pikka
+  patch-boundary-placer
+  patch-boundary-prudhoebay
+  patch-boundary-smiluveach
+
   ;globals for the NDVI.nls module.
   ndvi-dataset
   vegetation-ndvi-list
@@ -935,6 +953,25 @@ to setup-terrain-layers
   set patch-vegetation-dataset gis:load-dataset "data/patches/NorthSlopeVegetation.asc"
   ;set patch-whitefish-dataset gis:load-dataset "data/ascBounds/whitefish10Y.asc"
   set patch-caribou-harvest-dataset gis:load-dataset "data/ascBounds/caribou12m-scale.asc"
+
+  ;development regions
+  set patch-boundary-beartooth gis:load-dataset "data/development-regions/sm_Bear_Tooth.asc"
+  set patch-boundary-beecheypoint gis:load-dataset "data/development-regions/sm_Beechey_Point.asc"
+  set patch-boundary-colvilleriver gis:load-dataset "data/development-regions/sm_Colville_River.asc"
+  set patch-boundary-dewline gis:load-dataset "data/development-regions/sm_Dewline.asc"
+  set patch-boundary-duckisland gis:load-dataset "data/development-regions/sm_Duck_Island.asc"
+  set patch-boundary-greatermoosestooth gis:load-dataset "data/development-regions/sm_Greater_Mooses_Tooth.asc"
+  set patch-boundary-kuparukriver gis:load-dataset "data/development-regions/sm_Kuparuk_River.asc"
+  set patch-boundary-liberty gis:load-dataset "data/development-regions/sm_Liberty.asc"
+  set patch-boundary-milnepoint gis:load-dataset "data/development-regions/sm_Milne_Point.asc"
+  set patch-boundary-nikaitchuq gis:load-dataset "data/development-regions/sm_Nikaitchuq.asc"
+  set patch-boundary-northstar gis:load-dataset "data/development-regions/sm_Northstar.asc"
+  set patch-boundary-oooguruk gis:load-dataset "data/development-regions/sm_Oooguruk.asc"
+  set patch-boundary-pikka gis:load-dataset "data/development-regions/sm_Pikka.asc"
+  set patch-boundary-placer gis:load-dataset "data/development-regions/sm_Placer.asc"
+  set patch-boundary-prudhoebay gis:load-dataset "data/development-regions/sm_Prudhoe_Bay.asc"
+  set patch-boundary-smiluveach gis:load-dataset "data/development-regions/sm_S_Miluveach.asc"
+
 
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-wetness-dataset))
 
