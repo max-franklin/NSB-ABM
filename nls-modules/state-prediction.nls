@@ -51,7 +51,7 @@ to setup-ghost-caribou
   set ghost-min-day 151
   set ghost-max-day 258
   set ghost-day-divider 10
-  set ghost-learn-rate 0.001
+  set ghost-learn-rate 0.000000001
   
   
   set ghost-weight1 matrix:make-constant 22 20 1

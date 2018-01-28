@@ -1621,7 +1621,7 @@ to q-decide [speed-scale] ; Value should be 0-1 ; should be called by agent
   let filter-para filter [ ? > random-para ] percentage-para
   show "Filter"
   show filter-non-para
-  ;;TODO;;PARNUT. vs NONPARN HERE
+
   
   ;get our found weighted random patch
   let found-item (first filter-non-para)

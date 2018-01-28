@@ -262,6 +262,10 @@ patches-own
   ;bool-ocean
 
   patch-historic-utility-caribou
+
+  patch-caribou-modify-weight
+
+
 ]
 
 caribou-harvests-own
@@ -3422,10 +3426,10 @@ ghost-fd-input
 Number
 
 PLOT
-1618
-104
-1818
-254
+1736
+91
+1936
+241
 State Error
 NIL
 NIL
@@ -3438,6 +3442,40 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "[ghost-total-error] of ghost-caribou"
+
+BUTTON
+1735
+10
+1913
+43
+NIL
+setup-ghost-caribou
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1736
+50
+1891
+83
+NIL
+go-ghost
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?

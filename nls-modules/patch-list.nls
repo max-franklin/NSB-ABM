@@ -56,6 +56,109 @@ to-report patch-list-caribou-para-wrapper [curr-x curr-y attraction target]
 
 end
 
+;to-report new-patch-list-caribou-para-wrapper [curr-x curr-y attraction target]
+;  
+;  ;NOTE: curr-x curr-y are deprecated
+;
+;  ;Remove patches that cannot be visited
+;  let available neighbors with [ocean = 0 and wetness < caribou-max-wetness and elevation < caribou-max-elevation] 
+;  
+;  
+;  ;get patches based on type of utility and sort them
+;  let non-para patches with [member? self (sort-on [caribou-utility-non-para] available)]
+;  let para sort-on [caribou-utility-para] available 
+;  
+;  
+;  ;REDO THIS, ATTRACTION VALUE SHOULD BE ADDED AFTER FIRST NORMALIZATION OF VALUES
+;  ;===============================================================================;
+;  
+;  ;Add attraction values to utility on p-caribou-modify-weight, do this process for each utility type
+;  ask non-para [
+;    set patch-caribou-modify-weight caribou-utility-non-para
+;  ]
+;  
+;  ;Get the 2 patches closest to the target and add those distances together for future distribution of attraction
+;  let dist-target-total sum [caribou-utility-non-para] of (min-n-of 2 non-para [distance myself target])
+;  ask min-n-of 2 non-para [distance myself target]
+;  [
+;    let additional-value ((distance myself target) / dist-target-total) * attraction
+;    set patch-caribou-modify-weight patch-caribou-modify-weight + additional value
+;  ]
+;  
+;  
+;  
+; ; show non-para
+;  let list-non-para sort([caribou-utility-non-para] of non-para)
+;  let list-para sort([caribou-utility-para] of non-para)
+;  
+;  
+;  
+; ; show "Raw List"
+; ; show list-non-para
+;  let percentage-non-para [ ]
+;  let percentage-para [ ]
+;  
+;  foreach list-non-para
+;  [
+;    set percentage-non-para lput (sum percentage-non-para + ?) percentage-non-para
+;  ]
+;  
+;  foreach list-para
+;  [
+;    set percentage-para lput (sum percentage-para + ?) percentage-para
+;  ]
+;  
+;  ;show "Cumulative List"
+;  ;show percentage-non-para
+;  let random-non-para (random-float (max percentage-non-para))
+;  let random-para (random-float (max percentage-para))
+;  
+;  ;show "Random"
+;  ;show random-non-para
+;  
+;  let filter-non-para filter [ ? > random-non-para ] percentage-non-para
+;  let filter-para filter [ ? > random-para ] percentage-para
+;  ;show "Filter"
+;  ;show filter-non-para
+;
+;  
+;  ;get our found weighted random patch
+;  let found-item (first filter-non-para)
+;  
+;  ;get the index of the found patch in the cumulative list
+;  let index-item position found-item percentage-non-para
+;  
+;  ;get the patch that the index represents in the patch list that was returned
+;  
+;  let non-para-agents-list [ ]
+;  ask non-para
+;  [
+;    set non-para-agents-list lput self non-para-agents-list
+;  ]
+;  ;show "Found Index"
+; 
+;  ;show index-item
+;  ;show non-para-agents-list
+;  
+;  
+;  let face-patch one-of patches
+;  let i 0
+;  foreach non-para-agents-list
+;  [
+;    if( i = index-item)
+;    [
+;      set face-patch (patches with [member? ? non-para])
+;    ]
+;    
+;    set i (i + 1)
+;  ]
+;  
+;  ;let face-patch item index-item non-para
+;  report (one-of face-patch)
+; 
+;end
+
+
 to-report patch-list-caribou-phero-para-wrapper [curr-x curr-y cent-attraction cent-target phero-attraction phero-target]
  
 
