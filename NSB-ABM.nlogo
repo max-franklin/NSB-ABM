@@ -35,6 +35,10 @@ globals
   seed
   caribouVarCal ;;list containing values of caribou related variables that need to be calibrated.
 
+  patches-oil-bounds
+  patches-roads
+  patches-pipeline
+
   np-centroid-layer-152
   np-centroid-layer-166
   np-centroid-layer-180
@@ -80,6 +84,8 @@ globals
   patch-boundary-placer
   patch-boundary-prudhoebay
   patch-boundary-smiluveach
+  patch-pipes_layer
+  patch-roads_layer
 
   ;globals for the NDVI.nls module.
   ndvi-dataset
@@ -236,6 +242,7 @@ patches-own
   prec-paint
 
 
+
   ;;Utility Values
   ;caribou
   connected? ;boolean for whether or not patches are connected by a stream. Setting to be true for all patches with streams > than 1/2 mean [streams] of patches.
@@ -244,6 +251,11 @@ patches-own
   caribou-utility-para
   caribou-utility-non-para
   caribou-modifier ;modified based on caribou vists. Add decay?
+  patch-deflection-oil
+  patch-deflection-roads
+  patch-deflection-pipeline
+  patch-deflection-temp
+
 
   ;moose
   moose-utility-max
@@ -971,6 +983,8 @@ to setup-terrain-layers
   set patch-boundary-placer gis:load-dataset "data/development-regions/sm_Placer.asc"
   set patch-boundary-prudhoebay gis:load-dataset "data/development-regions/sm_Prudhoe_Bay.asc"
   set patch-boundary-smiluveach gis:load-dataset "data/development-regions/sm_S_Miluveach.asc"
+  set patch-roads_layer gis:load-dataset "data/development-regions/roads_layer.asc"
+  set patch-pipes_layer gis:load-dataset "data/development-regions/pipes_layer.asc"
 
 
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-wetness-dataset))
@@ -981,6 +995,64 @@ to setup-terrain-layers
   gis:apply-raster patch-elevation-dataset elevation
   gis:apply-raster patch-ocean-dataset ocean
   gis:apply-raster patch-vegetation-dataset vegetation-type
+
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-boundary-beartooth))
+  if(deflect-oil?)
+  [
+    gis:apply-raster patch-boundary-beartooth patch-deflection-temp
+    ;Union operation between all datasets, direct application of rasters will overwrite previous values.
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;do the same for the rest of datasets
+    gis:apply-raster patch-boundary-beartooth patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-beecheypoint patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-colvilleriver patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-dewline patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-duckisland patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-greatermoosestooth patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-kuparukriver patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-liberty patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-milnepoint patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-nikaitchuq patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-northstar patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-oooguruk patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-pikka patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-placer patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-prudhoebay patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    gis:apply-raster patch-boundary-smiluveach patch-deflection-temp
+        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    set patches-oil-bounds patches with [patch-deflection-oil > 0]
+
+  ]
+
+    gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-roads_layer))
+  if(deflect-roads?)
+  [
+    gis:apply-raster patch-roads_layer patch-deflection-roads
+    set patches-roads patches with [patch-deflection-roads > 0]
+  ]
+
+  if(deflect-pipeline?)
+  [
+    gis:apply-raster patch-pipes_layer patch-deflection-pipeline
+    set patches-pipeline patches with [patch-deflection-pipeline > 0]
+  ]
 
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-caribou-harvest-dataset))
   gis:apply-raster patch-caribou-harvest-dataset patch-caribou-harvest
@@ -1666,12 +1738,12 @@ NIL
 CHOOSER
 285
 574
-557
+659
 619
 BoundsFile
 BoundsFile
-"data/ascBounds/CharDolly10Y.asc" "data/ascBounds/CharDolly12M.asc" "data/ascBounds/Cisco10Y.asc" "data/ascBounds/Cisco12M.asc" "data/ascBounds/MooseBounds10Y.asc" "data/ascBounds/MooseBounds12M.asc" "data/ascBounds/whitefish12m.asc" "data/ascBounds/whitefish10Y.asc"
-0
+"data/ascBounds/CharDolly10Y.asc" "data/ascBounds/CharDolly12M.asc" "data/ascBounds/Cisco10Y.asc" "data/ascBounds/Cisco12M.asc" "data/ascBounds/MooseBounds10Y.asc" "data/ascBounds/MooseBounds12M.asc" "data/ascBounds/whitefish12m.asc" "data/ascBounds/whitefish10Y.asc" "data/development-regions/sm_Bear_Tooth.asc" "data/development-regions/sm_Beechey_Point.asc" "data/development-regions/sm_Colville_River.asc" "data/development-regions/sm_Dewline.asc" "data/development-regions/sm_Duck_Island.asc" "data/development-regions/sm_Greater_Mooses_Tooth.asc" "data/development-regions/sm_Kuparuk_River.asc" "data/development-regions/sm_Liberty.asc" "data/development-regions/sm_Milne_Point.asc" "data/development-regions/sm_Nikaitchuq.asc" "data/development-regions/sm_Northstar.asc" "data/development-regions/sm_Oooguruk.asc" "data/development-regions/sm_Pikka.asc" "data/development-regions/sm_Placer.asc" "data/development-regions/sm_Prudhoe_Bay.asc" "data/development-regions/sm_S_Miluveach.asc" "data/development-regions/pipes_layer.asc" "data/development-regions/roads_layer.asc"
+24
 
 BUTTON
 286
@@ -2731,7 +2803,7 @@ SWITCH
 770
 caribou-mutate?
 caribou-mutate?
-0
+1
 1
 -1000
 
@@ -3189,7 +3261,7 @@ SWITCH
 330
 dynamic-display?
 dynamic-display?
-1
+0
 1
 -1000
 
@@ -3361,6 +3433,39 @@ SWITCH
 597
 CD5?
 CD5?
+1
+1
+-1000
+
+SWITCH
+1583
+549
+1729
+582
+deflect-pipeline?
+deflect-pipeline?
+1
+1
+-1000
+
+SWITCH
+1583
+584
+1729
+617
+deflect-roads?
+deflect-roads?
+0
+1
+-1000
+
+SWITCH
+1583
+618
+1730
+651
+deflect-oil?
+deflect-oil?
 1
 1
 -1000

@@ -42,6 +42,25 @@ to update-para-utility
     let veg-value vegParRank * ndvi-util * caribou-veg-factor
     set caribou-utility-para caribou-utility-para + veg-value
     
+    if (patch-deflection-oil > 0 or patch-deflection-roads > 0 or patch-deflection-pipeline > 0)
+    [
+      ask neighbors [set patch-deflection-temp 0.156] ;value taken as mid-point from 2-3 and 3-4km adult reduction
+      set patch-deflection-temp 0.578 ;taken as midpoint for 0-1km and 1-2km adult reduction
+      
+     set patch-deflection-temp (patch-deflection-temp * caribou-utility) ;multiplied by the base utilization
+     set caribou-utility-para (caribou-utility-para - patch-deflection-temp)
+    ]
+    
+        
+    if(caribou-utility-non-para  <= 0)
+    [
+
+      set caribou-utility-non-para 0.0000000001
+    ]
+    if(ocean = 1)
+    [
+     set caribou-utility-non-para 0.0000000001
+    ]
     
         
     if(caribou-utility-para  <= 0)
@@ -68,6 +87,14 @@ to update-non-para-utility
     let veg-value vegNonParRank * ndvi-util * caribou-veg-factor
     set caribou-utility-non-para caribou-utility-non-para + veg-value
     
+    if (patch-deflection-oil > 0 or patch-deflection-roads > 0 or patch-deflection-pipeline > 0)
+    [
+      ask neighbors [set patch-deflection-temp 0.156] ;value taken as mid-point from 2-3 and 3-4km adult reduction
+      set patch-deflection-temp 0.578 ;taken as midpoint for 0-1km and 1-2km adult reduction
+      
+     set patch-deflection-temp (patch-deflection-temp * caribou-utility) ;multiplied by the base utilization
+     set caribou-utility-non-para (caribou-utility-non-para - patch-deflection-temp)
+    ]
     
         
     if(caribou-utility-non-para  <= 0)
