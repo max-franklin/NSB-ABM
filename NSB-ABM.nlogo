@@ -27,6 +27,8 @@ directed-link-breed [ cent-links cent-link ]
 
 globals
 [
+  file-output-prepend
+
   npGridId
   npGridQual
   pGridId
@@ -467,6 +469,7 @@ cent-links-own
 
 ;wraps to other setup functions
 to setup
+  set file-output-prepend ""
   clear-all
   set seed -2147483648 + random-num (2147483648 * 2)
   random-seed seed
@@ -796,7 +799,7 @@ to go
 end
 
 to setup-caribou-state-data
-  let file-ex "caribou-state-flux-bioE-"
+  let file-ex word file-output-prepend "caribou-state-flux-bioE-"
   set file-ex word file-ex seed
   set file-ex word file-ex ".txt"
 
@@ -816,7 +819,7 @@ to setup-caribou-state-data
 end
 
 to export-caribou-state-data
-   let file-ex "caribou-state-flux-bioE-"
+   let file-ex word file-output-prepend "caribou-state-flux-bioE-"
    set file-ex word file-ex seed
    set file-ex word file-ex ".txt"
 
@@ -851,7 +854,7 @@ to export-fcm-data
     ;;dump all pertinent data every year for variable calibration.
    ;set caribou-fcm-adja-list [fcm-adja] of caribou
 
-   let file-ex "caribou-fcms-agentnum-success-"
+   let file-ex word file-output-prepend "caribou-fcms-agentnum-success-"
    set file-ex word file-ex seed
    set file-ex word file-ex ".txt"
 
@@ -1460,6 +1463,7 @@ to export-hunter-data [mode]
    ;per trip, mode = 0
    if(mode = 0)
    [
+
      file-open "hunter-trip-data.txt"
      ask hunters
      [
@@ -1474,7 +1478,8 @@ to export-hunter-data [mode]
    ;per year, mode = 1
    if(mode = 1)
    [
-     file-open "hunter-year-data.txt"
+     let filename word file-output-prepend "hunter-year-data.txt"
+     file-open filename
      ask hunters
      [
        file-print ""
@@ -3444,7 +3449,7 @@ SWITCH
 582
 deflect-pipeline?
 deflect-pipeline?
-0
+1
 1
 -1000
 
@@ -3455,7 +3460,7 @@ SWITCH
 617
 deflect-roads?
 deflect-roads?
-0
+1
 1
 -1000
 
@@ -3466,7 +3471,7 @@ SWITCH
 651
 deflect-oil?
 deflect-oil?
-0
+1
 1
 -1000
 
@@ -4905,6 +4910,307 @@ NetLogo 5.3.1
     <enumeratedValueSet variable="moose-insect-factor">
       <value value="0.5"/>
     </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <exitCondition>year = 1</exitCondition>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="hunter-density-low-constant">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-mutate-prob">
+      <value value="0.15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CD5?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="energy-gain-factor">
+      <value value="42.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="decay-rate">
+      <value value="0.781"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-harvest-high-constant">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="is-random?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="use-hunters?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-precip-factor">
+      <value value="0.158"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="display-plots?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="trip-short-constant">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-max-wetness">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-4">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-recombine?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-util-cutoff">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Q-Gamma">
+      <value value="0.999"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-para">
+      <value value="0.71"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="boat-hike-long-constant">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribouPopMod?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-population">
+      <value value="35"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffuse-amt">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="is-training?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-9">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-veg-factor">
+      <value value="0.109"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="debug-fcm?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="calibrateCaribouVar?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="import-caribou-var?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Nuiqsut?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-insect-factor">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="var-grad-prob-factor">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-mutate?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Q-rate">
+      <value value="0.001"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="mutation-method">
+      <value value="&quot;fuzzy-logic&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="show-caribou-utility-non-para?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-density-high-constant">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="set-centroid-attraction">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="boat-hike-short-constant">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="var-mut-prob-factor">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deflect-roads?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="export-hunter-data?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="show-caribou-utility?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="use-q">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-amt">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-veg-factor">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-deflection-factor">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deflect-pipeline?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-harvest-low-constant">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="maximum-hunter-density">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="random-hunter-fcm?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-deflection-factor">
+      <value value="0.506"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-rough-factor">
+      <value value="0.28"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-amt">
+      <value value="2500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-modifier-factor">
+      <value value="0.321"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-radius">
+      <value value="1.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deflect-oil?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="display-grids?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-2">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="collect-kde?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="import-caribou-fcm?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="show-caribou-utility-para?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-mutate?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ndvi-weight">
+      <value value="0.631"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="trip-long-constant">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-max-elevation">
+      <value value="700"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prey-far-constant">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-recombine?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prey-close-constant">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="export-centroids?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-modify-amt">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="trip-length-max">
+      <value value="112"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-group-amt">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-centroid-selection">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-max-elevation">
+      <value value="700"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="elevation-scale">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-5">
+      <value value="0.66"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-harvest-goal">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="randomCaribouVarStart?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="BoundsFile">
+      <value value="&quot;data/development-regions/pipes_layer.asc&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-vision">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-max-wetness">
+      <value value="0.8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-mutate-prob">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-util-type-3">
+      <value value="0.66"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="show-moose-utility?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob-var-recombination">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-recomb-prob">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-recomb-prob">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-cent-dist-cutoff">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exportCaribouData?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="moose-rough-factor">
+      <value value="-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="caribou-insect-factor">
+      <value value="0.436"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hunter-training?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-display?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="elevation-limit">
+      <value value="221"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="centroid-attraction-min">
+      <value value="0.04"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="centroid-attraction-max">
+      <value value="0.55"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="display-centroids?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="new-file">
+      <value value="&quot;WetnessSumsAfter.txt&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="local-search-radius">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="file-output-prepend" first="1" step="1" last="100"/>
   </experiment>
 </experiments>
 @#$#@#$#@
