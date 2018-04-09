@@ -7,6 +7,7 @@ globals [
           hunter-fcm-success-list
 
           global-fcm-matrix
+          global-input-matrix
           global-fcm-sensory
           global-fcm-internal
           global-fcm-motor
@@ -49,15 +50,21 @@ hunters-own [
              boat-travel       
              return 
              
-             ;FCM
-             hunter-fcm-matrix
-             hunter-fcm-internal
-             hunter-fcm-motor
+             ;FCM          
+             ;hunter-fcm-internal
+             ;hunter-fcm-motor 
+             ;hunter-fcm-raw-internal
+             ;hunter-fcm-act-internal  
+             ;hunter-fcm-sensory-test
              hunter-fcm-motor-results
              hunter-fcm-sensory
-             hunter-fcm-raw-internal
-             hunter-fcm-act-internal  
-             hunter-fcm-sensory-test
+             hunter-fcm-matrix
+             hunter-input-matrix
+             current-activations
+             previous-activations
+             vector-A
+             vector-B
+             vector-AB-sum
              
              ;data
              boat-return 
@@ -205,7 +212,7 @@ to reset-hunters [ mode ]
      set number-of-trips (number-of-trips - 1)
    ]
    [
-     reset-hunter-matrices
+     set-hunter-matrices
      set number-of-trips 13
      set harvest-amount 0
    ]
@@ -272,35 +279,27 @@ to initialize-FCM-hunters
                                               [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
                                               [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]]
   
+  set global-input-matrix matrix:from-row-list [[ 1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [-1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [ 0  0  1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [ 0  0 -1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [ 0  0  0  0  1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [ 0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [ 0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [ 0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [ 0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [ 0  0  0  0  0  0  0  0 -1  1  0  0  0  0  0  0  0  0  0  0  0  0  0 ]
+                                                [ 0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0 ]]
+                                             
   set global-fcm-sensory matrix:from-row-list [[ 0  0  0  0  0  0  0  0  0  0  0]]
-  set global-fcm-internal matrix:submatrix global-fcm-matrix 0 11 11 19
-  set global-fcm-motor matrix:submatrix global-fcm-matrix 11 19 19 23
-  
-  set global-full-print matrix:pretty-print-text global-fcm-matrix
-  set global-sensory-print matrix:pretty-print-text global-fcm-sensory
-  set global-internal-print matrix:pretty-print-text global-fcm-internal
-  set global-motor-print matrix:pretty-print-text global-fcm-motor
-  
-  print-global-matrices
 end
 
 to set-hunter-matrices
     set hunter-fcm-matrix global-fcm-matrix
     set hunter-fcm-sensory global-fcm-sensory
-    set hunter-fcm-internal global-fcm-internal
-    set hunter-fcm-motor global-fcm-motor
-    set sensory-print matrix:pretty-print-text hunter-fcm-sensory
-    set internal-print matrix:pretty-print-text hunter-fcm-internal
-    set motor-print matrix:pretty-print-text hunter-fcm-motor
-end
-
-to reset-hunter-matrices
-    set hunter-fcm-internal matrix:submatrix hunter-fcm-matrix 0 11 11 19
-    set hunter-fcm-motor matrix:submatrix hunter-fcm-matrix 11 19 19 23
-    
-    set sensory-print matrix:pretty-print-text hunter-fcm-sensory
-    set internal-print matrix:pretty-print-text hunter-fcm-internal
-    set motor-print matrix:pretty-print-text hunter-fcm-motor
+    set hunter-input-matrix global-input-matrix
+    set current-activations  matrix:from-row-list [[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
+    set previous-activations  matrix:from-row-list [[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
 end
 
 to set-hunter-fcm-sensory
@@ -319,7 +318,7 @@ to set-hunter-fcm-sensory
   set sensory-hunter-density-low (1 - (ternary-funct hunter-density-low hunter-density-high hunter-density))
   set sensory-hunter-density-high ternary-funct hunter-density-low hunter-density-high hunter-density 
   
-  set sensory-rivers-in-way ternary-funct 0 rivers-in-way number-of-rivers-in-way-new
+  set sensory-rivers-in-way ternary-funct 0 rivers-in-way number-of-rivers-in-way
   
   matrix:set hunter-fcm-sensory 0 0 sensory-prey-close
   matrix:set hunter-fcm-sensory 0 1 sensory-prey-far 
@@ -336,25 +335,16 @@ to set-hunter-fcm-sensory
   set sensory-print matrix:pretty-print-text hunter-fcm-sensory
 end
 
-
-to set-hunter-fcm-raw-internal
-  set hunter-fcm-raw-internal matrix:times hunter-fcm-sensory hunter-fcm-internal 
-  set internal-print matrix:pretty-print-text hunter-fcm-internal
-  set raw-internal-print matrix:pretty-print-text hunter-fcm-raw-internal
+to set-activations
+  set previous-activations current-activations
+  set vector-A matrix:times previous-activations hunter-fcm-matrix 
+  set vector-B matrix:times hunter-fcm-sensory hunter-input-matrix
+  set vector-AB-sum matrix:plus vector-A vector-B
+  set current-activations matrix:map logistic-funct vector-AB-sum
 end
 
-to set-hunter-act-internal
-  set hunter-fcm-act-internal matrix:map logistic-funct hunter-fcm-raw-internal
-  set act-internal-print matrix:pretty-print-text hunter-fcm-act-internal
-end
-
-to set-hunter-fcm-motor
-  set hunter-fcm-motor-results matrix:times hunter-fcm-act-internal hunter-fcm-motor 
-  set motor-print matrix:pretty-print-text hunter-fcm-motor
-  set motor-results-print matrix:pretty-print-text hunter-fcm-motor-results 
-end
-
-to set-motor-concept
+to set-action
+  set hunter-fcm-motor-results matrix:submatrix current-activations 0 19 1 23
   let mat-dims matrix:dimensions hunter-fcm-motor-results
   set num-rows-h item 0 mat-dims
   set num-cols-h item 1 mat-dims
@@ -375,7 +365,6 @@ to set-motor-concept
 end
 
 to run-motor-function
-  
   if motor-concept-index = 0
   [
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
@@ -433,13 +422,9 @@ to execute-FCM
     set-travel-cost-evaluation
     set-hunter-density
     set-hunter-fcm-sensory
-    set-hunter-fcm-raw-internal
-    set-hunter-act-internal
-    set-hunter-fcm-motor
-    set-motor-concept
-    ;print-hunter-matrices
+    set-activations
+    set-action
     run-motor-function
-    ;print-trip-length
     spend-trip-length
 end
 
@@ -581,7 +566,7 @@ to move-forward
    set patch-sum (patch-sum + 1)
 end
 
-to-report number-of-rivers-in-way-new
+to-report number-of-rivers-in-way
   set num-riw 0
   if (xcor != [xcor] of target-land-centroid and ycor != [ycor] of target-land-centroid)
   [
@@ -594,70 +579,6 @@ to-report number-of-rivers-in-way-new
       [set num-riw (num-riw + 1)] 
       set x-riw x-riw + 1
     ]
-  ]
-  report num-riw
-end 
-
-to-report number-of-rivers-in-way
-  ;establish line between me and my land destination, find how many streams patches are in that set
-  set patch-list-riw []
-  set num-riw 0
-  set x1-riw xcor
-  set y1-riw ycor
-  set x2-riw [xcor] of target-land-centroid
-  set y2-riw [ycor] of target-land-centroid 
-  set slope-riw (y2-riw - y1-riw)/(x2-riw - x1-riw)
-
-  let delta-x (x2-riw - x1-riw)
-  let delta-y (y2-riw - y1-riw)
-  ;check which has the greatest change, calulate either x or y from the equation after for good resolution 
-  ifelse delta-x > delta-y
-  [
-    set x-riw x1-riw
-    set y-riw 0
-    ifelse(x2-riw > x1-riw)
-    [
-      while[x-riw <= x2-riw]
-      [
-        set y-riw (slope-riw * (x-riw - x1-riw) + y1-riw)
-        set patch-list-riw lput (patch x-riw y-riw) patch-list-riw
-        set x-riw (x-riw + 1)
-      ]
-    ]
-    [
-      while[x-riw >= x2-riw]
-      [
-        set y-riw (slope-riw * (x-riw - x1-riw) + y1-riw)
-        set patch-list-riw lput (patch x-riw y-riw) patch-list-riw
-        set x-riw (x-riw - 1)
-      ]
-    ] 
-  ]
-  [
-    set y-riw y1-riw
-    set x-riw 0
-    ifelse (y2-riw > y1-riw)
-    [
-      while [y-riw <= y2-riw]
-      [
-        set x-riw ((y-riw - y1-riw) / slope-riw + x1-riw)
-        set patch-list-riw lput (patch x-riw y-riw) patch-list-riw
-        set y-riw (y-riw + 1)
-      ]
-    ]
-    [
-      while [y-riw >= y2-riw]
-      [
-        set x-riw ((y-riw - y1-riw) / slope-riw + x1-riw)
-        set patch-list-riw lput (patch x-riw y-riw) patch-list-riw
-        set y-riw (y-riw - 1)
-      ]
-    ]
-  ] 
-  foreach patch-list-riw
-  [
-     if(empty? [river-set] of ? = false or [connected?] of ? = true)
-     [set num-riw (num-riw + 1)] 
   ]
   report num-riw
 end 
@@ -760,41 +681,6 @@ to kill-hunters
   ask hunters [ die ]
 end
 
-;REST
-to rest
-  rt random-float 360
-end
-
-to print-hunter-matrices
-  print "Sensory matrix:"
-  print sensory-print
-  print "\nInternal matrix:"
-  print internal-print
-  print "\nRaw internal matrix:"
-  print raw-internal-print
-  print "\nActivated internal matrix:"
-  print act-internal-print
-  print "\nMotor matrix:"
-  print motor-print
-  print "\nMotor times activated internal matrix:"
-  print motor-results-print
-  print "Motor matrix max:"
-  print motor-max
-  print "Concept index:"
-  print motor-concept-index
-end
-
-to print-global-matrices 
-  print "Full FCM:" 
-  print global-full-print
-  print "Global sensory matrix:"
-  print global-sensory-print
-  print "Global internal matrix:"
-  print global-internal-print
-  print "Global motor matrix:"
-  print global-motor-print
-end
-
 to update-hunter-fcms
   ;;Code block for evolving hunter FCMs. Selection occurs, followed by recombination and mutation.
   ;;Akin to the caribou FCM evolution code, the hunter 'reset' should probably occur in here, too. 
@@ -837,10 +723,4 @@ to update-hunter-fcms
       ;;for the next year of the simulation.
       reset-hunters 1
     ]
-  
-  
-  ;]
-  
-  
 end
-
