@@ -6,6 +6,143 @@
 ;      ]
 ;end
 
+
+caribou-own
+[
+  cent-memory ;try length 20 - value from Semenuik?
+  grid-memory
+  bioenergy-success ;acknowledges that it's impossible for a caribou to acquire hundreds of thousands of MJ. Serves to limit inputs to FCM
+
+  energy-gain ; Update Q Learning w/ energy
+  energy-loss
+  group-size
+  radius
+  energy
+  weight
+  fd-amt
+
+  scaled-bio
+  changed-states?
+
+  ;Actions
+  bank-rest
+  bank-intra
+  bank-inter
+  bank-migrate
+
+  ;;Movement Values in relation to Semeniuk et al
+  ;;  differs by being 3x as long compared to Semeniuk. Currently 90 minutes instead of 30 minutes
+  ;forage intra-patch
+  fga-amt
+  ;forage inter-patch
+  fge-amt
+  ;migrate/taxi
+  mg-amt-min
+  mg-amt-max
+  last-winner-caribou-val
+  ;goal patch for foraging
+  goal-patch
+  goal-reached
+
+  caribou-class ; Caribou Class 0 - Male, 1 - Female,  2 - Female/Parturition
+
+  ;FCM
+  cog-map
+  ;actVals
+  util-low
+  util-high
+  taxi-state
+  forage-state
+  cent-dist-close
+  cent-dist-far
+
+
+  ;--New FCM--
+  ;FCM Control
+  close-range ;  ex: 1.2
+  far-range ; ex: 1.8
+  fcm-sigmoid-scalar ; currently always set to 1
+  
+  ;FCM-Rework (True-FCM)
+  caribou-fcm-node-states
+  caribou-fcm-perception-weights
+  caribou-fcm-perceptions
+
+
+  ;Q-Net
+  net-x
+  net-w1
+  net-s1
+  net-z1
+  net-w2
+  net-s2
+  net-z2
+  net-wout
+  net-sout
+
+
+
+  bioenergy-saved
+  bioenergy-upper ;The upper limit for the FCM ternary calculation for energy
+  bioenergy-lower ;The lower limit for the FCM Ternary calculation for energy
+  ;--FCM Sensors--
+  ;0; foe-close
+  ;1; foe-far
+  ;2; food-close ;neighbor cells?
+  ;3; food-far
+  ;4; energy-low
+  ;5; energy-high
+  ;6; food-quantity-low ;lichen content?
+  ;7; food-quantity-high
+  ;;;----Sensors not in  R. Gras et al.---
+  ;8; disturb-close
+  ;9; disturb-far
+
+  fcm-mat-sensor ;sensor values placed into a matrix representing the previous values
+  fcm-mat-conc-delta ; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
+  fcm-adja ; Adjacency list for all actions, sub-list taken for matrix operations
+
+  last-taxi-vals
+  last-taxi-index
+
+  last-forage-vals
+  last-forage-index
+
+  migrate-limit
+
+  bioenergy
+
+  caribou-cognitive
+
+  ;;Current Centroid
+  current-centroid
+  ;;CurrentState 0 = foraging 1= migration/taxi
+  state
+  state-memory
+  ;;Last Centroid where the caribou came from
+  last-centroid
+  current-grid
+  last-grid
+
+
+  centroid-attraction
+ ; centroid-attraction-min
+ ; centroid-attraction-max
+  ;used to determine whether a migration has ended // Boolean
+  last-state-migrate
+  ;Allows remembering of last visited patches // Boolean
+  allowed-to-remember
+  ;counter for remembering
+  attraction-factor
+
+  last-patch-index
+  last-patches
+  previous-patch
+
+  test-migration
+]
+
+
 to setup-caribou
 
   
@@ -36,6 +173,26 @@ to setup-caribou
         let rxcor random-xcor
         let rycor random-ycor
         let gen-rand (random 100 + 1)
+        
+        
+        
+        
+        ;fcm setup new
+        set caribou-fcm-perceptions matrix:make-constant 1 21 0
+        set caribou-fcm-node-states matrix:make-constant 1 21 1
+        set fcm-adja matrix:copy fcm-adja-base ;refactor this
+        set caribou-fcm-perception-weights matrix:make-constant 21 21 0
+        
+        ;Set the diagonal of the perception weights to a random weight -1 to 1
+        let i 0
+        while [i < 21]
+        [
+          matrix:set caribou-fcm-perception-weights i i (1 - (random-float 2)) 
+        
+          set i (i + 1)
+        ]
+        
+        ;;END NEW
         
         ifelse(gen-rand < 42.5) ; average number bulls per 100 females
         [
@@ -132,6 +289,9 @@ to setup-caribou
     
     file-close 
   ]
+  
+  ;No Import
+  
   [
     let caribou-group-number floor(caribou-amt / caribou-group-amt)
     
@@ -146,54 +306,36 @@ to setup-caribou
     ;  matrix:set-row base-fcm-caribou 6 [0 0 0 0 0 0 0]
     
     
-    set fcm-adja-base matrix:make-constant 21 11 0
+    set fcm-adja-base matrix:make-constant 21 21 0
     ;initialize the adjacency list to predefined values
-    ;  matrix:set-row fcm-adja-base 0  [  4  0  0.1  0  -1  1  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 1  [  -4  0  0  0  0.5  -0.5  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 2  [  0  0.5  -0.1  0.1  0.5  -0.5  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 3  [  0  0  0.2  -0.2  -0.7  0.7  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 4  [  0.4  4  0  0  -2.2  2.2  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 5  [  0  -1  0.2  -0.2  1.5  -1.5  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 6  [  0  -0.2  -0.3  0.3  1.1  -1.1  0  0  0  2.6  0  ]
-    ;  matrix:set-row fcm-adja-base 7  [  0  0.2  1  -1  -1.1  1.1  0  0  0  -4  0  ]
-    ;  matrix:set-row fcm-adja-base 8  [  2  0  0  0  -1  1  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 9  [  -2  0  0  0  0.5  -0.5  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 10  [  0.5  0  0  0  0  0  3.5  -0.8  -1  -1  -1  ]
-    ;  matrix:set-row fcm-adja-base 11  [  0  0.3  0  0  0  0  -0.8  2.1  -0.5  4  -1.8  ]
-    ;  matrix:set-row fcm-adja-base 12  [  0  0  0.1  0  0  0  -0.1  0.5  -0.2  -0.3  -0.2  ]
-    ;  matrix:set-row fcm-adja-base 13  [  0  0  0  0.1  0  0  0  -0.5  0.2  0.3  0.2  ]
-    ;  matrix:set-row fcm-adja-base 14  [  0  0  0  0  0  0  -0.1  -0.8  1.5  0.8  0.7  ]
-    ;  matrix:set-row fcm-adja-base 15  [  0  0  0  0  0  0  0.4  1  -1.2  -0.7  -0.7  ]
-    ;  matrix:set-row fcm-adja-base 16  [  0  0  0  0  0  0  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 17  [  0  0  0  0  0  0  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 18  [  0  0  0  0  0  0  0  0  0.2  0  0  ]
-    ;  matrix:set-row fcm-adja-base 19  [  0  0  0  0  0  0  0  0  0  0  0  ]
-    ;  matrix:set-row fcm-adja-base 20  [  0  0  0  0  0  0  0  0  0  0  0  ]
-    ;  
-    matrix:set-row fcm-adja-base 0  [  1.00  0.00  0.10  0.00  -1    1.00  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 1  [  -1    0.00  0.00  0.00  0.50  -0.5  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 2  [  0.00  0.50  -0.1  0.10  0.50  -0.5  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 3  [  0.00  0.00  0.20  -0.2  -0.7  0.70  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 4  [  0.40  1.00  0.00  0.00  -2.2  2.20  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 5  [  0.00  -1    0.20  -0.2  1.50  -1.5  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 6  [  0.00  -0.2  -0.3  0.30  1.10  -1.1  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 7  [  0.00  0.20  1.00  -1    -1.1  1.10  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 8  [  2.00  0.00  0.00  0.00  -1.00  1.00  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 9  [  -2.00  0.00  0.00  0.00  0.50  -0.50  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 10  [  0.00  0.00  0.00  0.00  0.00  0.00  1.50  -0.8  -1    -1      -1  ]
-    matrix:set-row fcm-adja-base 11  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.8  2.10  -0.5  1.00  -1.8  ]
-    matrix:set-row fcm-adja-base 12  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.1  0.50  -0.2  -0.3  -0.2  ]
-    matrix:set-row fcm-adja-base 13  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  -0.5  0.20  0.30  0.20  ]
-    matrix:set-row fcm-adja-base 14  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.1  -0.8  1.50  0.80  0.70  ]
-    matrix:set-row fcm-adja-base 15  [  0.00  0.00  0.00  0.00  0.00  0.00  0.40  1.00  -1.2  -0.7  -0.7  ]
-    matrix:set-row fcm-adja-base 16  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 17  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 18  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 19  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
-    matrix:set-row fcm-adja-base 20  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  ]
+
+    ;Initial 
+    matrix:set-row  fcm-adja-base  0   [  1.00  0.00  0.10  0.00  -1.00  1.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  1   [  -1.00  0.00  0.00  0.00  0.50  -0.50  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  2   [  0.00  0.50  -0.10  0.10  0.50  -0.50  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  3   [  0.00  0.00  0.20  -0.20  -0.70  0.70  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  4   [  0.40  1.00  0.00  0.00  -2.20  2.20  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  5   [  0.00  -1.00  0.20  -0.20  1.50  -1.50  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  6   [  0.00  -0.20  -0.30  0.30  1.10  -1.10  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  7   [  0.00  0.20  1.00  -1.00  -1.10  1.10  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  8   [  2.00  0.00  0.00  0.00  -1.00  1.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  9   [  -2.00  0.00  0.00  0.00  0.50  -0.50  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  10  [  0.00  0.00  0.00  0.00  0.00  0.00  1.50  -0.80  -1.00  -1.00  -1.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  11  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.80  2.10  -0.50  1.00  -1.80  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  12  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.10  0.50  -0.20  -0.30  -0.20  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  13  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  -0.50  0.20  0.30  0.20  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  14  [  0.00  0.00  0.00  0.00  0.00  0.00  -0.10  -0.80  1.50  0.80  0.70  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  15  [  0.00  0.00  0.00  0.00  0.00  0.00  0.40  1.00  -1.20  -0.70  -0.70  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  16  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  17  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  18  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  19  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    matrix:set-row  fcm-adja-base  20  [  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00 0.00 ]
+    
+
     
     
-    set fcm-adja-base matrix:make-constant 21 11 0 ;For making a random map to mutate.
+    ;set fcm-adja-base matrix:make-constant 21 11 0 ;For making a random map to mutate.
     
     
     create-caribou caribou-group-amt
@@ -241,12 +383,36 @@ to setup-caribou
       set mg-amt-max 6000 / 2195
       
       
+      
+      
+      ;fcm setup new
+      set caribou-fcm-perceptions matrix:make-constant 1 21 0
+      set caribou-fcm-node-states matrix:make-constant 1 21 1
+      set fcm-adja matrix:copy fcm-adja-base ;refactor this
+      set caribou-fcm-perception-weights matrix:make-constant 21 21 0
+      
+      ;Set the diagonal of the perception weights to a random weight -1 to 1
+      let i 0
+      while [i < 21]
+      [
+        matrix:set caribou-fcm-perception-weights i i (1 - (random-float 2)) 
+        
+        set i (i + 1)
+      ]
+      
+      
+      
+      
+      
+      
+      ;;END setup new
+      
       ;fcm setup
       
       set fcm-mat-sensor matrix:make-constant 10 1 0
       set fcm-mat-conc-delta matrix:make-constant 11 1 0; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
       caribou-random-fcm
-      set fcm-adja matrix:copy fcm-adja-base ; Adj
+     ; set fcm-adja matrix:copy fcm-adja-base ; Adj
       
                                              ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
       
@@ -308,61 +474,7 @@ to setup-caribou
       set bioenergy-upper (33 * 1000) ;caribou-group-number * 1000) ; kJ
       set bioenergy-lower (22 * 1000) ;caribou-group-number) * 1000; kJ
       
-                                      ;;Edges
-                                      ;array:set graph-edges 0 1.0
-      
-                                      ;  set cog-map matrix:make-identity 7
-      
-      
-                                      ;;WIP;;
-                                      ;;FCM-caribou end states
-                                      ;Perception
-                                      ; util-low                    ; 0
-                                      ; util-high (inverse of low)  ; 1
-                                      ; cent-close                  ; 2
-                                      ; cent-far                    ; 3
-                                      ;Action
-                                      ; change-cent/taxi state      ; 4
-                                      ; forage-state/               ; 5
-                                      ; cent-attraction             ; 6
-      
-                                      ;  matrix:set-row cog-map 0 [0 0 0 1 -1 0 0] ;util low
-                                      ;  matrix:set-row cog-map 1 [0 0 0 -1 1 0 0] ;util high
-                                      ;  matrix:set-row cog-map 2 [0 0 0 0 -1 1 -1] ;cent close
-                                      ;  matrix:set-row cog-map 3 [0 0 0 0 0 0 1]   ;cent far
-                                      ;  matrix:set-row cog-map 4 [0 0 0 0 0 0 0] ;change cent/taxi
-                                      ;  matrix:set-row cog-map 5 [0 0 0 0 0 0 0] ;forage
-                                      ;  matrix:set-row cog-map 6 [0 0 0 0 0 0 0] ; cent attraction
-                                      ;   set cog-map matrix:copy base-fcm-caribou
-                                      ;
-                                      ;   let rand (random-float (mutate-amt * 2) - mutate-amt)
-                                      ;   matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
-                                      ;
-                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-                                      ;   matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
-                                      ;
-                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-                                      ;   matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
-                                      ;
-                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-                                      ;   matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
-                                      ;
-                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-                                      ;   matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
-                                      ;
-                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-                                      ;   matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
-                                      ;
-                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-                                      ;   matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
-                                      ;
-                                      ;   set rand (random-float (mutate-amt * 2) - mutate-amt)
-                                      ;   matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
-      
-                                      ;if(is-training?)
-                                      ;[
-                                      ;  setxy -12 -27
-                                      ;]
+ 
       reset-caribou-centroids
     ]
   ]
@@ -381,21 +493,7 @@ to go-caribou
   ;;;States;;;
   ; 0 - intra-forage
   ; 1 - taxi
-  ; 2 - interforage
-  
-  
-  
-  ;actVals
-  ;util-low
-  ;util-high
-  ;taxi-state
-  ;forage-state
-  ;cent-dist-close
-  ;cent-dist-far
-  
-  ;fcm-mat-sensor ;sensor values placed into a matrix representing the previous values
-  ;fcm-mat-conc-delta ; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
-  ;fcm-adja
+  ; 2 - interfo
   
   
   let high-food-para 0.5 * max [caribou-utility-para] of patches
@@ -422,8 +520,74 @@ to go-caribou
     let hunt-dist 1000
     if close-hunt != nobody
     [set hunt-dist distance close-hunt]
-    matrix:set fcm-mat-sensor 0 0  (1 - (fcm-ternary 0.25 0.75 hunt-dist)) ;Foe Close = 0 invert this valuse
-    matrix:set fcm-mat-sensor 1 0 (fcm-ternary 0.25 0.75 hunt-dist) ;Foe Far = 1
+ 
+   
+    
+    ; ;;Perceptions assignment
+; 
+;    matrix:set fcm-mat-sensor 0 0  (1 - (fcm-ternary 0.25 0.75 hunt-dist)) ;Foe Close = 0 invert this valuse
+;    matrix:set fcm-mat-sensor 1 0 (fcm-ternary 0.25 0.75 hunt-dist) ;Foe Far = 1
+;    
+;    ;**************************************************************correct caribou utility logic? *****************************************************************************
+;    
+;    ifelse(caribou-class = 2 and (day > 151 and day < 167))
+;    [
+;      let high-food-near (max-one-of patches in-radius 3 [caribou-utility-para]) 
+;      let high-food-dist distance high-food-near
+;      ;let high-food-threshold 0.5 * max [caribou-utility-para] of patches
+;      ;If there is no high quantity food nearby, set distance out of the ternary functions range. In this case world-size will do.
+;      if([caribou-utility-para] of high-food-near < high-food-para)
+;      [
+;        set high-food-dist 129
+;      ]
+;      matrix:set fcm-mat-sensor 2 0 (1 - (fcm-ternary 0 3 high-food-dist)) ;food Close = 0 invert this valuse
+;      matrix:set fcm-mat-sensor 3 0 (fcm-ternary 0 3 high-food-dist) ;Food Far = 1
+;      
+;      matrix:set fcm-mat-sensor 4 0 (1 - (fcm-ternary bioenergy-lower bioenergy-upper bioenergy )) 
+;      matrix:set fcm-mat-sensor 5 0 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy) 
+;      
+;      let local-quantity  [caribou-utility-para] of patch-here
+;      matrix:set fcm-mat-sensor 6 0 (fcm-ternary 0.50 1 local-quantity) ;Foe Close = 0 invert this valuse
+;      matrix:set fcm-mat-sensor 7 0 (1 - (fcm-ternary 0.50 0 local-quantity)) ;Foe Far = 1
+;      
+;      let close-disturb (min-one-of hunters [distance myself] )
+;      let disturb-dist 1000
+;      if close-hunt != nobody
+;      [set disturb-dist distance close-hunt]
+;      matrix:set fcm-mat-sensor 8 0 (1 - (fcm-ternary 1 3 disturb-dist)) ;Foe Close = 0 invert this valuse
+;      matrix:set fcm-mat-sensor 9 0 (fcm-ternary 1 3 disturb-dist) ;Foe Far = 1
+;    ]
+;    [
+;      let high-food-near (max-one-of patches in-radius 3 [caribou-utility-non-para])
+;      let high-food-dist distance high-food-near
+;      ;let high-food-threshold 0.5 * max [caribou-utility-non-para] of patches
+;      ;If there is no high quantity food nearby, set distance out of the ternary functions range. In this case world-size will do.
+;      if([caribou-utility-non-para] of high-food-near < high-food-non-para)
+;      [
+;        set high-food-dist 129
+;      ]
+;      matrix:set fcm-mat-sensor 2 0 (1 - (fcm-ternary 0 3 high-food-dist)) ;food Close = 0 invert this valuse
+;      matrix:set fcm-mat-sensor 3 0 (fcm-ternary 0 3 high-food-dist) ;Food Far = 1
+;      
+;      matrix:set fcm-mat-sensor 4 0 (1 - (fcm-ternary bioenergy-lower bioenergy-upper bioenergy ))
+;      matrix:set fcm-mat-sensor 5 0 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy)
+;      
+;      let local-quantity  [caribou-utility-non-para] of patch-here
+;      matrix:set fcm-mat-sensor 6 0 ((fcm-ternary 0.50 1 local-quantity)) ;Foe Close = 0 invert this valuse
+;      matrix:set fcm-mat-sensor 7 0 (1 - (fcm-ternary 0.50 0 local-quantity)) ;Foe Far = 1
+;      
+;      let close-disturb (min-one-of hunters [distance myself] )
+;      let disturb-dist 1000
+;      if close-hunt != nobody
+;      [set disturb-dist distance close-hunt]
+;      matrix:set fcm-mat-sensor 8 0 (1 - (fcm-ternary 1 3 disturb-dist)) ;Foe Close = 0 invert this valuse
+;      matrix:set fcm-mat-sensor 9 0 (fcm-ternary 1 3 disturb-dist) ;Foe Far = 1
+;    ] 
+
+ ;;Perceptions assignment
+ 
+    matrix:set caribou-fcm-perceptions 0 0  (1 - (fcm-ternary 0.25 0.75 hunt-dist)) ;Foe Close = 0 invert this valuse
+    matrix:set caribou-fcm-perceptions 0 1 (fcm-ternary 0.25 0.75 hunt-dist) ;Foe Far = 1
     
     ;**************************************************************correct caribou utility logic? *****************************************************************************
     
@@ -437,22 +601,22 @@ to go-caribou
       [
         set high-food-dist 129
       ]
-      matrix:set fcm-mat-sensor 2 0 (1 - (fcm-ternary 0 3 high-food-dist)) ;food Close = 0 invert this valuse
-      matrix:set fcm-mat-sensor 3 0 (fcm-ternary 0 3 high-food-dist) ;Food Far = 1
+      matrix:set caribou-fcm-perceptions 0 2 (1 - (fcm-ternary 0 3 high-food-dist)) ;food Close = 0 invert this valuse
+      matrix:set caribou-fcm-perceptions 0 3 (fcm-ternary 0 3 high-food-dist) ;Food Far = 1
       
-      matrix:set fcm-mat-sensor 4 0 (1 - (fcm-ternary bioenergy-lower bioenergy-upper bioenergy )) 
-      matrix:set fcm-mat-sensor 5 0 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy) 
+      matrix:set caribou-fcm-perceptions 0 4 (1 - (fcm-ternary bioenergy-lower bioenergy-upper bioenergy )) 
+      matrix:set caribou-fcm-perceptions 0 5 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy) 
       
       let local-quantity  [caribou-utility-para] of patch-here
-      matrix:set fcm-mat-sensor 6 0 (fcm-ternary 0.50 1 local-quantity) ;Foe Close = 0 invert this valuse
-      matrix:set fcm-mat-sensor 7 0 (1 - (fcm-ternary 0.50 0 local-quantity)) ;Foe Far = 1
+      matrix:set caribou-fcm-perceptions 0 6 (fcm-ternary 0.50 1 local-quantity) ;Foe Close = 0 invert this valuse
+      matrix:set caribou-fcm-perceptions 0 7 (1 - (fcm-ternary 0.50 0 local-quantity)) ;Foe Far = 1
       
       let close-disturb (min-one-of hunters [distance myself] )
       let disturb-dist 1000
       if close-hunt != nobody
       [set disturb-dist distance close-hunt]
-      matrix:set fcm-mat-sensor 8 0 (1 - (fcm-ternary 1 3 disturb-dist)) ;Foe Close = 0 invert this valuse
-      matrix:set fcm-mat-sensor 9 0 (fcm-ternary 1 3 disturb-dist) ;Foe Far = 1
+      matrix:set caribou-fcm-perceptions 0 8 (1 - (fcm-ternary 1 3 disturb-dist)) ;Foe Close = 0 invert this valuse
+      matrix:set caribou-fcm-perceptions 0 9 (fcm-ternary 1 3 disturb-dist) ;Foe Far = 1
     ]
     [
       let high-food-near (max-one-of patches in-radius 3 [caribou-utility-non-para])
@@ -463,26 +627,24 @@ to go-caribou
       [
         set high-food-dist 129
       ]
-      matrix:set fcm-mat-sensor 2 0 (1 - (fcm-ternary 0 3 high-food-dist)) ;food Close = 0 invert this valuse
-      matrix:set fcm-mat-sensor 3 0 (fcm-ternary 0 3 high-food-dist) ;Food Far = 1
+      matrix:set caribou-fcm-perceptions 0 2 (1 - (fcm-ternary 0 3 high-food-dist)) ;food Close = 0 invert this valuse
+      matrix:set caribou-fcm-perceptions 0 3 (fcm-ternary 0 3 high-food-dist) ;Food Far = 1
       
-      matrix:set fcm-mat-sensor 4 0 (1 - (fcm-ternary bioenergy-lower bioenergy-upper bioenergy ))
-      matrix:set fcm-mat-sensor 5 0 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy)
+      matrix:set caribou-fcm-perceptions 0 4 (1 - (fcm-ternary bioenergy-lower bioenergy-upper bioenergy ))
+      matrix:set caribou-fcm-perceptions 0 5 (fcm-ternary bioenergy-lower bioenergy-upper bioenergy)
       
       let local-quantity  [caribou-utility-non-para] of patch-here
-      matrix:set fcm-mat-sensor 6 0 ((fcm-ternary 0.50 1 local-quantity)) ;Foe Close = 0 invert this valuse
-      matrix:set fcm-mat-sensor 7 0 (1 - (fcm-ternary 0.50 0 local-quantity)) ;Foe Far = 1
+      matrix:set caribou-fcm-perceptions 0 6 ((fcm-ternary 0.50 1 local-quantity)) ;Foe Close = 0 invert this valuse
+      matrix:set caribou-fcm-perceptions 0 7 (1 - (fcm-ternary 0.50 0 local-quantity)) ;Foe Far = 1
       
       let close-disturb (min-one-of hunters [distance myself] )
       let disturb-dist 1000
       if close-hunt != nobody
       [set disturb-dist distance close-hunt]
-      matrix:set fcm-mat-sensor 8 0 (1 - (fcm-ternary 1 3 disturb-dist)) ;Foe Close = 0 invert this valuse
-      matrix:set fcm-mat-sensor 9 0 (fcm-ternary 1 3 disturb-dist) ;Foe Far = 1
+      matrix:set caribou-fcm-perceptions 0 8 (1 - (fcm-ternary 1 3 disturb-dist)) ;Foe Close = 0 invert this valuse
+      matrix:set caribou-fcm-perceptions 0 9 (fcm-ternary 1 3 disturb-dist) ;Foe Far = 1
     ]
-    
-    
-    
+ 
     
     ;;Sensory Operations
     ;this is the "splice" in the diagram from your notebook to multiply by the submatrix
@@ -497,39 +659,50 @@ to go-caribou
     ;weights for internal concepts
     ;;let sens-adj matrix:transpose(matrix:submatrix fcm-adja 0 0 10 6)
     ;REWORKED
-    let fcm-mat-sensor-t matrix:transpose(fcm-mat-sensor)
-    let sens-adj matrix:submatrix fcm-adja 0 0 10 6
+  ;  let fcm-mat-sensor-t matrix:transpose(fcm-mat-sensor)
+  ;  let sens-adj matrix:submatrix fcm-adja 0 0 10 6
     
     ;let internal matrix:times sens-adj fcm-mat-sensor
     ;set internal matrix:map fcm-sigmoid-simple internal
     
-    let internal matrix:times fcm-mat-sensor-t sens-adj
-    set internal matrix:map fcm-sigmoid-simple internal
+  ;  let internal matrix:times fcm-mat-sensor-t sens-adj
+  ;  set internal matrix:map fcm-sigmoid-simple internal
     
     
     ;weights for actions
     ;let conc-adj matrix:transpose(matrix:submatrix fcm-adja 10 6 16 11) 
     ;let final-states matrix:times conc-adj internal
-    let conc-adj matrix:submatrix fcm-adja 10 6 16 11
-    let final-states matrix:times internal conc-adj
+ ;  let conc-adj matrix:submatrix fcm-adja 10 6 16 11
+ ;   let final-states matrix:times internal conc-adj
     
     ;Make compatible with old function
-    set final-states matrix:transpose final-states
-    set final-states matrix:map fcm-sigmoid-simple final-states
+  ;  set final-states matrix:transpose final-states
+  ;  set final-states matrix:map fcm-sigmoid-simple final-states
     
     
-    if(who = 148 and debug-fcm?)
-    [
-      print "Initial Sense States"
-      print matrix:pretty-print-text fcm-mat-sensor
-      print "Concepts"
-      print matrix:pretty-print-text internal
-      
-      print "Results"
-      print matrix:pretty-print-text final-states
-    ]
+  ;  if(who = 148 and debug-fcm?)
+  ;  [
+  ;    print "Initial Sense States"
+  ;    print matrix:pretty-print-text fcm-mat-sensor
+  ;    print "Concepts"
+  ;    print matrix:pretty-print-text internal
+  ;    
+  ;    print "Results"
+  ;    print matrix:pretty-print-text final-states
+  ;  ]
     
-    set state fcm-index-max final-states
+    ;;GET STATES FROM highest state node value
+    
+    ;NEW FCM math
+    let state-influences matrix:times caribou-fcm-node-states fcm-adja
+    let perception-influences matrix:times caribou-fcm-perceptions caribou-fcm-perception-weights
+    set caribou-fcm-node-states matrix:plus state-influences caribou-fcm-node-states 
+    
+    let node-states matrix:submatrix caribou-fcm-node-states 0 16 1 21
+    
+   ; Submatrix to return new state list for x+1
+   ; let final-states [0 1]
+    set state fcm-index-max matrix:transpose node-states
     ;    
     ;    let concept-calc matrix:times matrix:transpose(matrix:submatrix fcm-adja 0 0 16 11) fcm-combined-sensor  ;multiply by the adjacency list for sensors and concepts (internalizations)
     ;    let concept-act fcm-sigmoid-concept-wrapper concept-calc fcm-mat-conc-delta
@@ -578,58 +751,7 @@ to go-caribou
     let cent-agent one-of cent-agents
     let temp-dist (distance current-centroid)
     
-    ;      ifelse(temp-dist > caribou-cent-dist-cutoff)
-    ;      [
-    ;        set cent-dist-close 0
-    ;        set cent-dist-far 1
-    ;
-    ;        set centroid-attraction centroid-attraction-max
-    ;      ]
-    ;      [
-    ;        set cent-dist-close 1
-    ;        set cent-dist-far 0
-    ;
-    ;        set taxi-state taxi-state + matrix:get cog-map 1 4
-    ;        set forage-state forage-state + matrix:get cog-map 1 3
-    ;
-    ;        set centroid-attraction (temp-dist / caribou-cent-dist-cutoff) * centroid-attraction-max
-    ;        if(centroid-attraction < centroid-attraction-min)
-    ;        [
-    ;          set centroid-attraction centroid-attraction-min
-    ;        ]
-    ;
-    ;      ]
-    ;      if(taxi-state > 1)
-    ;      [
-    ;        set taxi-state 1
-    ;      ]
-    ;
-    ;      if(taxi-state < 0)
-    ;      [
-    ;        set taxi-state 0
-    ;      ]
-    ;
-    ;      ; based on percentages in Semeniuk et al
-    ;      ifelse(taxi-state > 0.8)
-    ;      [
-    ;        ifelse(forage-state > 0.5)
-    ;        [
-    ;          set state 2
-    ;        ]
-    ;        [
-    ;          set state 1
-    ;        ]
-    ;      ]
-    ;      [
-    ;        ifelse(forage-state > 0.5)
-    ;        [
-    ;          set state 0
-    ;        ]
-    ;        [
-    ;          set state 2
-    ;        ]
-    ;      ]
-    ;
+
     
     
     
