@@ -3016,7 +3016,7 @@ SWITCH
 628
 use-hunters?
 use-hunters?
-1
+0
 1
 -1000
 
@@ -3137,7 +3137,7 @@ SWITCH
 330
 dynamic-display?
 dynamic-display?
-1
+0
 1
 -1000
 
@@ -3287,7 +3287,7 @@ SWITCH
 1132
 import-caribou-fcm?
 import-caribou-fcm?
-0
+1
 1
 -1000
 

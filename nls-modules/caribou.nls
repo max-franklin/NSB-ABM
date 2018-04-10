@@ -697,7 +697,7 @@ to go-caribou
     let state-influences matrix:times caribou-fcm-node-states fcm-adja
     let perception-influences matrix:times caribou-fcm-perceptions caribou-fcm-perception-weights
     set caribou-fcm-node-states matrix:plus state-influences caribou-fcm-node-states 
-    
+    set caribou-fcm-node-states matrix:map fcm-sigmoid-simple caribou-fcm-node-states
     let node-states matrix:submatrix caribou-fcm-node-states 0 16 1 21
     
    ; Submatrix to return new state list for x+1
