@@ -220,20 +220,20 @@ end
 to setup-cent-layers
   let day-list [ 152 166 180 194 208 222 236 250 ]
   
-  foreach day-list [
-    set day ? 
+  foreach day-list [ i ->
+    set day i 
     centroid-read
-    if ? = 152 [
+    if i = 152 [
       set np-centroid-layer-152 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0
       set p-centroid-layer-152 matrix:make-constant (max [p-network-id] of patches) (max [p-network-id] of patches) 0  ] 
     
-    if ? = 166 [ set np-centroid-layer-166 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
-    if ? = 180 [ set np-centroid-layer-180 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ] 
-    if ? = 194 [ set np-centroid-layer-194 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]  
-    if ? = 208 [ set np-centroid-layer-208 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
-    if ? = 222 [ set np-centroid-layer-222 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
-    if ? = 236 [ set np-centroid-layer-236 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
-    if ? = 250 [ set np-centroid-layer-250 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+    if i = 166 [ set np-centroid-layer-166 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+    if i = 180 [ set np-centroid-layer-180 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ] 
+    if i = 194 [ set np-centroid-layer-194 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]  
+    if i = 208 [ set np-centroid-layer-208 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+    if i = 222 [ set np-centroid-layer-222 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+    if i = 236 [ set np-centroid-layer-236 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
+    if i = 250 [ set np-centroid-layer-250 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
   ]
   
   set day 152

@@ -144,7 +144,7 @@ caribou-own
 
 
 to setup-caribou
-
+  ;;TO DO: CORRECT IMPORT CARIBOU FCM CODE TO READ IN CORRECT MATRIX DIMENSIONS.
   
   ifelse import-caribou-fcm? 
   [

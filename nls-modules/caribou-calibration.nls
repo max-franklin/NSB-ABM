@@ -72,7 +72,7 @@ to go-caribou-var-cal
     
     let maxSuccess max caribou-var-E-diff
     
-    let relSuccess map [ maxSuccess - ? ] caribou-var-E-diff
+    let relSuccess map [ i -> maxSuccess - i ] caribou-var-E-diff
     
     ;;Add to the list of attempted variable solutions and their associated success value (relative to
     ;;desired energy goal).
@@ -185,9 +185,9 @@ to gradient-caribou-variables
     let mutateAmt ((random-num 1) - 0.5)
     let new-val 0
     let i 0
-    foreach grad-mod [
+    foreach grad-mod [ j ->
       ;let 
-      set new-val ? + mutateAmt
+      set new-val j + mutateAmt
       if new-val > 1 [ set new-val 1 ]
       if new-val < 0 [ set new-val 0 ]
       set caribouVarCal replace-item (item i pos-list) caribouVarCal new-val
@@ -211,8 +211,8 @@ to-report cross-var-genome [ genome-1 genome-2 ]
   let snip-2 sublist genome-2 len-snip-1 (length genome-2)
   
   let genome-out snip-1
-  foreach snip-2 [
-   set genome-out lput ? genome-out
+  foreach snip-2 [ i ->
+   set genome-out lput i genome-out
   ]
   
   ;;quickly check to make sure we didn't botch the process..

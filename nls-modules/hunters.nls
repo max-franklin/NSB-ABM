@@ -5,6 +5,10 @@ globals [
           hunter-fcm-adja-list
           hunter-fcm-agentnum-list
           hunter-fcm-success-list
+          
+          ;new matrices lists
+          hunter-fcm-matrix-list
+          hunter-input-matrix-list
 
           global-fcm-matrix
           global-input-matrix
@@ -532,7 +536,7 @@ to boat-travel-return-funct
 end 
 
 to-report list-intersect [list1 list2] ;find intersection between riversets 
-  foreach list1 [ if (member? ? list2) [report true] ] 
+  foreach list1 [ i -> if member? i list2 [report true]] 
   report false 
 end 
 
@@ -685,39 +689,46 @@ to update-hunter-fcms
   ;;Code block for evolving hunter FCMs. Selection occurs, followed by recombination and mutation.
   ;;Akin to the caribou FCM evolution code, the hunter 'reset' should probably occur in here, too. 
   
-  ;set caribou-fcm-adja-list [fcm-adja] of caribou
-  ;;insert here... what the adjacency matrix should be.
-  
-  set hunter-fcm-adja-list [ hunter-fcm-matrix ] of hunters
-  
-  ;set caribou-fcm-agentnum-list [ ]
-  ;set hunter-fcm-agentnum-list [ ]
-
-  ;set caribou-fcm-success-list [ ]
-  ;set hunter-fcm-success-list [ ]
+  set hunter-fcm-matrix-list [ hunter-fcm-matrix ] of hunters
+  set hunter-input-matrix-list [ hunter-input-matrix ] of hunters
   
   ;;1 for hunters, 0 for caribou
-  let fcm-var-out (build-fcm-data hunter-fcm-adja-list  1)
+  let prob-list (build-fcm-data-new hunter-fcm-matrix-list hunter-input-matrix-list 1)
   
-  let weighted-list item 0 fcm-var-out
-  let prob-list item 1 fcm-var-out
-  
-  ask hunters
+  ask hunters ;hunter fcm genome recombination code
     [
       
       ;print word "previous fcm: " fcm-adja
       ifelse hunter-recombine?
       [ 
-        let genome-1 select-weighted-val prob-list hunter-fcm-adja-list
-        let genome-2 select-weighted-val prob-list hunter-fcm-adja-list
+        let list-pos-1 select-weighted-val-new prob-list
+        let list-pos-2 select-weighted-val-new prob-list
+        
+        let concept-genome-1 item list-pos-1 hunter-fcm-matrix-list
+        let concept-genome-2 item list-pos-2 hunter-fcm-matrix-list
+        
+        let input-genome-1 item list-pos-1 hunter-input-matrix-list
+        let input-genome-2 item list-pos-2 hunter-input-matrix-list
         ;print word "new fcm: " fcm-adja
-        set hunter-fcm-matrix cross-genome genome-1 genome-2 hunter-recomb-prob hunter-fcm-matrix
+        set hunter-fcm-matrix cross-genome concept-genome-1 concept-genome-2 hunter-recomb-prob hunter-fcm-matrix
+        set hunter-input-matrix cross-genome input-genome-1 input-genome-2 hunter-recomb-prob hunter-fcm-matrix
       ]
       [
-        set hunter-fcm-matrix select-weighted-val prob-list hunter-fcm-adja-list
+        let list-pos select-weighted-val-new prob-list
+        set hunter-fcm-matrix item list-pos hunter-fcm-matrix-list
+        set hunter-input-matrix item list-pos hunter-input-matrix-list
       ]
       
-      if hunter-mutate? [ set hunter-fcm-matrix mutate-genome hunter-mutate-prob hunter-fcm-matrix ]
+      if hunter-mutate? [
+        let coin-toss random 100
+        ifelse coin-toss > 49 
+        [
+          set hunter-fcm-matrix mutate-genome hunter-mutate-prob hunter-fcm-matrix 
+        ] 
+        [
+          set hunter-input-matrix mutate-genome hunter-mutate-prob hunter-input-matrix 
+        ]
+      ]
       
       ;;now, can reference "reset" code procedure here to make sure they're all back at Nuiqsut
       ;;for the next year of the simulation.

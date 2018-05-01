@@ -275,9 +275,9 @@ end
 to fix-grid-read
   let day-list [ 166 180 194 208 222 236 250 ]
   
-  foreach day-list [
+  foreach day-list [ i ->
     let dat [ ]
-    let target-file word "data/migration-grids/grids-ids-non-para-" ?
+    let target-file word "data/migration-grids/grids-ids-non-para-" i
     set target-file word target-file ".txt"
     
     set dat file-read-rep target-file dat
@@ -291,7 +291,7 @@ to fix-grid-read
     
     
     set dat [ ]
-    set target-file word "data/migration-grids/grids-qaul-non-para-" ?
+    set target-file word "data/migration-grids/grids-qaul-non-para-" i
     set target-file word target-file ".txt"
     
     set dat file-read-rep target-file dat
@@ -302,10 +302,10 @@ to fix-grid-read
     file-write dat
     file-close-all
     
-    if ? = 166 [
+    if i = 166 [
       
       set dat [ ]
-      set target-file word "data/migration-grids/grids-ids-para-" ?
+      set target-file word "data/migration-grids/grids-ids-para-" i
       set target-file word target-file ".txt"
       
       set dat file-read-rep target-file dat
@@ -318,7 +318,7 @@ to fix-grid-read
       
       
       set dat [ ]
-      set target-file word "data/migration-grids/grids-qaul-para-" ?
+      set target-file word "data/migration-grids/grids-qaul-para-" i
       set target-file word target-file ".txt"
       
       set dat file-read-rep target-file dat
