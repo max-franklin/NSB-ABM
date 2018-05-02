@@ -1844,7 +1844,7 @@ INPUTBOX
 656
 804
 caribou-veg-factor
-0.09899999999999998
+0.579
 1
 0
 Number
@@ -1855,7 +1855,7 @@ INPUTBOX
 730
 804
 caribou-rough-factor
-0.7809999999999999
+0.563
 1
 0
 Number
@@ -1876,7 +1876,7 @@ INPUTBOX
 805
 803
 caribou-insect-factor
-1.0
+0.545
 1
 0
 Number
@@ -1887,7 +1887,7 @@ INPUTBOX
 879
 803
 caribou-modifier-factor
-0.493
+0.888
 1
 0
 Number
@@ -1964,7 +1964,7 @@ INPUTBOX
 727
 905
 decay-rate
-1.0
+0.524
 1
 0
 Number
@@ -2030,7 +2030,7 @@ INPUTBOX
 953
 803
 caribou-deflection-factor
-0.23299999999999998
+0.098
 1
 0
 Number
@@ -2362,7 +2362,7 @@ INPUTBOX
 1020
 803
 caribou-precip-factor
-0.09899999999999998
+0.877
 1
 0
 Number
@@ -2413,7 +2413,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.826
+0.139
 0.01
 1
 NIL
@@ -2425,7 +2425,7 @@ INPUTBOX
 655
 906
 energy-gain-factor
-58.9
+52.7
 1
 0
 Number
@@ -2437,7 +2437,7 @@ SWITCH
 1063
 is-random?
 is-random?
-0
+1
 1
 -1000
 
@@ -2726,7 +2726,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-0
+1
 1
 -1000
 
@@ -2737,7 +2737,7 @@ SWITCH
 1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-0
+1
 1
 -1000
 
@@ -3279,7 +3279,7 @@ SWITCH
 1099
 import-caribou-var?
 import-caribou-var?
-1
+0
 1
 -1000
 
@@ -3290,7 +3290,7 @@ SWITCH
 1132
 import-caribou-fcm?
 import-caribou-fcm?
-1
+0
 1
 -1000
 
