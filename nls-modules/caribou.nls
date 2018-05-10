@@ -148,7 +148,7 @@ to setup-caribou
   
   ifelse import-caribou-fcm? 
   [
-    set fcm-adja-base matrix:make-constant 21 11 0 ;;purely for maintaining base fcm dimensions (for the sake of code stability)
+    set fcm-adja-base matrix:make-constant 21 21 0 ;;purely for maintaining base fcm dimensions (for the sake of code stability)
     let file-in "data/caribou-fcm-import.txt"
     let caribou-group-number floor(caribou-amt / caribou-group-amt)
     file-open file-in

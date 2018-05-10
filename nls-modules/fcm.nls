@@ -256,144 +256,58 @@ end ;end build-fcm-data
 
 to-report build-fcm-data-new [ fcm-matrix-list fcm-input-list agent-type ]
   
-  ;;agent-type = 0 = caribou
-  ;;agent-type = 1 = hunter
-  
   let fcm-agentnum-list [ ]
   let fcm-success-list [ ]
-
-  let x 0
-  let y (x + 1)
   
+  let x 0
+  let y x + 1
   let test? false
   
-  ifelse agent-type = 0 ;begin build-fcm-data for caribou agents
+  while [x < length fcm-matrix-list]
   [
-    while [x < length fcm-matrix-list]
-    [
-      let counter 1
-      let current-fcm item x fcm-matrix-list
-      ;set counter-list lput 1 counter-list
-      let avg-success mean [ bioenergy-success ] of caribou with [ fcm-adja = current-fcm ]
-      
-      if test? [ print avg-success ]
-      
-      let compStateMem [ 0 0 0 0 0 ]
-      
-      ask caribou with [ fcm-adja = current-fcm ] [
-        ;set compStateMem lput state-memory compStateMem
-        set compStateMem (map + compStateMem state-memory)
-      ]
-      
-      ;;now find amount of time spent in foraging states.
-      let fgTime 100 * ((item 1 compStateMem + item 4 compStateMem) / (sum compStateMem))
-      
-      ;;calculate state fitness based on amount of time spent foraging.
-      let lowFg 50
-      let highFg 88
-      let stateFit 0
-      
-      ifelse fgTime <= highFg and fgTime >= lowFg
-        [ set stateFit 1 ]
-        [
-          ifelse fgTime > highFg
-          [
-            let diff 100 - fgTime
-            set stateFit diff / (100 - highFg)
-          ]
-          [ set stateFit fgTime / lowFg ] 
-        ]
-      
-      if avg-success >= 0 [ set avg-success avg-success * stateFit ]
-      
-      if test? [ print compStateMem print fgTime print stateFit print avg-success ]
-      
-      
-      set test? false
-      
-      set y x + 1
-      
-      if y >= length fcm-matrix-list
-      [ set fcm-agentnum-list lput counter fcm-agentnum-list
-        set fcm-success-list lput avg-success fcm-success-list ]
-      
-      while [y < length fcm-matrix-list]
-      [
-        let comp matrix:minus current-fcm (item y fcm-matrix-list)
-        
-        ifelse test-diff comp = 0
-        [
-          set counter counter + 1
-          set fcm-matrix-list remove-item y fcm-matrix-list
-          ;set counter-list replace-item x counter-list (item x counter-list + 1)
-        ]
-        [
-          set y y + 1
-        ]
-        
-        if (y + 1) > length fcm-matrix-list
-        [ set fcm-agentnum-list lput counter fcm-agentnum-list
-          set fcm-success-list lput avg-success fcm-success-list ] 
-        
-      ]
-      
-      set x x + 1
-    ]
-    ;set caribou-fcm-matrix-list fcm-matrix-list
-    set caribou-fcm-agentnum-list fcm-agentnum-list
-    set caribou-fcm-success-list fcm-success-list
-  ] ;end first if in ifelse, begin hunter build-fcm-list portion
-  [
-    while [x < length fcm-matrix-list]
-    [
-      let counter 1 ;counter for adding up similiar FCMs, NOT for loop iteration.
-      let current-fcm-matrix item x fcm-matrix-list
-      let current-input-matrix item x fcm-input-list
-      let avg-success mean [ harvest-amount ] of hunters with [ hunter-fcm-matrix = current-fcm-matrix and hunter-input-matrix = current-input-matrix ]
-      
-      ;if test? [ print avg-success ]
-      
-      ;set test? false
-      
-      set y x + 1
-      
-      if y >= length fcm-matrix-list
-      [ set fcm-agentnum-list lput counter fcm-agentnum-list
-        set fcm-success-list lput avg-success fcm-success-list ]
-      
-      while [y < length fcm-matrix-list]
-      [
-        let fcm-matrix-comp matrix:minus current-fcm-matrix (item y fcm-matrix-list)
-        let input-matrix-comp matrix:minus current-input-matrix (item y fcm-matrix-list)
-        
-        ifelse matrix-diff fcm-matrix-comp = 0 and matrix-diff input-matrix-comp = 0
-        [
-          set counter counter + 1
-          set fcm-matrix-list remove-item y fcm-matrix-list
-          set fcm-input-list remove-item y fcm-input-list
-        ]
-        [
-          set y y + 1
-        ]
-        
-        if (y + 1) > length fcm-matrix-list
-        [ set fcm-agentnum-list lput counter fcm-agentnum-list
-          set fcm-success-list lput avg-success fcm-success-list ] 
-        
-      ]
-      
-      set x x + 1
-    ]
-    ;set hunter matrix list globals.
-    set hunter-fcm-matrix-list fcm-matrix-list
-    set hunter-input-matrix-list fcm-input-list
-    set hunter-fcm-agentnum-list fcm-agentnum-list
-    set hunter-fcm-success-list fcm-success-list
+    let counter 1 ;counter for adding up similiar FCMs, NOT for loop iteration.
+    let current-fcm-matrix item x fcm-matrix-list
+    let current-input-matrix item x fcm-input-list
+    let avg-success mean [ harvest-amount ] of hunters with [ hunter-fcm-matrix = current-fcm-matrix and hunter-input-matrix = current-input-matrix ]
     
-  ] ;end ifelse statement.
-  
-  
-  
+    ;if test? [ print avg-success ]
+    
+    ;set test? false
+    
+    set y x + 1
+    
+    if y >= length fcm-matrix-list
+    [ set fcm-agentnum-list lput counter fcm-agentnum-list
+      set fcm-success-list lput avg-success fcm-success-list ]
+    
+    while [y < length fcm-matrix-list]
+    [
+      let fcm-matrix-comp matrix:minus current-fcm-matrix (item y fcm-matrix-list)
+      let input-matrix-comp matrix:minus current-input-matrix (item y fcm-input-list)
+      
+      ifelse matrix-diff fcm-matrix-comp = 0 and matrix-diff input-matrix-comp = 0
+      [
+        set counter counter + 1
+        set fcm-matrix-list remove-item y fcm-matrix-list
+        set fcm-input-list remove-item y fcm-input-list
+      ]
+      [
+        set y y + 1
+      ]
+      
+      if (y + 1) > length fcm-matrix-list
+      [ set fcm-agentnum-list lput counter fcm-agentnum-list
+        set fcm-success-list lput avg-success fcm-success-list ] 
+      
+    ]
+    
+    set x x + 1
+  ]
+  ;set hunter matrix list globals.
+  set hunter-fcm-matrix-list fcm-matrix-list
+  set hunter-input-matrix-list fcm-input-list
+  set hunter-fcm-agentnum-list fcm-agentnum-list
+  set hunter-fcm-success-list fcm-success-list
   
   let min-s min fcm-success-list
   let max-s max fcm-success-list 
@@ -446,11 +360,8 @@ to-report cross-genome [ genome-1 genome-2 recomb-prob fcm-matrix ]
     set genome-1 matrix:to-row-list genome-1
     set genome-2 matrix:to-row-list genome-2
     
-    
     let snip1 sublist genome-1 0 rand-row
-    ;show length snip1
     let snip2 sublist genome-2 (rand-row + 1) (item 0 matrix:dimensions fcm-matrix) ;21
-    ;show length snip2
     
     let subsnip1 sublist (item rand-row genome-1) 0 rand-col
     let subsnip2 sublist (item rand-row genome-2) rand-col (item 1 matrix:dimensions fcm-matrix) ;11
@@ -462,15 +373,8 @@ to-report cross-genome [ genome-1 genome-2 recomb-prob fcm-matrix ]
     set snip1 lput fused-snip snip1
     
     foreach snip2 [ i -> set snip1 lput i snip1 ]
-    
-    set recomb-genome matrix:from-row-list snip1
 
-    ;show rand-row
-    ;show rand-col
-    
-    ;show subsnip1
-    ;show subsnip2
-    ;show fused-snip
+    set recomb-genome matrix:from-row-list snip1
 
     report recomb-genome
   ]
@@ -531,6 +435,9 @@ to update-caribou-fcm
         let genome-1 select-weighted-val prob-list caribou-fcm-adja-list
         let genome-2 select-weighted-val prob-list caribou-fcm-adja-list
         ;print word "new fcm: " fcm-adja
+        ;print matrix:dimensions genome-1
+        ;print matrix:dimensions genome-2
+        ;print prob-list
         set fcm-adja cross-genome genome-1 genome-2 caribou-recomb-prob fcm-adja-base
       ]
       [

@@ -711,7 +711,7 @@ to update-hunter-fcms
         let input-genome-2 item list-pos-2 hunter-input-matrix-list
         ;print word "new fcm: " fcm-adja
         set hunter-fcm-matrix cross-genome concept-genome-1 concept-genome-2 hunter-recomb-prob hunter-fcm-matrix
-        set hunter-input-matrix cross-genome input-genome-1 input-genome-2 hunter-recomb-prob hunter-fcm-matrix
+        set hunter-input-matrix cross-genome input-genome-1 input-genome-2 hunter-recomb-prob hunter-input-matrix
       ]
       [
         let list-pos select-weighted-val-new prob-list

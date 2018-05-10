@@ -448,8 +448,10 @@ to setup
   setup-caribou-kde-file
   setup-hunter-kde-file
 
-  reset-ticks
 
+
+  reset-ticks
+  scenario-controller
 
 end
 
@@ -566,6 +568,205 @@ to profile-test
   file-open profileOut
   file-print profiler:report
   file-close-all
+end
+
+to scenario-controller
+  if scenario != "none" [
+    ;; set variables common to all scenarios
+    set display-plots? false
+    set dynamic-display? false
+    set show-caribou-utility-para? false
+    set show-caribou-utility-non-para? false
+    set show-moose-utility? false
+    set display-centroids? false
+    set display-grids? false
+    set Nuiqsut? true
+    set CD5? true
+    set BoundsFile "data/development-regions/pipes_layer.asc"
+    set caribouPopMod? false
+    set caribou-amt 2500
+    set caribou-group-amt 50
+    set caribou-radius 1.5
+    set caribou-para 0.71
+    set elevation-limit 221
+    set use-q false
+    set Q-rate 0.001
+    set Q-Gamma 0.999
+    set debug-fcm? false
+    set prob-var-recombination .33
+    set import-caribou-fcm? true
+    set import-caribou-var? true
+    set is-random? false
+    set is-training? true
+    set randomCaribouVarStart? false
+    set calibrateCaribouVar? false
+    set exportCaribouData? true
+    set mutation-method "fuzzy-logic"
+    set caribou-recomb-prob 0.2
+    set caribou-mutate-prob 0.15
+    set caribou-recombine? true
+    set caribou-mutate? true
+    set export-centroids? false
+    set set-centroid-attraction 0.1
+    set caribou-max-wetness 0.8
+    set caribou-max-elevation 700
+    set caribou-modify-amt 1
+    set moose-amt 0
+    set hunter-recomb-prob 0.2
+    set hunter-mutate-prob 0.15
+    set hunter-mutate? true
+    set hunter-recombine? true
+    ;; remove comment later after building hunter fcms up -
+    set random-hunter-fcm? true
+    ;; set random-hunter-fcm? false
+    set caribou-harvest-high-constant 0.6
+    set caribou-harvest-low-constant 0.4
+    set local-search-radius 3
+    set hunter-harvest-goal 1
+    set hunter-centroid-selection 15
+    set trip-length-max 112
+    set hunter-vision 2
+    set hunter-population 35
+    set use-hunters? true
+    set export-hunter-data? true
+    set hunter-training? true
+    set prey-close-constant .4
+    set prey-far-constant .6
+    set trip-long-constant .4
+    set trip-short-constant .6
+    set boat-hike-long-constant .4
+    set boat-hike-short-constant .6
+    set hunter-density-low-constant .4
+    set hunter-density-high-constant .6
+    set deflect-pipeline? false
+    set deflect-oil? false
+    set deflect-roads? false
+    set use-hunters? true
+
+
+    if scenario = "control-w-hunters" [
+      ;; evolve agents for 1000 years.
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      ;; run scenario and collect results for 100 years.
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end control with hunters if
+
+    if scenario = "control-no-hunters" [
+      ;; make sure variable settings are appropriately set.
+      set use-hunters? false
+
+      ;; evolve agents for 1000 years.
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      ;; run scenario and collect results for 100 years.
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end control no hunters if
+
+    if scenario = "obd-w-hunters" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end obd w hunters if
+
+    if scenario = "obd-no-hunters" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set use-hunters? false
+
+      while [ year != 1000 ]
+      [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ]
+      [
+        go
+      ]
+    ] ;; end obd-no-hunters if
+
+    if scenario = "veg-shift-w-hunters" [
+      ;; add in matrix shift...
+      set-shifted-ndvi-data-list
+
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+
+    ] ;; end veg-shift-w-hunters if
+
+    if scenario = "veg-shift-no-hunters" [
+      ;; add in matrix shift...
+      set use-hunters? false
+      set-shifted-ndvi-data-list
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end veg-shift-no-hunters if
+
+    if scenario = "caribou-evolution" [
+      set calibrateCaribouVar? true
+      set randomCaribouVarStart? true
+      set import-caribou-var? false
+      set is-random? true
+      set Nuiqsut? false
+      set CD5? false
+
+      while [ year <= 2500 ] [ go ] ;; user will have to use space bar interrupt in file to stop evolution before end point.
+
+    ] ;; end caribou-evolution if
+
+    if scenario = "hunter-evolution" [
+      set random-hunter-fcm? true
+      while [ year <= 1 ] [ go ] ;; user will have to use space bar interrupt in file to stop evolution before end point.
+    ] ;; end hunter-evolution if
+
+
+  ] ;; end outer if
+end
+
+to scenario-var-reset
+  set year 0
+  set collect-kde? true
+  set is-training? false
+  set hunter-training? false
 end
 
 ;Go, wraps to other go's
@@ -1721,7 +1922,7 @@ BUTTON
 50
 Go
 go
-T
+NIL
 1
 T
 OBSERVER
@@ -1844,7 +2045,7 @@ INPUTBOX
 656
 804
 caribou-veg-factor
-0.579
+0.353
 1
 0
 Number
@@ -1855,7 +2056,7 @@ INPUTBOX
 730
 804
 caribou-rough-factor
-0.563
+0.479
 1
 0
 Number
@@ -1876,7 +2077,7 @@ INPUTBOX
 805
 803
 caribou-insect-factor
-0.545
+0.205
 1
 0
 Number
@@ -1887,7 +2088,7 @@ INPUTBOX
 879
 803
 caribou-modifier-factor
-0.888
+0.369
 1
 0
 Number
@@ -1964,7 +2165,7 @@ INPUTBOX
 727
 905
 decay-rate
-0.524
+0.116
 1
 0
 Number
@@ -2030,7 +2231,7 @@ INPUTBOX
 953
 803
 caribou-deflection-factor
-0.098
+0.719
 1
 0
 Number
@@ -2362,7 +2563,7 @@ INPUTBOX
 1020
 803
 caribou-precip-factor
-0.877
+0.496
 1
 0
 Number
@@ -2413,7 +2614,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.139
+0.708
 0.01
 1
 NIL
@@ -2425,7 +2626,7 @@ INPUTBOX
 655
 906
 energy-gain-factor
-52.7
+8.1
 1
 0
 Number
@@ -3041,7 +3242,7 @@ SWITCH
 628
 use-hunters?
 use-hunters?
-1
+0
 1
 -1000
 
@@ -3080,7 +3281,7 @@ SWITCH
 998
 hunter-recombine?
 hunter-recombine?
-1
+0
 1
 -1000
 
@@ -3091,7 +3292,7 @@ SWITCH
 1035
 hunter-mutate?
 hunter-mutate?
-1
+0
 1
 -1000
 
@@ -3104,7 +3305,7 @@ caribou-mutate-prob
 caribou-mutate-prob
 0
 1
-0.1
+0.15
 .01
 1
 NIL
@@ -3119,7 +3320,7 @@ caribou-recomb-prob
 caribou-recomb-prob
 0
 1
-0.15
+0.2
 .01
 1
 NIL
@@ -3134,7 +3335,7 @@ hunter-recomb-prob
 hunter-recomb-prob
 0
 1
-0.1
+0.2
 .1
 1
 NIL
@@ -3149,7 +3350,7 @@ hunter-mutate-prob
 hunter-mutate-prob
 0
 1
-0.2
+0.15
 .1
 1
 NIL
@@ -3173,7 +3374,7 @@ SWITCH
 626
 export-hunter-data?
 export-hunter-data?
-1
+0
 1
 -1000
 
@@ -3184,7 +3385,7 @@ SWITCH
 625
 hunter-training?
 hunter-training?
-1
+0
 1
 -1000
 
@@ -3213,7 +3414,7 @@ SWITCH
 1072
 random-hunter-fcm?
 random-hunter-fcm?
-1
+0
 1
 -1000
 
@@ -3268,7 +3469,7 @@ SWITCH
 562
 collect-kde?
 collect-kde?
-1
+0
 1
 -1000
 
@@ -3301,7 +3502,7 @@ SWITCH
 596
 Nuiqsut?
 Nuiqsut?
-1
+0
 1
 -1000
 
@@ -3312,7 +3513,7 @@ SWITCH
 597
 CD5?
 CD5?
-1
+0
 1
 -1000
 
@@ -3348,6 +3549,16 @@ deflect-oil?
 1
 1
 -1000
+
+CHOOSER
+1511
+408
+1695
+453
+scenario
+scenario
+"none" "hunter-evolution" "caribou-evolution" "control-w-hunters" "control-no-hunters" "obd-w-hunters" "obd-no-hunters" "veg-shift-w-hunters" "veg-shift-no-hunters"
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
