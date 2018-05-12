@@ -759,7 +759,7 @@ to scenario-controller
     if scenario = "veg-early-shift-no-hunters" [
       ;; add in matrix shift...
       set use-hunters? false
-      set-early-shifted-ndvi-data-list
+      set-e-shifted-ndvi-data-list
       while [ year != 1000 ] [
         go
       ]
