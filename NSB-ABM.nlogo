@@ -950,7 +950,8 @@ to setup-caribou-fcm-data
    file-write "year,"
    file-write "fcm agent useage,"
    file-write "fcm success,"
-   file-write "caribou fcm matrix"
+   file-write "caribou fcm-adja matrix,"
+   file-write "caribou fcm-perception-weights matrix"
    file-close
 end
 
@@ -972,6 +973,7 @@ to export-fcm-data
      file-write word (item y caribou-fcm-agentnum-list) ","
      file-write word (item y caribou-fcm-success-list) ","
      file-write matrix:to-row-list (item y caribou-fcm-adja-list)
+     file-write matrix:to-row-list (item y caribou-fcm-perception-weights-list)
      set y y + 1
    ]
 
