@@ -57,6 +57,7 @@ globals
   cent-day-list ;for recording list of days where the centroids need to be reassigned in the simulation
   avg-sim-time ;for reporting the average amount of time it takes to simulate each year.
 
+  caribou-fcm-perception-weights-list
   caribou-fcm-adja-list
   caribou-fcm-agentnum-list
   caribou-fcm-success-list
@@ -148,10 +149,12 @@ globals
   year
   day
   hour
+
   ;;FCM
   base-fcm-caribou
   best-caribou-val
   fcm-adja-base
+  caribou-fcm-perception-weights-base
 
 
   ;PatchList for movement decisions
@@ -1951,7 +1954,7 @@ BUTTON
 50
 Go
 go
-NIL
+T
 1
 T
 OBSERVER
@@ -2074,7 +2077,7 @@ INPUTBOX
 656
 804
 caribou-veg-factor
-0.353
+0.14
 1
 0
 Number
@@ -2085,7 +2088,7 @@ INPUTBOX
 730
 804
 caribou-rough-factor
-0.479
+0.215
 1
 0
 Number
@@ -2106,7 +2109,7 @@ INPUTBOX
 805
 803
 caribou-insect-factor
-0.205
+0.294
 1
 0
 Number
@@ -2117,7 +2120,7 @@ INPUTBOX
 879
 803
 caribou-modifier-factor
-0.369
+0.215
 1
 0
 Number
@@ -2194,7 +2197,7 @@ INPUTBOX
 727
 905
 decay-rate
-0.116
+0.43
 1
 0
 Number
@@ -2260,7 +2263,7 @@ INPUTBOX
 953
 803
 caribou-deflection-factor
-0.719
+0.336
 1
 0
 Number
@@ -2592,7 +2595,7 @@ INPUTBOX
 1020
 803
 caribou-precip-factor
-0.496
+0.561
 1
 0
 Number
@@ -2643,7 +2646,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.708
+0.464
 0.01
 1
 NIL
@@ -2655,7 +2658,7 @@ INPUTBOX
 655
 906
 energy-gain-factor
-8.1
+29.4
 1
 0
 Number
@@ -3520,7 +3523,7 @@ SWITCH
 1132
 import-caribou-fcm?
 import-caribou-fcm?
-0
+1
 1
 -1000
 
@@ -3587,7 +3590,7 @@ CHOOSER
 scenario
 scenario
 "none" "hunter-evolution" "caribou-evolution" "control-w-hunters" "control-no-hunters" "obd-w-hunters" "obd-no-hunters" "veg-later-shift-w-hunters" "veg-later-shift-no-hunters" "veg-early-shift-w-hunters" "veg-early-shift-no-hunters"
-1
+0
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -3931,7 +3934,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.3
+NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
