@@ -155,7 +155,8 @@ to setup-caribou
     file-open file-in
     while [not file-at-end?] [
       let num-caribou file-read
-      let matrix file-read
+      let matrix-adja file-read
+      let matrix-perc file-read
       create-caribou num-caribou
       [
         ;;initialize state memory list: positions from 0:4 = evade, interforage, taxi/migrate, rest, intraforage
@@ -226,8 +227,8 @@ to setup-caribou
         set fcm-mat-sensor matrix:make-constant 10 1 0
         set fcm-mat-conc-delta matrix:make-constant 11 1 0; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
         
-        set fcm-adja matrix:from-row-list matrix; Adj
-        
+        set fcm-adja matrix:from-row-list matrix-adja; Adj
+        set caribou-fcm-perception-weights matrix:from-row-list matrix-perc ;perception weights
                                                    
         set close-range 1.0;  ex: 1.2
         set far-range 6; ex: 1.8
