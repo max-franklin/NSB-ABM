@@ -57,6 +57,7 @@ globals
   cent-day-list ;for recording list of days where the centroids need to be reassigned in the simulation
   avg-sim-time ;for reporting the average amount of time it takes to simulate each year.
 
+  caribou-fcm-perception-weights-list
   caribou-fcm-adja-list
   caribou-fcm-agentnum-list
   caribou-fcm-success-list
@@ -148,10 +149,12 @@ globals
   year
   day
   hour
+
   ;;FCM
   base-fcm-caribou
   best-caribou-val
   fcm-adja-base
+  caribou-fcm-perception-weights-base
 
 
   ;PatchList for movement decisions
@@ -948,7 +951,8 @@ to setup-caribou-fcm-data
    file-write "year,"
    file-write "fcm agent useage,"
    file-write "fcm success,"
-   file-write "caribou fcm matrix"
+   file-write "caribou fcm-adja matrix,"
+   file-write "caribou fcm-perception-weights matrix"
    file-close
 end
 
@@ -970,6 +974,7 @@ to export-fcm-data
      file-write word (item y caribou-fcm-agentnum-list) ","
      file-write word (item y caribou-fcm-success-list) ","
      file-write matrix:to-row-list (item y caribou-fcm-adja-list)
+     file-write matrix:to-row-list (item y caribou-fcm-perception-weights-list)
      set y y + 1
    ]
 
@@ -3283,7 +3288,7 @@ SWITCH
 954
 exportCaribouData?
 exportCaribouData?
-1
+0
 1
 -1000
 

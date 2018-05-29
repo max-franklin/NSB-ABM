@@ -47,6 +47,7 @@ to caribou-random-fcm
   ;set fcm-adja-base matrix:map random-fcm-binary fcm-adja-base ;randomize fcm
   ;set fcm-adja-base matrix:map random-fcm-pentav fcm-adja-base ;randomize fcm
   set fcm-adja-base matrix:map random-fcm-fuzzy fcm-adja-base ;randomize fcm
+  set caribou-fcm-perception-weights-base matrix:map random-fcm-fuzzy caribou-fcm-perception-weights-base
 end
 
 to-report test-diff [diff]
@@ -91,6 +92,7 @@ end
 to-report build-fcm-data [ fcm-adja-list agent-type ]
   ;;agent-type = 0 = caribou
   ;;agent-type = 1 = hunter
+  ;;agent-type = 2 = caribou w_u 
   
   let fcm-var-out [ ]
   
@@ -102,7 +104,7 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
   
   let test? false
   
-  ifelse agent-type = 0
+  if agent-type = 0
   [
     while [x < length fcm-adja-list]
     [
@@ -178,6 +180,7 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
     set caribou-fcm-agentnum-list fcm-agentnum-list
     set caribou-fcm-success-list fcm-success-list
   ]
+  if agent-type = 1
   [
     while [x < length fcm-adja-list]
     [
@@ -222,6 +225,83 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
     set hunter-fcm-agentnum-list fcm-agentnum-list
     set hunter-fcm-success-list fcm-success-list
     
+  ]
+  
+  if agent-type = 2
+  [
+    while [x < length fcm-adja-list]
+    [
+      let counter 1
+      let current-fcm item x fcm-adja-list
+      ;set counter-list lput 1 counter-list
+      let avg-success mean [ bioenergy-success ] of caribou with [ caribou-fcm-perception-weights = current-fcm ]
+      
+      if test? [ print avg-success ]
+      
+      let compStateMem [ 0 0 0 0 0 ]
+      
+      ask caribou with [ caribou-fcm-perception-weights = current-fcm ] [
+        ;set compStateMem lput state-memory compStateMem
+        set compStateMem (map + compStateMem state-memory)
+      ]
+      
+      ;;now find amount of time spent in foraging states.
+      let fgTime 100 * ((item 1 compStateMem + item 4 compStateMem) / (sum compStateMem))
+      
+      ;;calculate state fitness based on amount of time spent foraging.
+      let lowFg 50
+      let highFg 88
+      let stateFit 0
+      
+      ifelse fgTime <= highFg and fgTime >= lowFg
+        [ set stateFit 1 ]
+        [
+          ifelse fgTime > highFg
+          [
+            let diff 100 - fgTime
+            set stateFit diff / (100 - highFg)
+          ]
+          [ set stateFit fgTime / lowFg ] 
+        ]
+      
+      if avg-success >= 0 [ set avg-success avg-success * stateFit ]
+      
+      if test? [ print compStateMem print fgTime print stateFit print avg-success ]
+      
+      
+      set test? false
+      
+      set y x + 1
+      
+      if y >= length fcm-adja-list
+      [ set fcm-agentnum-list lput counter fcm-agentnum-list
+        set fcm-success-list lput avg-success fcm-success-list ]
+      
+      while [y < length fcm-adja-list]
+      [
+        let comp matrix:minus current-fcm (item y fcm-adja-list)
+        
+        ifelse test-diff comp = 0
+        [
+          set counter counter + 1
+          set fcm-adja-list remove-item y fcm-adja-list
+          ;set counter-list replace-item x counter-list (item x counter-list + 1)
+        ]
+        [
+          set y y + 1
+        ]
+        
+        if (y + 1) > length fcm-adja-list
+        [ set fcm-agentnum-list lput counter fcm-agentnum-list
+          set fcm-success-list lput avg-success fcm-success-list ] 
+        
+      ]
+      
+      set x x + 1
+    ]
+    set caribou-fcm-perception-weights-list fcm-adja-list
+    set caribou-fcm-agentnum-list fcm-agentnum-list
+    set caribou-fcm-success-list fcm-success-list
   ]
   
   
@@ -415,13 +495,30 @@ end
 ;Breed Updates for FCMs
 to update-caribou-fcm
   
-  set caribou-fcm-adja-list [fcm-adja] of caribou
+  let caribou-ordered sort-on [who] caribou
+  
+  set caribou-fcm-adja-list [ ]
+  set caribou-fcm-perception-weights-list [ ]
+  
+  foreach caribou-ordered
+  [
+    x -> 
+    set caribou-fcm-adja-list lput ( [fcm-adja] of x ) caribou-fcm-adja-list
+    set caribou-fcm-perception-weights-list lput ( [caribou-fcm-perception-weights] of x ) caribou-fcm-perception-weights-list
+  ]
+  
+  
+ ; set caribou-fcm-adja-list [fcm-adja] of caribou
+;  set caribou-fcm-perception-weights-list [caribou-fcm-perception-weights] of caribou
+  
   
   set caribou-fcm-agentnum-list [ ]
 
   set caribou-fcm-success-list [ ]
   
   let fcm-var-out (build-fcm-data caribou-fcm-adja-list 0)
+  let fcm-var-w-out (build-fcm-data caribou-fcm-perception-weights-list 2)
+  
   
   let weighted-list item 0 fcm-var-out
   let prob-list item 1 fcm-var-out
@@ -434,17 +531,26 @@ to update-caribou-fcm
       [ 
         let genome-1 select-weighted-val prob-list caribou-fcm-adja-list
         let genome-2 select-weighted-val prob-list caribou-fcm-adja-list
+        
+        let genome-w-1 select-weighted-val prob-list caribou-fcm-perception-weights-list
+        let genome-w-2 select-weighted-val prob-list caribou-fcm-perception-weights-list
         ;print word "new fcm: " fcm-adja
         ;print matrix:dimensions genome-1
         ;print matrix:dimensions genome-2
         ;print prob-list
         set fcm-adja cross-genome genome-1 genome-2 caribou-recomb-prob fcm-adja-base
+        set caribou-fcm-perception-weights cross-genome genome-w-1 genome-w-2 caribou-recomb-prob caribou-fcm-perception-weights-base
       ]
       [
         set fcm-adja select-weighted-val prob-list caribou-fcm-adja-list
+        set caribou-fcm-perception-weights select-weighted-val prob-list caribou-fcm-perception-weights-list
       ]
       
-      if caribou-mutate? [ set fcm-adja mutate-genome caribou-mutate-prob fcm-adja ]
+      if caribou-mutate? 
+      [
+        set fcm-adja mutate-genome caribou-mutate-prob fcm-adja 
+        set caribou-fcm-perception-weights mutate-genome caribou-mutate-prob caribou-fcm-perception-weights
+      ]
       ;set fcm-adja matrix:copy fcm-adja-base ; Adj
       ;removing this procedure for the time being.
       ;set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map

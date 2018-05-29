@@ -7,7 +7,7 @@ globals [
           hunter-fcm-success-list
           
           ;new matrices lists
-          hunter-fcm-matrix-list
+          hunter-fcm-matrix-list 
           hunter-input-matrix-list
 
           global-fcm-matrix
