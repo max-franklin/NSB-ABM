@@ -495,8 +495,21 @@ end
 ;Breed Updates for FCMs
 to update-caribou-fcm
   
-  set caribou-fcm-adja-list [fcm-adja] of caribou
-  set caribou-fcm-perception-weights-list [caribou-fcm-perception-weights] of caribou
+  let caribou-ordered sort-on [who] caribou
+  
+  set caribou-fcm-adja-list [ ]
+  set caribou-fcm-perception-weights-list [ ]
+  
+  foreach caribou-ordered
+  [
+    x -> 
+    set caribou-fcm-adja-list lput ( [fcm-adja] of x ) caribou-fcm-adja-list
+    set caribou-fcm-perception-weights-list lput ( [caribou-fcm-perception-weights] of x ) caribou-fcm-perception-weights-list
+  ]
+  
+  
+ ; set caribou-fcm-adja-list [fcm-adja] of caribou
+;  set caribou-fcm-perception-weights-list [caribou-fcm-perception-weights] of caribou
   
   
   set caribou-fcm-agentnum-list [ ]
