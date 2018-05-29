@@ -712,6 +712,7 @@ to scenario-controller
 
     if scenario = "veg-later-shift-w-hunters" [
       ;; add in matrix shift...
+
       set-later-shifted-ndvi-data-list
 
       while [ year != 1000 ] [
@@ -1951,7 +1952,7 @@ BUTTON
 50
 Go
 go
-NIL
+T
 1
 T
 OBSERVER
@@ -2074,7 +2075,7 @@ INPUTBOX
 656
 804
 caribou-veg-factor
-0.353
+0.14
 1
 0
 Number
@@ -2085,7 +2086,7 @@ INPUTBOX
 730
 804
 caribou-rough-factor
-0.479
+0.215
 1
 0
 Number
@@ -2106,7 +2107,7 @@ INPUTBOX
 805
 803
 caribou-insect-factor
-0.205
+0.294
 1
 0
 Number
@@ -2117,7 +2118,7 @@ INPUTBOX
 879
 803
 caribou-modifier-factor
-0.369
+0.215
 1
 0
 Number
@@ -2194,7 +2195,7 @@ INPUTBOX
 727
 905
 decay-rate
-0.116
+0.43
 1
 0
 Number
@@ -2260,7 +2261,7 @@ INPUTBOX
 953
 803
 caribou-deflection-factor
-0.719
+0.336
 1
 0
 Number
@@ -2592,7 +2593,7 @@ INPUTBOX
 1020
 803
 caribou-precip-factor
-0.496
+0.561
 1
 0
 Number
@@ -2643,7 +2644,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.708
+0.464
 0.01
 1
 NIL
@@ -2655,7 +2656,7 @@ INPUTBOX
 655
 906
 energy-gain-factor
-8.1
+29.4
 1
 0
 Number
@@ -3282,7 +3283,7 @@ SWITCH
 954
 exportCaribouData?
 exportCaribouData?
-0
+1
 1
 -1000
 
@@ -3503,10 +3504,10 @@ collect-kde?
 -1000
 
 SWITCH
-375
-1066
-560
-1099
+370
+1064
+555
+1097
 import-caribou-var?
 import-caribou-var?
 0
@@ -3587,6 +3588,34 @@ CHOOSER
 scenario
 scenario
 "none" "hunter-evolution" "caribou-evolution" "control-w-hunters" "control-no-hunters" "obd-w-hunters" "obd-no-hunters" "veg-later-shift-w-hunters" "veg-later-shift-no-hunters" "veg-early-shift-w-hunters" "veg-early-shift-no-hunters"
+0
+
+SWITCH
+371
+1099
+529
+1132
+use-high-res-ndvi?
+use-high-res-ndvi?
+0
+1
+-1000
+
+BUTTON
+373
+1136
+466
+1169
+Show NDVI
+show-ndvi
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
 1
 
 @#$#@#$#@
@@ -3931,7 +3960,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.3
+NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
