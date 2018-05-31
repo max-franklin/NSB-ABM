@@ -216,7 +216,9 @@ to reset-hunters [ mode ]
      set number-of-trips (number-of-trips - 1)
    ]
    [
-     set-hunter-matrices
+     set hunter-fcm-sensory matrix:from-row-list [[ 0  0  0  0  0  0  0  0  0  0  0]]
+     set current-activations  matrix:from-row-list [[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
+     set previous-activations  matrix:from-row-list [[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
      set number-of-trips 13
      set harvest-amount 0
    ]
