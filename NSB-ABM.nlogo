@@ -647,8 +647,9 @@ to scenario-controller
     set use-hunters? true
 
 
-    if scenario = "control-w-hunters" [
+    if scenario = "control-w-hunters-lo" [
       ;; evolve agents for 1000 years.
+	  set use-high-res-ndvi? false
       while [ year != 1000 ] [
         go
       ]
@@ -661,9 +662,10 @@ to scenario-controller
       ]
     ] ;; end control with hunters if
 
-    if scenario = "control-no-hunters" [
+    if scenario = "control-no-hunters-lo" [
       ;; make sure variable settings are appropriately set.
       set use-hunters? false
+	  set use-high-res-ndvi? false
 
       ;; evolve agents for 1000 years.
       while [ year != 1000 ] [
@@ -678,11 +680,11 @@ to scenario-controller
       ]
     ] ;; end control no hunters if
 
-    if scenario = "obd-w-hunters" [
+    if scenario = "obd-w-hunters-lo" [
       set deflect-pipeline? true
       set deflect-oil? true
       set deflect-roads? true
-
+	  set use-high-res-ndvi? false
       while [ year != 1000 ] [
         go
       ]
@@ -694,11 +696,12 @@ to scenario-controller
       ]
     ] ;; end obd w hunters if
 
-    if scenario = "obd-no-hunters" [
+    if scenario = "obd-no-hunters-lo" [
       set deflect-pipeline? true
       set deflect-oil? true
       set deflect-roads? true
       set use-hunters? false
+	  set use-high-res-ndvi? false
 
       while [ year != 1000 ]
       [
@@ -713,9 +716,9 @@ to scenario-controller
       ]
     ] ;; end obd-no-hunters if
 
-    if scenario = "veg-later-shift-w-hunters" [
+    if scenario = "veg-later-shift-w-hunters-lo" [
       ;; add in matrix shift...
-
+	  set use-high-res-ndvi? false
       set-later-shifted-ndvi-data-list
 
       while [ year != 1000 ] [
@@ -730,8 +733,9 @@ to scenario-controller
 
     ] ;; end veg-shift-w-hunters if
 
-    if scenario = "veg-later-shift-no-hunters" [
+    if scenario = "veg-later-shift-no-hunters-lo" [
       ;; add in matrix shift...
+	  set use-high-res-ndvi? false
       set use-hunters? false
       set-later-shifted-ndvi-data-list
       while [ year != 1000 ] [
@@ -744,8 +748,9 @@ to scenario-controller
         go
       ]
     ] ;; end veg-shift-no-hunters if
-    if scenario = "veg-early-shift-w-hunters" [
+    if scenario = "veg-early-shift-w-hunters-lo" [
       ;; add in matrix shift...
+	  set use-high-res-ndvi? false
       set-early-shifted-ndvi-data-list
 
       while [ year != 1000 ] [
@@ -760,8 +765,9 @@ to scenario-controller
 
     ] ;; end veg-shift-w-hunters if
 
-    if scenario = "veg-early-shift-no-hunters" [
+    if scenario = "veg-early-shift-no-hunters-lo" [
       ;; add in matrix shift...
+	  set use-high-res-ndvi? false
       set use-hunters? false
       set-early-shifted-ndvi-data-list
       while [ year != 1000 ] [
@@ -774,7 +780,8 @@ to scenario-controller
         go
       ]
     ] ;; end veg-shift-no-hunters if
-    if scenario = "caribou-evolution" [
+    if scenario = "caribou-evolution-lo" [
+	  set use-high-res-ndvi? false
       set calibrateCaribouVar? true
       set randomCaribouVarStart? true
       set import-caribou-var? false
@@ -786,11 +793,256 @@ to scenario-controller
 
     ] ;; end caribou-evolution if
 
-    if scenario = "hunter-evolution" [
+    if scenario = "hunter-evolution-lo" [
+      set use-high-res-ndvi? false
       set random-hunter-fcm? true
       while [ year <= 1 ] [ go ] ;; user will have to use space bar interrupt in file to stop evolution before end point.
     ] ;; end hunter-evolution if
 
+    ;;;HIGH RESOLUTION NDVI SCENARIOS
+        if scenario = "control-w-hunters-hi" [
+      ;; evolve agents for 1000 years.
+	  set use-high-res-ndvi? true
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      ;; run scenario and collect results for 100 years.
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end control with hunters if
+
+    if scenario = "control-no-hunters-hi" [
+      ;; make sure variable settings are appropriately set.
+      set use-hunters? false
+	  set use-high-res-ndvi? true
+
+      ;; evolve agents for 1000 years.
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      ;; run scenario and collect results for 100 years.
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end control no hunters if
+
+    if scenario = "obd-w-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+	  set use-high-res-ndvi? true
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end obd w hunters if
+
+    if scenario = "obd-no-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set use-hunters? false
+	  set use-high-res-ndvi? true
+
+      while [ year != 1000 ]
+      [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ]
+      [
+        go
+      ]
+    ] ;; end obd-no-hunters if
+
+    if scenario = "veg-later-shift-w-hunters-hi" [
+      ;; add in matrix shift...
+	  set use-high-res-ndvi? true
+      set-later-shifted-ndvi-data-list
+
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+
+    ] ;; end veg-shift-w-hunters if
+
+    if scenario = "veg-later-shift-no-hunters-hi" [
+      ;; add in matrix shift...
+	  set use-high-res-ndvi? true
+      set use-hunters? false
+      set-later-shifted-ndvi-data-list
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end veg-shift-no-hunters if
+    if scenario = "veg-early-shift-w-hunters-hi" [
+      ;; add in matrix shift...
+	  set use-high-res-ndvi? true
+      set-early-shifted-ndvi-data-list
+
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+
+    ] ;; end veg-shift-w-hunters if
+
+    if scenario = "veg-early-shift-no-hunters-hi" [
+      ;; add in matrix shift...
+	  set use-high-res-ndvi? true
+      set use-hunters? false
+      set-early-shifted-ndvi-data-list
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end veg-shift-no-hunters if
+    if scenario = "caribou-evolution-hi" [
+	  set use-high-res-ndvi? true
+      set calibrateCaribouVar? true
+      set randomCaribouVarStart? true
+      set import-caribou-var? false
+      set is-random? true
+      set Nuiqsut? false
+      set CD5? false
+
+      while [ year <= 2500 ] [ go ] ;; user will have to use space bar interrupt in file to stop evolution before end point.
+
+    ] ;; end caribou-evolution if
+
+    if scenario = "hunter-evolution-hi" [
+      set use-high-res-ndvi? true
+      set random-hunter-fcm? true
+      while [ year <= 1 ] [ go ] ;; user will have to use space bar interrupt in file to stop evolution before end point.
+    ] ;; end hunter-evolution if
+
+    ;combined scenarios
+    	if scenario = "cobmined-early-ndvi-w-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-early-shifted-ndvi-data-list
+      set use-high-res-ndvi? true
+      set use-hunters? true
+      while [ year != 1000 ] [
+        go
+      ]
+    ]
+    	if scenario = "cobmined-early-ndvi-no-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-early-shifted-ndvi-data-list
+      set use-high-res-ndvi? true
+      set use-hunters? false
+      while [ year != 1000 ] [
+        go
+      ]
+    	  ]
+    	  	if scenario = "cobmined-late-ndvi-w-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-later-shifted-ndvi-data-list
+      set use-high-res-ndvi? true
+      set use-hunters? true
+      while [ year != 1000 ] [
+        go
+      ]
+    ]
+    	if scenario = "cobmined-late-ndvi-no-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-later-shifted-ndvi-data-list
+      set use-high-res-ndvi? true
+      set use-hunters? false
+      while [ year != 1000 ] [
+        go
+      ]
+    	  ]
+    	if scenario = "cobmined-early-ndvi-w-hunters-lo" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-early-shifted-ndvi-data-list
+      set use-high-res-ndvi? false
+      set use-hunters? true
+      while [ year != 1000 ] [
+        go
+      ]
+    ]
+    	if scenario = "cobmined-early-ndvi-no-hunters-lo" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-early-shifted-ndvi-data-list
+      set use-high-res-ndvi? false
+      set use-hunters? false
+      while [ year != 1000 ] [
+        go
+      ]
+    	  ]
+
+     	if scenario = "cobmined-late-ndvi-w-hunters-lo" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-later-shifted-ndvi-data-list
+      set use-high-res-ndvi? false
+      set use-hunters? true
+      while [ year != 1000 ] [
+        go
+      ]
+    ]
+
+    	if scenario = "cobmined-late-ndvi-no-hunters-lo" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-later-shifted-ndvi-data-list
+      set use-high-res-ndvi? false
+      set use-hunters? false
+      while [ year != 1000 ] [
+        go
+      ]
+    ]
 
   ] ;; end outer if
 end
@@ -3420,7 +3672,7 @@ SWITCH
 625
 hunter-training?
 hunter-training?
-0
+1
 1
 -1000
 
@@ -3588,11 +3840,11 @@ deflect-oil?
 CHOOSER
 1511
 408
-1731
+1751
 453
 scenario
 scenario
-"none" "hunter-evolution" "caribou-evolution" "control-w-hunters" "control-no-hunters" "obd-w-hunters" "obd-no-hunters" "veg-later-shift-w-hunters" "veg-later-shift-no-hunters" "veg-early-shift-w-hunters" "veg-early-shift-no-hunters"
+"none" "hunter-evolution-lo" "caribou-evolution-lo" "control-w-hunters-lo" "control-no-hunters-lo" "obd-w-hunters-lo" "obd-no-hunters-lo" "veg-later-shift-w-hunters-lo" "veg-later-shift-no-hunters-lo" "veg-early-shift-w-hunters-lo" "veg-early-shift-no-hunters-lo" "cobmined-early-ndvi-no-hunters-lo" "cobmined-early-ndvi-w-hunters-lo" "cobmined-late-ndvi-no-hunters-lo" "cobmined-late-ndvi-w-hunters-lo" "hunter-evolution-hi" "caribou-evolution-hi" "control-w-hunters-hi" "control-no-hunters-hi" "obd-w-hunters-hi" "obd-no-hunters-hi" "veg-later-shift-w-hunters-hi" "veg-later-shift-no-hunters-hi" "veg-early-shift-w-hunters-hi" "veg-early-shift-no-hunters-hi" "cobmined-early-ndvi-no-hunters-hi" "cobmined-early-ndvi-w-hunters-hi" "cobmined-late-ndvi-no-hunters-hi" "cobmined-late-ndvi-w-hunters-hi"
 0
 
 SWITCH
