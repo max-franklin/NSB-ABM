@@ -311,7 +311,7 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
   let max-s max fcm-success-list 
 
 
-  ifelse agent-type = 0
+  ifelse agent-type = 0 or agent-type = 2
   [
     carefully 
     [ set fcm-success-list feature-scale-list min-s max-s fcm-success-list ]
@@ -517,7 +517,7 @@ to update-caribou-fcm
   set caribou-fcm-success-list [ ]
   
   let fcm-var-out (build-fcm-data caribou-fcm-adja-list 0)
-  let fcm-var-w-out (build-fcm-data caribou-fcm-perception-weights-list 2)
+;  let fcm-var-w-out (build-fcm-data-new caribou-fcm-perception-weights-list 2)
   
   
   let weighted-list item 0 fcm-var-out

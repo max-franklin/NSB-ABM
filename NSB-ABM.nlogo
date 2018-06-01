@@ -665,7 +665,10 @@ to scenario-controller
     if scenario = "control-no-hunters-lo" [
       ;; make sure variable settings are appropriately set.
       set use-hunters? false
-	  set use-high-res-ndvi? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+      set use-high-res-ndvi? false
 
       ;; evolve agents for 1000 years.
       while [ year != 1000 ] [
@@ -701,7 +704,10 @@ to scenario-controller
       set deflect-oil? true
       set deflect-roads? true
       set use-hunters? false
-	  set use-high-res-ndvi? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+      set use-high-res-ndvi? false
 
       while [ year != 1000 ]
       [
@@ -718,7 +724,7 @@ to scenario-controller
 
     if scenario = "veg-later-shift-w-hunters-lo" [
       ;; add in matrix shift...
-	  set use-high-res-ndvi? false
+      set use-high-res-ndvi? false
       set-later-shifted-ndvi-data-list
 
       while [ year != 1000 ] [
@@ -735,9 +741,13 @@ to scenario-controller
 
     if scenario = "veg-later-shift-no-hunters-lo" [
       ;; add in matrix shift...
-	  set use-high-res-ndvi? false
+      set use-high-res-ndvi? false
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
       set-later-shifted-ndvi-data-list
+
       while [ year != 1000 ] [
         go
       ]
@@ -767,9 +777,13 @@ to scenario-controller
 
     if scenario = "veg-early-shift-no-hunters-lo" [
       ;; add in matrix shift...
-	  set use-high-res-ndvi? false
+      set use-high-res-ndvi? false
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
       set-early-shifted-ndvi-data-list
+
       while [ year != 1000 ] [
         go
       ]
@@ -818,7 +832,11 @@ to scenario-controller
     if scenario = "control-no-hunters-hi" [
       ;; make sure variable settings are appropriately set.
       set use-hunters? false
-	  set use-high-res-ndvi? true
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
+      set use-high-res-ndvi? true
 
       ;; evolve agents for 1000 years.
       while [ year != 1000 ] [
@@ -854,7 +872,11 @@ to scenario-controller
       set deflect-oil? true
       set deflect-roads? true
       set use-hunters? false
-	  set use-high-res-ndvi? true
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
+      set use-high-res-ndvi? true
 
       while [ year != 1000 ]
       [
@@ -888,9 +910,13 @@ to scenario-controller
 
     if scenario = "veg-later-shift-no-hunters-hi" [
       ;; add in matrix shift...
-	  set use-high-res-ndvi? true
+      set use-high-res-ndvi? true
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
       set-later-shifted-ndvi-data-list
+
       while [ year != 1000 ] [
         go
       ]
@@ -920,8 +946,12 @@ to scenario-controller
 
     if scenario = "veg-early-shift-no-hunters-hi" [
       ;; add in matrix shift...
-	  set use-high-res-ndvi? true
+      set use-high-res-ndvi? true
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
       set-early-shifted-ndvi-data-list
       while [ year != 1000 ] [
         go
@@ -971,6 +1001,10 @@ to scenario-controller
       set-early-shifted-ndvi-data-list
       set use-high-res-ndvi? true
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
       while [ year != 1000 ] [
         go
       ]
@@ -993,6 +1027,10 @@ to scenario-controller
       set-later-shifted-ndvi-data-list
       set use-high-res-ndvi? true
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
       while [ year != 1000 ] [
         go
       ]
@@ -1015,6 +1053,10 @@ to scenario-controller
       set-early-shifted-ndvi-data-list
       set use-high-res-ndvi? false
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+      set export-hunter-data? false
       while [ year != 1000 ] [
         go
       ]
@@ -1027,6 +1069,7 @@ to scenario-controller
       set-later-shifted-ndvi-data-list
       set use-high-res-ndvi? false
       set use-hunters? true
+
       while [ year != 1000 ] [
         go
       ]
@@ -1039,6 +1082,10 @@ to scenario-controller
       set-later-shifted-ndvi-data-list
       set use-high-res-ndvi? false
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
       while [ year != 1000 ] [
         go
       ]
@@ -3529,7 +3576,7 @@ SWITCH
 628
 use-hunters?
 use-hunters?
-0
+1
 1
 -1000
 
@@ -3568,7 +3615,7 @@ SWITCH
 998
 hunter-recombine?
 hunter-recombine?
-0
+1
 1
 -1000
 
@@ -3579,7 +3626,7 @@ SWITCH
 1035
 hunter-mutate?
 hunter-mutate?
-0
+1
 1
 -1000
 
@@ -3845,7 +3892,7 @@ CHOOSER
 scenario
 scenario
 "none" "hunter-evolution-lo" "caribou-evolution-lo" "control-w-hunters-lo" "control-no-hunters-lo" "obd-w-hunters-lo" "obd-no-hunters-lo" "veg-later-shift-w-hunters-lo" "veg-later-shift-no-hunters-lo" "veg-early-shift-w-hunters-lo" "veg-early-shift-no-hunters-lo" "cobmined-early-ndvi-no-hunters-lo" "cobmined-early-ndvi-w-hunters-lo" "cobmined-late-ndvi-no-hunters-lo" "cobmined-late-ndvi-w-hunters-lo" "hunter-evolution-hi" "caribou-evolution-hi" "control-w-hunters-hi" "control-no-hunters-hi" "obd-w-hunters-hi" "obd-no-hunters-hi" "veg-later-shift-w-hunters-hi" "veg-later-shift-no-hunters-hi" "veg-early-shift-w-hunters-hi" "veg-early-shift-no-hunters-hi" "cobmined-early-ndvi-no-hunters-hi" "cobmined-early-ndvi-w-hunters-hi" "cobmined-late-ndvi-no-hunters-hi" "cobmined-late-ndvi-w-hunters-hi"
-0
+8
 
 SWITCH
 371
@@ -3854,7 +3901,7 @@ SWITCH
 1132
 use-high-res-ndvi?
 use-high-res-ndvi?
-0
+1
 1
 -1000
 
