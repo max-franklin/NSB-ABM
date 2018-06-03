@@ -222,7 +222,7 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
     carefully
     [ set fcm-success-list feature-scale-list min-s max-s fcm-success-list ]
     [ set fcm-success-list map [ 1 ] fcm-success-list ]
-    set fcm-agentnum-list map [ ? / (count caribou)]  fcm-agentnum-list
+    set fcm-agentnum-list map [ mapVal -> mapVal / (count caribou)]  fcm-agentnum-list
   ]
   [
     ;carefully 
@@ -233,7 +233,7 @@ to-report build-fcm-data [ fcm-adja-list agent-type ]
     [ set fcm-success-list feature-scale-list min-s max-s fcm-success-list ]
     [ set fcm-success-list map [ 1 ] fcm-success-list ]
     ;set fcm-agentnum-list map [ ? / (count caribou)]  fcm-agentnum-list
-    set fcm-agentnum-list map [ ? / (count hunters)]  fcm-agentnum-list
+    set fcm-agentnum-list map [ mapVal -> mapVal / (count hunters)]  fcm-agentnum-list
     
   ]
   
@@ -263,7 +263,7 @@ to select-fcms
   carefully
   [ set caribou-fcm-success-list feature-scale-list min-s max-s caribou-fcm-success-list ]
   [ set caribou-fcm-success-list map [ 1 ] caribou-fcm-success-list ]
-  set caribou-fcm-agentnum-list map [ ? / (count caribou)]  caribou-fcm-agentnum-list
+  set caribou-fcm-agentnum-list map [ mapVal -> mapVal / (count caribou)]  caribou-fcm-agentnum-list
   
   let weighted-list (map * caribou-fcm-success-list caribou-fcm-agentnum-list)
   
@@ -319,16 +319,18 @@ to select-fcms
 end
 
 to-report select-genome [ prob-list genome-list ]
+  let result 0
   let random-prob (1 + random 1000) / 1000
-  let diff-list map [ abs(? - random-prob) ] prob-list
+  let diff-list map [ i -> abs(i - random-prob) ] prob-list
   let pos position (min diff-list) diff-list
   
   ifelse random-prob >= item pos prob-list
   ;carefully is for in-case max probability = random-prob, causing caribou to search 1 farther than the list.
-    [ carefully 
-      [report item (pos + 1) caribou-fcm-adja-list]
-      [report item (pos) caribou-fcm-adja-list] ] 
-    [ report item (pos) caribou-fcm-adja-list ]
+  [ carefully 
+    [set result item (pos + 1) caribou-fcm-adja-list]
+    [set result item (pos) caribou-fcm-adja-list] ] 
+  [ set result item (pos) caribou-fcm-adja-list ]
+  report result
 end
 
 to-report cross-genome [ genome-1 genome-2 recomb-prob fcm-matrix ]
@@ -353,11 +355,11 @@ to-report cross-genome [ genome-1 genome-2 recomb-prob fcm-matrix ]
     
     let fused-snip subsnip1
     
-    foreach subsnip2 [ set fused-snip lput ? fused-snip ]
+    foreach subsnip2 [ x -> set fused-snip lput x fused-snip ]
 
     set snip1 lput fused-snip snip1
     
-    foreach snip2 [ set snip1 lput ? snip1 ]
+    foreach snip2 [ x -> set snip1 lput x snip1 ]
     
     set recomb-genome matrix:from-row-list snip1
 
@@ -374,7 +376,7 @@ to-report cross-genome [ genome-1 genome-2 recomb-prob fcm-matrix ]
 end
 
 to-report feature-scale-list [minVal maxVal x]
-  set x map [(? - minVal) / (maxVal - minVal)] x
+  set x map [mapVal -> (mapVal - minVal) / (maxVal - minVal)] x
   report x
 end
 

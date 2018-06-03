@@ -547,7 +547,7 @@ to boat-travel-return-funct
 end 
 
 to-report list-intersect [list1 list2] ;find intersection between riversets 
-  foreach list1 [ if (member? ? list2) [report true] ] 
+  foreach list1 [ x -> if (member? x list2) [report true] ] 
   report false 
 end 
 
@@ -655,8 +655,9 @@ to-report number-of-rivers-in-way
     ]
   ] 
   foreach patch-list-riw
-  [
-     if(empty? [river-set] of ? = false or [connected?] of ? = true)
+  [ 
+    x ->
+     if(empty? [river-set] of x = false or [connected?] of x = true)
      [set num-riw (num-riw + 1)] 
   ]
   report num-riw
