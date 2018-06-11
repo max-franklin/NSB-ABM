@@ -690,9 +690,20 @@ end
 to update-hunter-fcms
   ;;Code block for evolving hunter FCMs. Selection occurs, followed by recombination and mutation.
   ;;Akin to the caribou FCM evolution code, the hunter 'reset' should probably occur in here, too. 
+  let hunter-ordered sort-on [who] hunters
   
-  set hunter-fcm-matrix-list [ hunter-fcm-matrix ] of hunters
-  set hunter-input-matrix-list [ hunter-input-matrix ] of hunters
+  set hunter-fcm-matrix-list [ ]
+  set hunter-input-matrix-list [ ]
+  
+  foreach hunter-ordered
+  [
+    x ->
+    set hunter-fcm-matrix-list lput ( [hunter-fcm-matrix] of x ) hunter-fcm-matrix-list
+    set hunter-input-matrix-list lput ( [hunter-input-matrix] of x ) hunter-input-matrix-list
+  ]
+  
+
+
   
   ;;1 for hunters, 0 for caribou
   let prob-list (build-fcm-data-new hunter-fcm-matrix-list hunter-input-matrix-list 1)
