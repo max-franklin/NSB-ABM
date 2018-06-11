@@ -7,7 +7,7 @@
 extensions [ gis array matrix table csv profiler]
 
 __includes["nls-modules/insect.nls" "nls-modules/precip.nls" "nls-modules/NDVI.nls" "nls-modules/caribouPop.nls"
-           "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
+  "nls-modules/caribou.nls" "nls-modules/moose.nls" "nls-modules/hunters.nls"
   "nls-modules/fcm.nls" "nls-modules/patch-list.nls" "nls-modules/utility-functions.nls" "nls-modules/display.nls" "nls-modules/connectivityCorrection.nls" "nls-modules/vegetation-rank.nls"
   "nls-modules/migration-grids.nls" "nls-modules/migration-centroids.nls" "nls-modules/caribou-calibration.nls" "nls-modules/kde-sample.nls" ]
 
@@ -51,7 +51,7 @@ globals
   np-centroid-layer-250
   p-centroid-layer-152
 
-;GIS DATA
+  ;GIS DATA
   np-centroid-network
   p-centroid-network
   cent-day-list ;for recording list of days where the centroids need to be reassigned in the simulation
@@ -120,8 +120,8 @@ globals
 
   ;Globals Precipitation
   precipitation-dataset
-	precipitation-data-list
-	precipitation-max
+  	precipitation-data-list
+  	precipitation-max
   precipitation-matrix-number
 
   ;;Bounds Data
@@ -270,7 +270,7 @@ patches-own
 
   vegParRank ;vegetation ranking of patch for pregnant caribou
   vegNonParRank ;vegetation ranking of patch for non-pregnant caribou
-  ;;;;; HENRI PATCH VALUES ;;;;;
+                ;;;;; HENRI PATCH VALUES ;;;;;
   vegetation-beta
 
   prev-insect-val
@@ -289,7 +289,7 @@ patches-own
 
 caribou-harvests-own
 [
- frequency-rank
+  frequency-rank
 ]
 centroids-own
 [
@@ -303,20 +303,20 @@ centroids-own
 
 grids-own
 [
- grid-id
- np-qual-id
- p-qual-id
+  grid-id
+  np-qual-id
+  p-qual-id
 ]
 
 deflectors-own
 [
- ;boolean
- has-applied
- ;patch size
- area-outer
- area-inner
- ;value -- value should be from (0,1]
- deflect-amt
+  ;boolean
+  has-applied
+  ;patch size
+  area-outer
+  area-inner
+  ;value -- value should be from (0,1]
+  deflect-amt
 ]
 
 turtles-own
@@ -399,9 +399,9 @@ to setup
   setup-precipitation
   setup-terrain-layers
   setup-caribou-utility ;setup caribou utility code requires a fix, semantics of it don't make sense.
-  ;update-caribou-utility
-  ;update-para-utility
-  ;update-non-para-utility
+                        ;update-caribou-utility
+                        ;update-para-utility
+                        ;update-non-para-utility
   setup-moose-utility
   setup-moose
   ;setup-centroids
@@ -414,11 +414,11 @@ to setup
   go-precipitation
   if(is-random?)
   [
-   caribou-random-fcm
+    caribou-random-fcm
   ]
 
   set caribou-fcm-adja-list [fcm-adja] of caribou
- ; setup-ndvi
+  ; setup-ndvi
   go-veg-ranking
   set-streams
 
@@ -573,6 +573,7 @@ to profile-test
   file-close-all
 end
 
+
 to scenario-controller
   if scenario != "none" [
     ;; set variables common to all scenarios
@@ -647,8 +648,9 @@ to scenario-controller
     set use-hunters? true
 
 
-    if scenario = "control-w-hunters" [
+    if scenario = "control-w-hunters-lo" [
       ;; evolve agents for 1000 years.
+      	  set use-high-res-ndvi? false
       while [ year != 1000 ] [
         go
       ]
@@ -661,9 +663,13 @@ to scenario-controller
       ]
     ] ;; end control with hunters if
 
-    if scenario = "control-no-hunters" [
+    if scenario = "control-no-hunters-lo" [
       ;; make sure variable settings are appropriately set.
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+      set use-high-res-ndvi? false
 
       ;; evolve agents for 1000 years.
       while [ year != 1000 ] [
@@ -678,11 +684,11 @@ to scenario-controller
       ]
     ] ;; end control no hunters if
 
-    if scenario = "obd-w-hunters" [
+    if scenario = "obd-w-hunters-lo" [
       set deflect-pipeline? true
       set deflect-oil? true
       set deflect-roads? true
-
+      	  set use-high-res-ndvi? false
       while [ year != 1000 ] [
         go
       ]
@@ -694,11 +700,15 @@ to scenario-controller
       ]
     ] ;; end obd w hunters if
 
-    if scenario = "obd-no-hunters" [
+    if scenario = "obd-no-hunters-lo" [
       set deflect-pipeline? true
       set deflect-oil? true
       set deflect-roads? true
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+      set use-high-res-ndvi? false
 
       while [ year != 1000 ]
       [
@@ -713,9 +723,9 @@ to scenario-controller
       ]
     ] ;; end obd-no-hunters if
 
-    if scenario = "veg-later-shift-w-hunters" [
+    if scenario = "veg-later-shift-w-hunters-lo" [
       ;; add in matrix shift...
-
+      set use-high-res-ndvi? false
       set-later-shifted-ndvi-data-list
 
       while [ year != 1000 ] [
@@ -730,10 +740,15 @@ to scenario-controller
 
     ] ;; end veg-shift-w-hunters if
 
-    if scenario = "veg-later-shift-no-hunters" [
+    if scenario = "veg-later-shift-no-hunters-lo" [
       ;; add in matrix shift...
+      set use-high-res-ndvi? false
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
       set-later-shifted-ndvi-data-list
+
       while [ year != 1000 ] [
         go
       ]
@@ -744,8 +759,9 @@ to scenario-controller
         go
       ]
     ] ;; end veg-shift-no-hunters if
-    if scenario = "veg-early-shift-w-hunters" [
+    if scenario = "veg-early-shift-w-hunters-lo" [
       ;; add in matrix shift...
+      	  set use-high-res-ndvi? false
       set-early-shifted-ndvi-data-list
 
       while [ year != 1000 ] [
@@ -760,10 +776,15 @@ to scenario-controller
 
     ] ;; end veg-shift-w-hunters if
 
-    if scenario = "veg-early-shift-no-hunters" [
+    if scenario = "veg-early-shift-no-hunters-lo" [
       ;; add in matrix shift...
+      set use-high-res-ndvi? false
       set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
       set-early-shifted-ndvi-data-list
+
       while [ year != 1000 ] [
         go
       ]
@@ -774,7 +795,8 @@ to scenario-controller
         go
       ]
     ] ;; end veg-shift-no-hunters if
-    if scenario = "caribou-evolution" [
+    if scenario = "caribou-evolution-lo" [
+      	  set use-high-res-ndvi? false
       set calibrateCaribouVar? true
       set randomCaribouVarStart? true
       set import-caribou-var? false
@@ -786,11 +808,331 @@ to scenario-controller
 
     ] ;; end caribou-evolution if
 
-    if scenario = "hunter-evolution" [
+    if scenario = "hunter-evolution-lo" [
+      set use-high-res-ndvi? false
       set random-hunter-fcm? true
       while [ year <= 1 ] [ go ] ;; user will have to use space bar interrupt in file to stop evolution before end point.
     ] ;; end hunter-evolution if
 
+    ;;;HIGH RESOLUTION NDVI SCENARIOS
+    if scenario = "control-w-hunters-hi" [
+      ;; evolve agents for 1000 years.
+      	  set use-high-res-ndvi? true
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      ;; run scenario and collect results for 100 years.
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end control with hunters if
+
+    if scenario = "control-no-hunters-hi" [
+      ;; make sure variable settings are appropriately set.
+      set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
+      set use-high-res-ndvi? true
+
+      ;; evolve agents for 1000 years.
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      ;; run scenario and collect results for 100 years.
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end control no hunters if
+
+    if scenario = "obd-w-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      	  set use-high-res-ndvi? true
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end obd w hunters if
+
+    if scenario = "obd-no-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
+      set use-high-res-ndvi? true
+
+      while [ year != 1000 ]
+      [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ]
+      [
+        go
+      ]
+    ] ;; end obd-no-hunters if
+
+    if scenario = "veg-later-shift-w-hunters-hi" [
+      ;; add in matrix shift...
+      	  set use-high-res-ndvi? true
+      set-later-shifted-ndvi-data-list
+
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+
+    ] ;; end veg-shift-w-hunters if
+
+    if scenario = "veg-later-shift-no-hunters-hi" [
+      ;; add in matrix shift...
+      set use-high-res-ndvi? true
+      set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+      set-later-shifted-ndvi-data-list
+
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end veg-shift-no-hunters if
+    if scenario = "veg-early-shift-w-hunters-hi" [
+      ;; add in matrix shift...
+      	  set use-high-res-ndvi? true
+      set-early-shifted-ndvi-data-list
+
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+
+    ] ;; end veg-shift-w-hunters if
+
+    if scenario = "veg-early-shift-no-hunters-hi" [
+      ;; add in matrix shift...
+      set use-high-res-ndvi? true
+      set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
+      set-early-shifted-ndvi-data-list
+      while [ year != 1000 ] [
+        go
+      ]
+
+      scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ] ;; end veg-shift-no-hunters if
+    if scenario = "caribou-evolution-hi" [
+      	  set use-high-res-ndvi? true
+      set calibrateCaribouVar? true
+      set randomCaribouVarStart? true
+      set import-caribou-var? false
+      set is-random? true
+      set Nuiqsut? false
+      set CD5? false
+
+      while [ year <= 2500 ] [ go ] ;; user will have to use space bar interrupt in file to stop evolution before end point.
+
+    ] ;; end caribou-evolution if
+
+    if scenario = "hunter-evolution-hi" [
+      set use-high-res-ndvi? true
+      set random-hunter-fcm? true
+      while [ year <= 1 ] [ go ] ;; user will have to use space bar interrupt in file to stop evolution before end point.
+    ] ;; end hunter-evolution if
+
+    ;combined scenarios
+    	if scenario = "combined-early-ndvi-w-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-early-shifted-ndvi-data-list
+      set use-high-res-ndvi? true
+      set use-hunters? true
+      while [ year != 1000 ] [
+        go
+      ]
+      	
+      	        scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ]
+    	if scenario = "combined-early-ndvi-no-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-early-shifted-ndvi-data-list
+      set use-high-res-ndvi? true
+      set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
+      while [ year != 1000 ] [
+        go
+      ]
+    	  ]
+    	  	if scenario = "combined-late-ndvi-w-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-later-shifted-ndvi-data-list
+      set use-high-res-ndvi? true
+      set use-hunters? true
+      while [ year != 1000 ] [
+        go
+      ]
+      	
+      	        scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ]
+    	if scenario = "combined-late-ndvi-no-hunters-hi" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-later-shifted-ndvi-data-list
+      set use-high-res-ndvi? true
+      set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
+      while [ year != 1000 ] [
+        go
+      ]
+      	
+      	        scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    	  ]
+    	if scenario = "combined-early-ndvi-w-hunters-lo" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-early-shifted-ndvi-data-list
+      set use-high-res-ndvi? false
+      set use-hunters? true
+      while [ year != 1000 ] [
+        go
+      ]
+      	
+      	        scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ]
+    	if scenario = "combined-early-ndvi-no-hunters-lo" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-early-shifted-ndvi-data-list
+      set use-high-res-ndvi? false
+      set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+      set export-hunter-data? false
+      while [ year != 1000 ] [
+        go
+      ]
+      	
+      	        scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    	  ]
+
+    	if scenario = "combined-late-ndvi-w-hunters-lo" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-later-shifted-ndvi-data-list
+      set use-high-res-ndvi? false
+      set use-hunters? true
+
+      while [ year != 1000 ] [
+        go
+      ]
+      	
+      	        scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ]
+
+    	if scenario = "combined-late-ndvi-no-hunters-lo" [
+      set deflect-pipeline? true
+      set deflect-oil? true
+      set deflect-roads? true
+      set-later-shifted-ndvi-data-list
+      set use-high-res-ndvi? false
+      set use-hunters? false
+      set hunter-mutate? false
+      set hunter-recombine? false
+      set hunter-training? false
+
+      while [ year != 1000 ] [
+        go
+      ]
+      	
+      	        scenario-var-reset
+
+      while [ year != 100 ] [
+        go
+      ]
+    ]
 
   ] ;; end outer if
 end
@@ -804,7 +1146,7 @@ end
 
 ;Go, wraps to other go's
 to go
- ; set day (ticks mod 365)
+  ; set day (ticks mod 365)
   set hour hour + 1.5
   if(hour = 24)
   [
@@ -845,15 +1187,15 @@ to go
 
 
 
-  if day = 152 [ go-insect ]
-  if day = 166 [ go-insect ]
-  if day = 181 [ go-insect ]
-  if day = 196 [ go-insect ]
-  if day = 212 [ go-insect ]
-  if day = 227 [ go-insect ]
+    if day = 152 [ go-insect ]
+    if day = 166 [ go-insect ]
+    if day = 181 [ go-insect ]
+    if day = 196 [ go-insect ]
+    if day = 212 [ go-insect ]
+    if day = 227 [ go-insect ]
 
 
-  ;build-mean-utility-lists
+    ;build-mean-utility-lists
 
     if (day - 12) mod 14 = 0
     ;if abs (mean [caribou-utility-non-para] of patches - non-para-check) > 0.000000001 ;mean [caribou-utility-para] of patches != para-check or
@@ -924,61 +1266,61 @@ to setup-caribou-state-data
 end
 
 to export-caribou-state-data
-   let file-ex "caribou-state-flux-bioE-"
-   set file-ex word file-ex seed
-   set file-ex word file-ex ".txt"
+  let file-ex "caribou-state-flux-bioE-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
 
-   file-open file-ex
-   file-print ""
-   file-write ticks
-   file-write count caribou with [state = 0]
-   file-write count caribou with [state = 1]
-   file-write count caribou with [state = 2]
-   file-write count caribou with [state = 3]
-   file-write count caribou with [state = 4]
-   file-write mean [ bioenergy-success ] of caribou
-    file-close
+  file-open file-ex
+  file-print ""
+  file-write ticks
+  file-write count caribou with [state = 0]
+  file-write count caribou with [state = 1]
+  file-write count caribou with [state = 2]
+  file-write count caribou with [state = 3]
+  file-write count caribou with [state = 4]
+  file-write mean [ bioenergy-success ] of caribou
+  file-close
 end
 
 to setup-caribou-fcm-data
-   let file-ex "caribou-fcms-agentnum-success-"
-   set file-ex word file-ex seed
-   set file-ex word file-ex ".txt"
+  let file-ex "caribou-fcms-agentnum-success-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
 
-   if file-exists? file-ex [ file-delete file-ex ]
+  if file-exists? file-ex [ file-delete file-ex ]
 
-   file-open file-ex
-   file-write "year,"
-   file-write "fcm agent useage,"
-   file-write "fcm success,"
-   file-write "caribou fcm-adja matrix,"
-   file-write "caribou fcm-perception-weights matrix"
-   file-close
+  file-open file-ex
+  file-write "year,"
+  file-write "fcm agent useage,"
+  file-write "fcm success,"
+  file-write "caribou fcm-adja matrix,"
+  file-write "caribou fcm-perception-weights matrix"
+  file-close
 end
 
 to export-fcm-data
-    ;;dump all pertinent data every year for variable calibration.
-   ;set caribou-fcm-adja-list [fcm-adja] of caribou
+  ;;dump all pertinent data every year for variable calibration.
+  ;set caribou-fcm-adja-list [fcm-adja] of caribou
 
-   let file-ex "caribou-fcms-agentnum-success-"
-   set file-ex word file-ex seed
-   set file-ex word file-ex ".txt"
+  let file-ex "caribou-fcms-agentnum-success-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
 
-   file-open file-ex
+  file-open file-ex
 
-   let x length caribou-fcm-adja-list
-   let y 0
-   while [ y < x ] [
-     file-print ""
-     file-write word year ","
-     file-write word (item y caribou-fcm-agentnum-list) ","
-     file-write word (item y caribou-fcm-success-list) ","
-     file-write matrix:to-row-list (item y caribou-fcm-adja-list)
-     file-write matrix:to-row-list (item y caribou-fcm-perception-weights-list)
-     set y y + 1
-   ]
+  let x length caribou-fcm-adja-list
+  let y 0
+  while [ y < x ] [
+    file-print ""
+    file-write word year ","
+    file-write word (item y caribou-fcm-agentnum-list) ","
+    file-write word (item y caribou-fcm-success-list) ","
+    file-write matrix:to-row-list (item y caribou-fcm-adja-list)
+    file-write matrix:to-row-list (item y caribou-fcm-perception-weights-list)
+    set y y + 1
+  ]
 
-    file-close
+  file-close
 end
 
 
@@ -986,16 +1328,16 @@ to reset-caribou-centroids
   ifelse day > 151 and day < 166 and caribou-class = 2
     [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
       set last-centroid patch -64 64 ];current-centroid ]
-    [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
-      set last-centroid patch -64 64 ];current-centroid ] ]
-                                      ;starting grid is closest grid
+  [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
+    set last-centroid patch -64 64 ];current-centroid ] ]
+                                    ;starting grid is closest grid
   ifelse day > 151 and day < 166 and caribou-class = 2
     [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
       set current-grid [who] of current-grid
       set last-grid 0 ]
-    [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
-      set current-grid [who] of current-grid
-      set last-grid 0 ]
+  [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
+    set current-grid [who] of current-grid
+    set last-grid 0 ]
 end
 
 to reset-caribou-banks
@@ -1045,7 +1387,7 @@ to go-dynamic-display
   [
     display-caribou-utility-para
   ]
-    if (show-caribou-utility-non-para?)
+  if (show-caribou-utility-non-para?)
   [
     display-caribou-utility-non-para
   ]
@@ -1062,8 +1404,8 @@ end
 to setup-terrain-layers
 
   ;set ndvi-matrix 0 ;initializing to May 1 NDVI layer. Shouldnt be used ofc until May 1 is reached in the model, though..
-                    ;need to implement timing for NDVI layer switching. Day 121 = May 1 in the simulation, and day 263 = Oct. 20
-                    ;(day 1 = Jan. 1)
+  ;need to implement timing for NDVI layer switching. Day 121 = May 1 in the simulation, and day 263 = Oct. 20
+  ;(day 1 = Jan. 1)
   ask patches [ set ndvi-quality 0 ]
   set-ndvi-data-list ;setting up the NDVI list
   if day >= 151 [ set day 151 go-ndvi set day 152 ] ;bug fix that maintains logic behind NDVI load in procedures.
@@ -1115,43 +1457,43 @@ to setup-terrain-layers
 
     ;do the same for the rest of datasets
     gis:apply-raster patch-boundary-beartooth patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-beecheypoint patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-colvilleriver patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-dewline patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-duckisland patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-greatermoosestooth patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-kuparukriver patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-liberty patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-milnepoint patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-nikaitchuq patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-northstar patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-oooguruk patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-pikka patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-placer patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-prudhoebay patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
     gis:apply-raster patch-boundary-smiluveach patch-deflection-temp
-        ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
 
     set patches-oil-bounds patches with [patch-deflection-oil > 0]
 
   ]
 
-    gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-roads_layer))
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-roads_layer))
   if(deflect-roads?)
   [
     gis:apply-raster patch-roads_layer patch-deflection-roads
@@ -1184,15 +1526,15 @@ end
 
 to-report caribou-veg-type-energy [val]
 
-;1 - Dry prostrate-shrub tundra; barrens
-;2 - Moist graminoid, prostrate-shrub tundra (moist, non-acidic tundra)
-;3 - Moist dwarf-shrub, tussock graminoid tundra (typical acidic, tussock tundra)
-;4 - Moist low-shrub tundra; other shrublands
-;5 - Wet graminoid tundra
-;6 -  Water
-;7 - Clouds, ice
-;8 - Shadow
-;9 - Moist tussock graminoid, dwarf-shrub tundra (moist, cold, acidic, sandy tussock tundra)
+  ;1 - Dry prostrate-shrub tundra; barrens
+  ;2 - Moist graminoid, prostrate-shrub tundra (moist, non-acidic tundra)
+  ;3 - Moist dwarf-shrub, tussock graminoid tundra (typical acidic, tussock tundra)
+  ;4 - Moist low-shrub tundra; other shrublands
+  ;5 - Wet graminoid tundra
+  ;6 -  Water
+  ;7 - Clouds, ice
+  ;8 - Shadow
+  ;9 - Moist tussock graminoid, dwarf-shrub tundra (moist, cold, acidic, sandy tussock tundra)
 
   ;values in MJ in patc
   if(val = 1)
@@ -1269,25 +1611,25 @@ to-report check-location [x y]
   if x < -64.5 or x > 64.5
   [
     report false
- ;   show "X: "
- ;   show x
+    ;   show "X: "
+    ;   show x
   ]
 
   if y < -64.5 or y > 64.5
   [
     report false
- ;   show "Y: "
-;    show y
+    ;   show "Y: "
+    ;    show y
   ]
 
 
   ifelse ([ocean] of patch x y) = 1
- [
-   set ocean-good  false
-  ; show "ocean false"
- ;  show x
- ;  show y
- ]
+  [
+    set ocean-good  false
+    ; show "ocean false"
+    ;  show x
+    ;  show y
+  ]
 
   [
     set ocean-good true
@@ -1296,31 +1638,31 @@ to-report check-location [x y]
   ifelse ([wetness] of patch x y) > 0.95
   [
     set wetness-good false
- ;   show "wet-false"
- ;   show x
-  ;  show y
+    ;   show "wet-false"
+    ;   show x
+    ;  show y
   ]
   [
     set wetness-good true
   ]
 
-   ifelse ([elevation] of patch x y) > elevation-limit
- [
-   set elevation-good  false
-;   show "elev-false"
- ]
+  ifelse ([elevation] of patch x y) > elevation-limit
+  [
+    set elevation-good  false
+    ;   show "elev-false"
+  ]
 
   [
     set elevation-good true
   ]
 
-   ifelse wetness-good = true and ocean-good = true and elevation-good = true
-   [
-     report true
-   ]
-   [
-     report false
-   ]
+  ifelse wetness-good = true and ocean-good = true and elevation-good = true
+  [
+    report true
+  ]
+  [
+    report false
+  ]
 end
 
 to-report patch-exists [x y]
@@ -1343,22 +1685,22 @@ end
 to set-coastline
   ask patches
   [
-     if ocean = 0
-     [
-        if any? neighbors with [ocean = 1]
-        [
-           set coast true
-        ]
-     ]
+    if ocean = 0
+    [
+      if any? neighbors with [ocean = 1]
+      [
+        set coast true
+      ]
+    ]
   ]
 end
 
 ;SHOW COASTLINE
 to show-coastline
-   ask patches with [coast = true]
-   [
-      set pcolor 86
-   ]
+  ask patches with [coast = true]
+  [
+    set pcolor 86
+  ]
 end
 
 ;SET MOSQUITO SCALE
@@ -1374,10 +1716,10 @@ end
 
 ;SET GRAY SCALE
 to set-gray-scale ;sets the gray scale values based on the desities present at each patch
-   set-mosquito-scale
-   set-oestrid-scale
-   set gray-scale (mosquito-scale + oestrid-scale)
-   set pcolor gray-scale
+  set-mosquito-scale
+  set-oestrid-scale
+  set gray-scale (mosquito-scale + oestrid-scale)
+  set pcolor gray-scale
 end
 
 ;SET OESTRID SCALE
@@ -1395,7 +1737,7 @@ end
 to remove-coastline
   ask patches with [coast = true]
   [
-     set-gray-scale
+    set-gray-scale
   ]
 end
 
@@ -1405,10 +1747,10 @@ to reduce-coast
   [
     ask patches in-radius 2 with [ocean = 0]
     [
-         set mosquito-density (random-float (.5 * mosquito-max-tenth))
-        set oestrid-density (random-float (.5 * oestrid-max-tenth))
-        set-gray-scale
-        ;set a coast reduce variable to just check before distributions are made
+      set mosquito-density (random-float (.5 * mosquito-max-tenth))
+      set oestrid-density (random-float (.5 * oestrid-max-tenth))
+      set-gray-scale
+      ;set a coast reduce variable to just check before distributions are made
     ]
   ]
 end
@@ -1428,25 +1770,25 @@ to test-flow
       ;set pcolor yellow
       sprout 1
       [
-       ;let random-color 10 + random 10
-       let flow-id [river-id] of patch-here
+        ;let random-color 10 + random 10
+        let flow-id [river-id] of patch-here
 
-       repeat 1000
-       [
-         ask patch-here [set river-set lput [flow-id] of myself river-set ];set pcolor red]
-         let target neighbors with [connected? = true and not member? ([flow-id] of myself) river-set ]
-         set target min-one-of target [elevation]
-         carefully [ move-to target ]
-         [
-           move-to max-one-of (patches with [member? [flow-id] of myself river-set]) [pycor]
-           set target neighbors with [connected? = true and not member? ([flow-id] of myself) river-set ]
-           set target min-one-of target [elevation]
-           ifelse target = NOBODY
-           [ die ]
-           [ move-to target ]
-         ]
-         ;ask patch-here []
-       ]
+        repeat 1000
+        [
+          ask patch-here [set river-set lput [flow-id] of myself river-set ];set pcolor red]
+          let target neighbors with [connected? = true and not member? ([flow-id] of myself) river-set ]
+          set target min-one-of target [elevation]
+          carefully [ move-to target ]
+          [
+            move-to max-one-of (patches with [member? [flow-id] of myself river-set]) [pycor]
+            set target neighbors with [connected? = true and not member? ([flow-id] of myself) river-set ]
+            set target min-one-of target [elevation]
+            ifelse target = NOBODY
+            [ die ]
+            [ move-to target ]
+          ]
+          ;ask patch-here []
+        ]
       ]
     ]
 
@@ -1579,11 +1921,11 @@ to build-caribou-harvest-lists
   set caribou-harvest-fRanks-list [ ]
   ask caribou-harvests
   [
-;    set caribou-harvest-selection-list [ ]
-;    set caribou-harvest-fRanks-list [ ]
+    ;    set caribou-harvest-selection-list [ ]
+    ;    set caribou-harvest-fRanks-list [ ]
     set caribou-harvest-selection-list lput who caribou-harvest-selection-list
     set caribou-harvest-fRanks-list lput (20 - frequency-rank) caribou-harvest-fRanks-list
-;    set caribou-harvest-fRanks-list lput (20 - ([frequency-rank] of self)) caribou-harvest-fRanks-list
+    ;    set caribou-harvest-fRanks-list lput (20 - ([frequency-rank] of self)) caribou-harvest-fRanks-list
   ]
 end
 
@@ -1592,36 +1934,36 @@ to build-caribou-harvest-prob-list
 end
 
 to export-hunter-data [mode]
-   ;per trip, mode = 0
-   if(mode = 0)
-   [
+  ;per trip, mode = 0
+  if(mode = 0)
+  [
 
-     file-open "hunter-trip-data.txt"
-     ask hunters
-     [
-       file-print ""
-       file-write spent-time
-       file-write ([who] of self)
-       file-write prey-caught
-       file-write harvest-patch
-     ]
-     file-close
-   ]
-   ;per year, mode = 1
-   if(mode = 1)
-   [
-     let filename "hunter-year-data.txt"
-     file-open filename
-     ask hunters
-     [
-       file-print ""
-       file-write year
-       file-write ([who] of self)
-       file-write harvest-amount
-       file-write matrix:to-row-list hunter-fcm-matrix
-     ]
-     file-close
-   ]
+    file-open "hunter-trip-data.txt"
+    ask hunters
+    [
+      file-print ""
+      file-write spent-time
+      file-write ([who] of self)
+      file-write prey-caught
+      file-write harvest-patch
+    ]
+    file-close
+  ]
+  ;per year, mode = 1
+  if(mode = 1)
+  [
+    let filename "hunter-year-data.txt"
+    file-open filename
+    ask hunters
+    [
+      file-print ""
+      file-write year
+      file-write ([who] of self)
+      file-write harvest-amount
+      file-write matrix:to-row-list hunter-fcm-matrix
+    ]
+    file-close
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -3277,7 +3619,7 @@ SWITCH
 628
 use-hunters?
 use-hunters?
-0
+1
 1
 -1000
 
@@ -3316,7 +3658,7 @@ SWITCH
 998
 hunter-recombine?
 hunter-recombine?
-0
+1
 1
 -1000
 
@@ -3327,7 +3669,7 @@ SWITCH
 1035
 hunter-mutate?
 hunter-mutate?
-0
+1
 1
 -1000
 
@@ -3420,7 +3762,7 @@ SWITCH
 625
 hunter-training?
 hunter-training?
-0
+1
 1
 -1000
 
@@ -3588,12 +3930,12 @@ deflect-oil?
 CHOOSER
 1511
 408
-1731
+1751
 453
 scenario
 scenario
-"none" "hunter-evolution" "caribou-evolution" "control-w-hunters" "control-no-hunters" "obd-w-hunters" "obd-no-hunters" "veg-later-shift-w-hunters" "veg-later-shift-no-hunters" "veg-early-shift-w-hunters" "veg-early-shift-no-hunters"
-0
+"none" "hunter-evolution-lo" "caribou-evolution-lo" "control-w-hunters-lo" "control-no-hunters-lo" "obd-w-hunters-lo" "obd-no-hunters-lo" "veg-later-shift-w-hunters-lo" "veg-later-shift-no-hunters-lo" "veg-early-shift-w-hunters-lo" "veg-early-shift-no-hunters-lo" "combined-early-ndvi-no-hunters-lo" "combined-early-ndvi-w-hunters-lo" "combined-late-ndvi-no-hunters-lo" "combined-late-ndvi-w-hunters-lo" "hunter-evolution-hi" "caribou-evolution-hi" "control-w-hunters-hi" "control-no-hunters-hi" "obd-w-hunters-hi" "obd-no-hunters-hi" "veg-later-shift-w-hunters-hi" "veg-later-shift-no-hunters-hi" "veg-early-shift-w-hunters-hi" "veg-early-shift-no-hunters-hi" "combined-early-ndvi-no-hunters-hi" "combined-early-ndvi-w-hunters-hi" "combined-late-ndvi-no-hunters-hi" "combined-late-ndvi-w-hunters-hi"
+8
 
 SWITCH
 371
@@ -3602,7 +3944,7 @@ SWITCH
 1132
 use-high-res-ndvi?
 use-high-res-ndvi?
-0
+1
 1
 -1000
 
