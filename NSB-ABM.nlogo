@@ -3619,7 +3619,7 @@ SWITCH
 628
 use-hunters?
 use-hunters?
-1
+0
 1
 -1000
 
@@ -3658,7 +3658,7 @@ SWITCH
 998
 hunter-recombine?
 hunter-recombine?
-1
+0
 1
 -1000
 
@@ -3669,7 +3669,7 @@ SWITCH
 1035
 hunter-mutate?
 hunter-mutate?
-1
+0
 1
 -1000
 
@@ -3762,7 +3762,7 @@ SWITCH
 625
 hunter-training?
 hunter-training?
-1
+0
 1
 -1000
 
@@ -3935,7 +3935,7 @@ CHOOSER
 scenario
 scenario
 "none" "hunter-evolution-lo" "caribou-evolution-lo" "control-w-hunters-lo" "control-no-hunters-lo" "obd-w-hunters-lo" "obd-no-hunters-lo" "veg-later-shift-w-hunters-lo" "veg-later-shift-no-hunters-lo" "veg-early-shift-w-hunters-lo" "veg-early-shift-no-hunters-lo" "combined-early-ndvi-no-hunters-lo" "combined-early-ndvi-w-hunters-lo" "combined-late-ndvi-no-hunters-lo" "combined-late-ndvi-w-hunters-lo" "hunter-evolution-hi" "caribou-evolution-hi" "control-w-hunters-hi" "control-no-hunters-hi" "obd-w-hunters-hi" "obd-no-hunters-hi" "veg-later-shift-w-hunters-hi" "veg-later-shift-no-hunters-hi" "veg-early-shift-w-hunters-hi" "veg-early-shift-no-hunters-hi" "combined-early-ndvi-no-hunters-hi" "combined-early-ndvi-w-hunters-hi" "combined-late-ndvi-no-hunters-hi" "combined-late-ndvi-w-hunters-hi"
-8
+1
 
 SWITCH
 371
@@ -3955,6 +3955,23 @@ BUTTON
 1169
 Show NDVI
 show-ndvi
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+692
+562
+811
+595
+Rapid Year Test
+set day 255
 NIL
 1
 T
