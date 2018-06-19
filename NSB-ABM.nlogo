@@ -1961,6 +1961,7 @@ to export-hunter-data [mode]
       file-write ([who] of self)
       file-write harvest-amount
       file-write matrix:to-row-list hunter-fcm-matrix
+      file-write matrix:to-row-list hunter-input-matrix
     ]
     file-close
   ]
