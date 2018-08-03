@@ -552,7 +552,7 @@ to set-hunter-density
 end
 
 to head-towards-prey
-  set heading towards prey 
+  face prey
 end
 
 to catch-prey
