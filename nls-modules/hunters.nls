@@ -498,30 +498,36 @@ to boat-travel-funct [target-r]
   if([connected?] of patch-here = true and empty? [river-set] of patch-here = false and ([river-set] of patch-here != [river-set] of target-r)) [set return-to-river true]
   ifelse(return-to-river = false)
   [
-       set river-memory lput patch-here river-memory
-       let target neighbors with [connected? = true and not member? self [river-memory] of myself 
-                             and (list-intersect ([river-to-follow] of myself) river-set) ] 
-       set target max-one-of target [elevation]
-       carefully [ face target move-to target ]
-       [
-         move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor]
-         set target neighbors with [connected? = true and not member? self [river-memory] of myself 
-                                and (list-intersect ([river-to-follow] of myself) river-set)] 
-         set target max-one-of target [elevation]
-         if target != NOBODY
-         [ face target move-to target ]
-       ]
-   ]
-   [
-     if (target-r = 0)
-     [ set target-r home-patch ] 
-     foot-travel-return-funct target-r
-   ]
+    ifelse (patch-here != target-r)
+    [     
+      ;set river-memory lput patch-here river-memory
+      ;let target neighbors with [connected? = true and not member? self [river-memory] of myself and (list-intersect ([river-to-follow] of myself) river-set) ] 
+      let target neighbors in-radius 5 with [connected? = true and not member? self [river-memory] of myself and (list-intersect ([river-to-follow] of myself) river-set) ] 
+      set target max-one-of target [elevation]
+      carefully [ face target move-to target ]
+      [
+        move-to min-one-of neighbors with [(list-intersect ([river-to-follow] of myself) river-set)][pycor]
+        ;set target neighbors with [connected? = true and not member? self [river-memory] of myself and (list-intersect ([river-to-follow] of myself) river-set)]
+        set target neighbors in-radius 5 with [connected? = true and not member? self [river-memory] of myself and (list-intersect ([river-to-follow] of myself) river-set) ]  
+        set target max-one-of target [elevation]
+        if target != NOBODY
+        [ face target move-to target ]
+      ]
+    ]
+    [
+      face target-r move-to target-r     
+    ]
+  ]
+  [
+    if (target-r = 0)
+    [ set target-r home-patch ] 
+    foot-travel-return-funct target-r
+  ]
 end 
 
 to boat-travel-return-funct
   set river-memory []
-  set river-memory lput patch-here river-memory
+  ;set river-memory lput patch-here river-memory
   let target neighbors with [connected? = true and not member? self [river-memory] of myself and ( [distance home-patch-global] of self < [distance home-patch] of myself )
                              and (list-intersect ([river-to-follow] of myself) river-set)] ;in-radius 2 ;and not member of my memory
   set target min-one-of target [elevation]
