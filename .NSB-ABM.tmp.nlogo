@@ -1239,10 +1239,6 @@ to go
 
   if exportCaribouData?[ export-caribou-state-data ]
 
-  if export-logger-data?
-  [
-    export-logger-data
-  ]
 
   if use-hunters? [
     go-hunters-nls
