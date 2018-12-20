@@ -67,7 +67,7 @@ caribou-own
   caribou-fcm-node-states
   caribou-fcm-perception-weights
   caribou-fcm-perceptions
-
+  caribou-prev-fcm-node-states
 
   ;Q-Net
   net-x
@@ -597,7 +597,7 @@ to go-caribou
     set caribou-fcm-node-states matrix:plus state-influences caribou-fcm-node-states 
     set caribou-fcm-node-states matrix:map fcm-sigmoid-simple caribou-fcm-node-states
     let node-states matrix:submatrix caribou-fcm-node-states 0 16 1 21
-    
+    set caribou-prev-fcm-node-states node-states
    ; Submatrix to return new state list for x+1
    ; let final-states [0 1]
     set state fcm-index-max matrix:transpose node-states

@@ -1239,6 +1239,10 @@ to go
 
   if exportCaribouData?[ export-caribou-state-data ]
 
+  if export-logger-data?
+  [
+    export-logger-data
+  ]
 
   if use-hunters? [
     go-hunters-nls
@@ -1295,10 +1299,10 @@ to export-logger-data
     file-print ""
     file-write word scenario ","
     file-write word ([who] of self) ","
-    ;file-write word matrix:to-row-list hunter-fcm-matrix ","
-    ;file-write word matrix:to-row-list hunter-input-matrix ","
-    ;file-write word matrix:to-row-list hunter-fcm-sensory ","
-    ;file-write word matrix:to-row-list previous-activations ","
+    file-write word matrix:to-row-list fcm-adja ","
+    file-write word matrix:to-row-list  ","
+    file-write word matrix:to-row-list caribou-fcm-perceptions ","
+    file-write word matrix:to-row-list caribou-prev-fcm-node-states ","
   ]
   file-close
 end
@@ -4392,7 +4396,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
