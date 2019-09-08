@@ -113,11 +113,6 @@ globals
   patch-vegetation-dataset
   max-roughness
 
-  ;use boxes;
-  ; mutation-rate
-  ; mutation-amt
-  ; learn-rate
-
   ;Globals Precipitation
   precipitation-dataset
   	precipitation-data-list
@@ -171,9 +166,6 @@ globals
   caribou-pop
   caribou/agent
   r-caribou
-  ;;Caribou Activation Control
-  ;caribou-cent-dist-cutoff
-  ;caribou-util-cutoff
 
   ;;magic centroid number - A hack to allow comparison with centriod number
   magic-centroid
@@ -398,13 +390,9 @@ to setup
 
   setup-precipitation
   setup-terrain-layers
-  setup-caribou-utility ;setup caribou utility code requires a fix, semantics of it don't make sense.
-                        ;update-caribou-utility
-                        ;update-para-utility
-                        ;update-non-para-utility
+  setup-caribou-utility
   setup-moose-utility
   setup-moose
-  ;setup-centroids
   setup-caribou
   setup-caribou-q
 
@@ -418,7 +406,6 @@ to setup
   ]
 
   set caribou-fcm-adja-list [fcm-adja] of caribou
-  ; setup-ndvi
   go-veg-ranking
   set-streams
 
@@ -564,10 +551,8 @@ to profile-test
   profiler:reset
   profiler:start
 
-  ;setup-grid-layers
   setup
   while [ year != 2 ] [ go ]
-
 
   profiler:stop
   print profiler:report
@@ -590,6 +575,11 @@ to scenario-controller
     set Nuiqsut? true
     set CD5? true
     set BoundsFile "data/development-regions/pipes_layer.asc"
+
+    ;; caribou default variables:
+    ;; no recalibration of related environment vars
+    ;; import pre-existing FCMs and env vars
+    ;; allow evolution of FCM to occur
     set caribouPopMod? false
     set caribou-amt 2500
     set caribou-group-amt 50
@@ -618,7 +608,13 @@ to scenario-controller
     set caribou-max-wetness 0.8
     set caribou-max-elevation 700
     set caribou-modify-amt 1
+    ;; end default caribou vars
+
     set moose-amt 0
+
+    ;; default hunter vars:
+    ;; no hunter fcm import
+    ;; hunter fcms are evolving
     set hunter-recomb-prob 0.2
     set hunter-mutate-prob 0.15
     set hunter-mutate? true
@@ -649,7 +645,7 @@ to scenario-controller
     set deflect-oil? false
     set deflect-roads? false
     set use-hunters? true
-
+    ;; end default hunter vars
 
     if scenario = "control-w-hunters-lo" [
       ;; evolve agents for 1000 years.
@@ -1178,12 +1174,9 @@ to go
 
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
 
-      ;ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
-
       set year year + 1
       set day 152
 
-      ;if year = 200 [ stop ] ; can be deleted, just for network recording.
       set avg-sim-time lput timer avg-sim-time
       reset-timer
     ]
@@ -1197,21 +1190,14 @@ to go
     if day = 212 [ go-insect ]
     if day = 227 [ go-insect ]
 
-
-    ;build-mean-utility-lists
-
     if (day - 12) mod 14 = 0
-    ;if abs (mean [caribou-utility-non-para] of patches - non-para-check) > 0.000000001 ;mean [caribou-utility-para] of patches != para-check or
     [
-      ;centroid-test
       centroid-read
       grid-read
 
       ask caribou [ reset-caribou-centroids ]
 
     ]
-
-    ;ifelse year = 0 [centroid-weight-master-io] [centroid-weight-io]
 
     if export-centroids? [ centroid-export ]
     swap-centroid-layers
@@ -1661,8 +1647,6 @@ to nad-to-patch-pos [x y]
 
 end
 
-;
-
 ;Spawn location checking for better testing.
 to-report check-location [x y]
   let ocean-good true
@@ -1672,24 +1656,17 @@ to-report check-location [x y]
   if x < -64.5 or x > 64.5
   [
     report false
-    ;   show "X: "
-    ;   show x
   ]
 
   if y < -64.5 or y > 64.5
   [
     report false
-    ;   show "Y: "
-    ;    show y
   ]
 
 
   ifelse ([ocean] of patch x y) = 1
   [
     set ocean-good  false
-    ; show "ocean false"
-    ;  show x
-    ;  show y
   ]
 
   [
@@ -1699,9 +1676,6 @@ to-report check-location [x y]
   ifelse ([wetness] of patch x y) > 0.95
   [
     set wetness-good false
-    ;   show "wet-false"
-    ;   show x
-    ;  show y
   ]
   [
     set wetness-good true
@@ -1710,7 +1684,6 @@ to-report check-location [x y]
   ifelse ([elevation] of patch x y) > elevation-limit
   [
     set elevation-good  false
-    ;   show "elev-false"
   ]
 
   [
@@ -1828,10 +1801,8 @@ to test-flow
     ask patch (item x river-cords) (item (x + 1) river-cords)
     [
       set river-id ((x / 2) + 1)
-      ;set pcolor yellow
       sprout 1
       [
-        ;let random-color 10 + random 10
         let flow-id [river-id] of patch-here
 
         repeat 1000
@@ -1848,7 +1819,6 @@ to test-flow
             [ die ]
             [ move-to target ]
           ]
-          ;ask patch-here []
         ]
       ]
     ]
@@ -1868,36 +1838,6 @@ to visualize-rivers
     set x x + 1
   ]
 end
-
-
-;to-report build-prob-list [ weighted-list ]
-;  let x 1
-;  let prob-num 0
-;  ;let mini-list [ ]
-;  let prob-list [ ]
-;  set prob-num item (x - 1) weighted-list + item x weighted-list
-;  set prob-list lput prob-num prob-list
-;
-;  while [x < length weighted-list]
-;  [
-;    set prob-num 0;
-
-;    set prob-num item (x - 1) prob-list + item x weighted-list
-
-;    set prob-list lput prob-num prob-list
-;    set x x + 1
-;  ]
-
-;  print "pre-scaled prob list:"
-;  show prob-list
-
-;  let minVal min prob-list
-;  let maxVal max prob-list
-;  set prob-list feature-scale-list minVal maxVal prob-list
-
-;  report prob-list
-;end
-
 
 ;;use this function to build a probability list from a weighted listed. Order doesn't matter
 ;;in the weighted list.
@@ -1982,11 +1922,8 @@ to build-caribou-harvest-lists
   set caribou-harvest-fRanks-list [ ]
   ask caribou-harvests
   [
-    ;    set caribou-harvest-selection-list [ ]
-    ;    set caribou-harvest-fRanks-list [ ]
     set caribou-harvest-selection-list lput who caribou-harvest-selection-list
     set caribou-harvest-fRanks-list lput (20 - frequency-rank) caribou-harvest-fRanks-list
-    ;    set caribou-harvest-fRanks-list lput (20 - ([frequency-rank] of self)) caribou-harvest-fRanks-list
   ]
 end
 
