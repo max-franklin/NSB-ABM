@@ -84,32 +84,26 @@ to centroid-test
   ;ask patches with [ cent-util-non-para >= .75 * max-cnp and cent-util-non-para <= 1 * max-cnp] [ if cent-util-non-para > max [ cent-util-non-para ] of neighbors [ set pcolor yellow ]]
 end
 
-to centroid-read
-  if day < 250 [
+to centroid-read [ centroid-day ]
+  if centroid-day < 250 [
     let cycler 1
-  ;show day
-  ;show (day - 12) mod 14
-  let tday day + 14
-  let target-file word "data/migration-centroids/patch-cids-non-para-" tday
-  set target-file word target-file ".txt"
-  ;;show target-file
-  file-open target-file
-  ask patches [ set npid 0 set np-network-id 0 set pcolor black ]
-  let xc -64 let yc 64 
+    let tday centroid-day + 14
+    let target-file word "data/migration-centroids/patch-cids-non-para-" tday
+    set target-file word target-file ".txt"
+    ;;show target-file
+    file-open target-file
+    ask patches [ set npid 0 set np-network-id 0 set pcolor black ]
+    let xc -64 let yc 64 
     while [ yc >= -64]  
     [ ask patch xc yc 
       [set npid file-read if npid > 0 [ set np-network-id cycler set cycler cycler + 1 ] ] 
        set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] 
     ]
-  ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
     file-close-all
-    
 
-    if day < 166
+    if centroid-day < 166
     [
       set cycler 1
-      ;show day
-      ;show (day - 12) mod 14
       
       set target-file word "data/migration-centroids/patch-cids-para-" tday
       set target-file word target-file ".txt"
@@ -123,11 +117,7 @@ to centroid-read
       
       file-close-all
     ]
-    
-
   ]
-  
-
   if display-centroids? = true [ display-npc ]
 end
 
@@ -221,8 +211,7 @@ to setup-cent-layers
   let day-list [ 152 166 180 194 208 222 236 250 ]
   
   foreach day-list [ i ->
-    set day i 
-    centroid-read
+    centroid-read i
     if i = 152 [
       set np-centroid-layer-152 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0
       set p-centroid-layer-152 matrix:make-constant (max [p-network-id] of patches) (max [p-network-id] of patches) 0  ] 
@@ -235,8 +224,6 @@ to setup-cent-layers
     if i = 236 [ set np-centroid-layer-236 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
     if i = 250 [ set np-centroid-layer-250 matrix:make-constant (max [np-network-id] of patches) (max [np-network-id] of patches) 0 ]
   ]
-  
-  set day 152
   
 end
 

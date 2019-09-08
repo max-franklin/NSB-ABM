@@ -362,7 +362,7 @@ to setup
   set np-centroid-network np-centroid-layer-152
   set p-centroid-network p-centroid-layer-152
 
-  centroid-read
+  centroid-read day
   grid-read
 
   set season 1
@@ -495,8 +495,6 @@ to setup-centroids
 
 
   file-close
-
-
 
 end
 
@@ -1192,7 +1190,7 @@ to go
 
     if (day - 12) mod 14 = 0
     [
-      centroid-read
+      centroid-read day
       grid-read
 
       ask caribou [ reset-caribou-centroids ]
@@ -4333,7 +4331,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.4
+NetLogo 6.0.3
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
