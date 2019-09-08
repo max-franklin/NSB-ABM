@@ -363,7 +363,7 @@ to setup
   set p-centroid-network p-centroid-layer-152
 
   centroid-read day
-  grid-read
+  grid-read day
 
   set season 1
   setup-deflectors
@@ -1191,7 +1191,7 @@ to go
     if (day - 12) mod 14 = 0
     [
       centroid-read day
-      grid-read
+      grid-read day
 
       ask caribou [ reset-caribou-centroids ]
 

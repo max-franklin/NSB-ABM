@@ -84,11 +84,11 @@ to centroid-test
   ;ask patches with [ cent-util-non-para >= .75 * max-cnp and cent-util-non-para <= 1 * max-cnp] [ if cent-util-non-para > max [ cent-util-non-para ] of neighbors [ set pcolor yellow ]]
 end
 
-to centroid-read [ centroid-day ]
-  if centroid-day < 250 [
+to centroid-read [ today ]
+  if today < 250 [
     let cycler 1
-    let tday centroid-day + 14
-    let target-file word "data/migration-centroids/patch-cids-non-para-" tday
+    let next-centroid-day today + 14
+    let target-file word "data/migration-centroids/patch-cids-non-para-" next-centroid-day
     set target-file word target-file ".txt"
     ;;show target-file
     file-open target-file
@@ -101,11 +101,11 @@ to centroid-read [ centroid-day ]
     ]
     file-close-all
 
-    if centroid-day < 166
+    if today < 166
     [
       set cycler 1
       
-      set target-file word "data/migration-centroids/patch-cids-para-" tday
+      set target-file word "data/migration-centroids/patch-cids-para-" next-centroid-day
       set target-file word target-file ".txt"
       ;show target-file
       file-open target-file
