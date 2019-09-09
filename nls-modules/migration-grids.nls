@@ -299,7 +299,6 @@ to spawn-grid-centers
     set x x + 1
   ]
   ask grids with [np-qual-id = 0] [die]
-  ;ask grids [ if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color grey] if np-qual-id = 4 [set color yellow] ]
 end
 
 to display-npgrids

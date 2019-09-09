@@ -208,6 +208,14 @@ to profile-net-setup
 end
 
 to setup-cent-layers
+  
+  set cent-day-list [ ]
+  ask patches
+  [ set cent-util-list-non-para [ ]
+    set cent-util-list-para [ ]
+    set np-grid-id 0
+    set p-grid-id 0 ]
+  
   let day-list [ 152 166 180 194 208 222 236 250 ]
   
   foreach day-list [ i ->

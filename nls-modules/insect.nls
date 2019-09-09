@@ -1,6 +1,11 @@
 ;This is the .nls module for loading and updating insect values in the model.
 
 to setup-insect
+  set-mosquito-means-list
+  set-oestrid-means-list
+  set-mosquito-mean
+  set-oestrid-mean
+  ;; zero out insect densities on ocean patches
   ask patches
     [
        if (elevation < 0) ;ocean has negative raster values
@@ -10,14 +15,7 @@ to setup-insect
          set mosquito-scale 0
          set oestrid-scale 0
          set pcolor 0
-         ;set water true
-         ;set bool-ocean true
       ]
-      ;if (elevation >= 0)
-      ;[
-      ;   set water false
-      ;   set bool-ocean false
-      ;]
     ]
 end
 

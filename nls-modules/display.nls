@@ -148,10 +148,6 @@ to display-caribou-utility-non-para
   ask patches [set pcolor scale-color green caribou-utility-non-para 0 1 ]
 end
 
-to display-moose-utility
-  ask patches [set pcolor scale-color green moose-utility 0 3 ]
-end
-
 ;show bounds files
 to display-bounds
   cd

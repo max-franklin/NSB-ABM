@@ -28,19 +28,6 @@ to-report patch-list-caribou-wrapper [curr-x curr-y attraction target]
 
 end
 
-to-report patch-list-moose-wrapper [curr-x curr-y]
-
-  build-patch-list curr-x curr-y
-  remove-nonwalkable-patches moose-max-elevation moose-max-wetness
-  patch-list-normal-moose-util
-  patch-list-add-attraction 0 one-of centroids
-
-  let p patch-list-probable
-  ;clear the patch-list by calling setup
-  setup-patch-list
-  report p
-end
-
 to-report patch-list-caribou-para-wrapper [curr-x curr-y attraction target]
  
 
@@ -245,39 +232,6 @@ to patch-list-normal-caribou-util-non-para
   ]
 
 end
-
-
-to patch-list-normal-moose-util
-  let utotal 0
-
-  let i 0
-  ;get total number
-  while [i < 8]
-  [
-    if(patch-list-get-exist i = 1)
-    [
-      let p patch (patch-list-get-x i) (patch-list-get-y i)
-      array:set patch-list-utility i ([moose-utility] of p)
-      set utotal (utotal + array:item patch-list-utility i)
-    ]
-    set i (i + 1)
-  ]
-
-  ;as
-  set i 0
-  while [i < 8]
-  [
-    if(patch-list-get-exist i = 1 and not (utotal = 0))
-    [
-      array:set patch-list-utility i (array:item patch-list-utility i / utotal)
-    ]
-    set i (i + 1)
-  ]
-
-end
-
-
-
 
 ;Add an attraction to a target variable
 to patch-list-add-attraction [attraction target]
