@@ -615,7 +615,7 @@ to init-simulation-vars-from-scenario [ selected-scenario ]
     if member? "no-hunter" selected-scenario [
       setup-no-hunter-scenario-vars
     ]
-    if member? "obd" selected-scenario or member? "combined" selected-scenario [
+    if member? "obd" selected-scenario [
       setup-obd-scenarios-vars
     ]
     if member? "veg-early-shift" selected-scenario [
