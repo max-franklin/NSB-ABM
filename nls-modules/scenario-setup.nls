@@ -1,0 +1,22 @@
+to setup-no-hunter-scenario-vars
+  set use-hunters? false
+  set hunter-mutate? false
+  set hunter-recombine? false
+  set hunter-training? false
+end
+
+to setup-obd-scenarios-vars
+  set deflect-pipeline? true
+  set deflect-oil? true
+  set deflect-roads? true
+end
+
+to setup-caribou-evolution-vars
+	set use-high-res-ndvi? false
+  set calibrateCaribouVar? true
+  set randomCaribouVarStart? true
+  set import-caribou-var? false
+  set is-random? true
+  set Nuiqsut? false
+  set CD5? false
+end

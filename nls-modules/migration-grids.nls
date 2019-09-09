@@ -180,69 +180,10 @@ to setup-grid-layers
   file-close-all
 end
 
-to old-grid-read
-  ;;procedure is purely around for testing comparison at this point.
-  if day < 250 [
-    ;show day
-    ;show (day - 12) mod 14
-    let tday day + 14
-    let target-file word "data/migration-grids/grids-ids-non-para-" tday
-    set target-file word target-file ".txt"
-    ;show target-file
-    file-open target-file
-    ask patches [ set np-grid-id 0  set pcolor black ]
-    let xc -64 let yc 64 while [ yc >= -64]  [ ask patch xc yc [set np-grid-id file-read ] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
-    ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
-    file-close-all
-
-    set tday day + 14
-    set target-file word "data/migration-grids/grids-qaul-non-para-" tday ;accidentally mispelled file name in file creation, can fix later.
-    set target-file word target-file ".txt"
-
-    ;show target-file
-    file-open target-file
-    ask patches [ set gnpid 0  set pcolor black ]
-    set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [set gnpid file-read ] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
-    ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
-    file-close-all
-
-    if day < 166
-    [
-      ;show day
-      ;show (day - 12) mod 14
-      set tday day + 14
-      set target-file word "data/migration-grids/grids-ids-para-" tday
-      set target-file word target-file ".txt"
-      ;show target-file
-      file-open target-file
-      ask patches [ set p-grid-id 0  set pcolor black ]
-      set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [set p-grid-id file-read ] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
-      ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
-      file-close-all
-
-      set tday day + 14
-      set target-file word "data/migration-grids/grids-qaul-para-" tday ;accidentally mispelled file name in file creation, can fix later.
-      set target-file word target-file ".txt"
-
-      ;show target-file
-      file-open target-file
-      ask patches [ set gpid 0  set pcolor black ]
-      set xc -64 set yc 64 while [ yc >= -64]  [ ask patch xc yc [set gpid file-read ] set xc xc + 1 if xc >= 65 [ set yc yc - 1 set xc -64 ] ]
-      ;ask patches [if npid = 1 [set pcolor red] if npid = 2 [set pcolor blue] if npid = 3 [set pcolor grey] if npid = 4 [set pcolor yellow] ]
-      file-close-all
-    ]
-
-    spawn-grid-centers
-    
-  ]
-
-  ifelse display-grids? = true [ display-npgrids] [ask grids [ht] ]
-end
-
-to grid-read
+to grid-read [ today ]
   let day-list [ 166 180 194 208 222 236 250 ]
   
-  let pos position (day + 14) day-list
+  let pos position (today + 14) day-list
   
   show pos
   
@@ -358,7 +299,6 @@ to spawn-grid-centers
     set x x + 1
   ]
   ask grids with [np-qual-id = 0] [die]
-  ;ask grids [ if np-qual-id = 1 [set color red] if np-qual-id = 2 [set color blue] if np-qual-id = 3 [set color grey] if np-qual-id = 4 [set color yellow] ]
 end
 
 to display-npgrids

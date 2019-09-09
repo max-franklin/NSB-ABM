@@ -1,92 +1,85 @@
 to setup-precipitation
   ask patches[set precipitation-amt 0]
+  set precipitation-data-list ["data/PrecipitationMatrices/Precipitation1.asc" "data/PrecipitationMatrices/Precipitation2.asc" "data/PrecipitationMatrices/Precipitation3.asc" "data/PrecipitationMatrices/Precipitation4.asc" "data/PrecipitationMatrices/Precipitation5.asc" "data/PrecipitationMatrices/Precipitation6.asc"
+                               "data/PrecipitationMatrices/Precipitation7.asc" "data/PrecipitationMatrices/Precipitation8.asc" "data/PrecipitationMatrices/Precipitation9.asc" "data/PrecipitationMatrices/Precipitation10.asc" "data/PrecipitationMatrices/Precipitation11.asc" "data/PrecipitationMatrices/Precipitation12.asc"]
 end
 
 to go-precipitation
-;Define months to load Precipitation dataset
-if(day < 366) ;dec
-[
-	;set matrix item to 12
-	set precipitation-matrix-number 11
-]
-
-if(day < 335) ;nov
-[
-	;set matrix item to 11
-	set precipitation-matrix-number 10
-]
-
-if(day < 304) ;oct
-[
-	;set matrix item to 10
-	set precipitation-matrix-number 9
-]
-
-if(day < 274) ;sept
-[
-	;set matrix item to 9
-	set precipitation-matrix-number 8
-]
-
-if(day < 243) ;aug
-[
-	;set matrix item to 8
-	set precipitation-matrix-number 7
-]
-
-if(day < 213) ;july
-[
-	;set matrix item to 7
-	set precipitation-matrix-number 6
-]
-
-if(day < 182) ;june
-[
-	;set matrix item to 6
-	set precipitation-matrix-number 5
-]
-
-if(day < 152) ;may
-[
-	;set matrix item to 5
-	set precipitation-matrix-number 4
-]
-
-if(day < 121) ;april
-[
-	;set matrix item to 4
-	set precipitation-matrix-number 3
-]
-if(day < 91) ;march
-[
-	;set matrix item to 3
-	set precipitation-matrix-number 2
-]
-
-if(day < 60) ;feb
-[
-	;set matrix item to 2
-	set precipitation-matrix-number 1
-]
-
-if(day < 32) ;jan
-[
-	;set matrix item to 1
-	set precipitation-matrix-number 0
-]
-
-let pmatrix (item precipitation-matrix-number precipitation-data-list)
+  ;Define months to load Precipitation dataset
+  if(day < 366) ;dec
+  [
+    	;set matrix item to 12
+    	set precipitation-matrix-number 11
+  ]
+  
+  if(day < 335) ;nov
+  [
+    	;set matrix item to 11
+    	set precipitation-matrix-number 10
+  ]
+  
+  if(day < 304) ;oct
+  [
+    	;set matrix item to 10
+    	set precipitation-matrix-number 9
+  ]
+  
+  if(day < 274) ;sept
+  [
+    	;set matrix item to 9
+    	set precipitation-matrix-number 8
+  ]
+  
+  if(day < 243) ;aug
+  [
+    	;set matrix item to 8
+    	set precipitation-matrix-number 7
+  ]
+  
+  if(day < 213) ;july
+  [
+    	;set matrix item to 7
+    	set precipitation-matrix-number 6
+  ]
+  
+  if(day < 182) ;june
+  [
+    	;set matrix item to 6
+    	set precipitation-matrix-number 5
+  ]
+  
+  if(day < 152) ;may
+  [
+    	;set matrix item to 5
+    	set precipitation-matrix-number 4
+  ]
+  
+  if(day < 121) ;april
+  [
+    	;set matrix item to 4
+    	set precipitation-matrix-number 3
+  ]
+  if(day < 91) ;march
+  [
+    	;set matrix item to 3
+    	set precipitation-matrix-number 2
+  ]
+  
+  if(day < 60) ;feb
+  [
+    	;set matrix item to 2
+    	set precipitation-matrix-number 1
+  ]
+  
+  if(day < 32) ;jan
+  [
+    	;set matrix item to 1
+    	set precipitation-matrix-number 0
+  ]
+  
+  let pmatrix (item precipitation-matrix-number precipitation-data-list)
   set precipitation-dataset gis:load-dataset pmatrix
   set precipitation-max (gis:maximum-of precipitation-dataset)
-  gis:set-sampling-method precipitation-dataset "BILINEAR"
-  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of precipitation-dataset))
-  gis:apply-raster precipitation-dataset precipitation-amt
-
-  ask patches [if(not ( (precipitation-amt <= 0) or (precipitation-amt >= 0))) [set precipitation-amt 0]]
-end
-
-to test-precipitation-layer
-  set precipitation-dataset gis:load-dataset "/Users/MaxwellFranklin/Documents/NSB-ABM/test.asc"
   gis:set-sampling-method precipitation-dataset "BILINEAR"
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of precipitation-dataset))
   gis:apply-raster precipitation-dataset precipitation-amt
@@ -95,17 +88,3 @@ to test-precipitation-layer
 end
 
 
-;Monthly Precipitation Data
-to set-precipitation-data-list
-    set precipitation-data-list ["data/PrecipitationMatrices/Precipitation1.asc" "data/PrecipitationMatrices/Precipitation2.asc" "data/PrecipitationMatrices/Precipitation3.asc" "data/PrecipitationMatrices/Precipitation4.asc" "data/PrecipitationMatrices/Precipitation5.asc" "data/PrecipitationMatrices/Precipitation6.asc"
-                               "data/PrecipitationMatrices/Precipitation7.asc" "data/PrecipitationMatrices/Precipitation8.asc" "data/PrecipitationMatrices/Precipitation9.asc" "data/PrecipitationMatrices/Precipitation10.asc" "data/PrecipitationMatrices/Precipitation11.asc" "data/PrecipitationMatrices/Precipitation12.asc"]
-end
-
-;to load-precipitation-gis   ;loads in the north slope GIS elevation raster to a dataset in NetLogo
-;  let pmatrix (item precipitation-matrix precipitation-data-list)
-;  set precipitation-dataset gis:load-dataset pmatrix
-;  set precipitation-max (gis:maximum-of precipitation-dataset)
-;  gis:set-sampling-method precipitation-dataset "BILINEAR"
-;  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of precipitation-dataset))
-;  gis:apply-raster precipitation-dataset precipitation-amt
-;end
