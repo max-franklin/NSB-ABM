@@ -1,12 +1,29 @@
+globals [
+  kde-slices ;how many sections are needed
+  
+  ;This should probably be replaced with a sim global for the min/max
+  kde-min-day ;starting day of simulation year
+  kde-max-day ;maximum day of simulation year 
+]
+
+to setup-kde-sample 
+  ask patches [
+    set patch-caribou-KDE array:from-list n-values 6 [0]
+    set patch-hunter-KDE array:from-list n-values 6 [0]
+  ]
+end
+
 to setup-caribou-kde-file
   if collect-kde? [
+    
+    
     let file-out "control-scenario-caribou-kde-data.txt"
     if file-exists? file-out [ file-delete file-out ]
     file-open file-out
-    file-write "ticks"
-    file-write "who"
     file-write "xcor"
     file-write "ycor"
+    file-write "list"
+
     file-close
   ]
 end
@@ -16,44 +33,97 @@ to setup-hunter-kde-file
     let file-out "control-scenario-hunter-kde-data.txt"
     if file-exists? file-out [ file-delete file-out ]
     file-open file-out
-    file-write "ticks"
-    file-write "who"
     file-write "xcor"
     file-write "ycor"
+    file-write "list"
     file-close
   ]
 end
 
 to collect-caribou-coordinates
   if collect-kde? [
-    let file-out "control-scenario-caribou-kde-data.txt"
-    file-open file-out
-    
-    ask caribou [
-      file-print ""
-      file-write ticks
-      file-write who
-      file-write xcor
-      file-write ycor
+  ;  let file-out "control-scenario-caribou-kde-data.txt"
+  ;  file-open file-out
+    let kde-index floor (((day-to-month - 6) + percent-of-month-complete - .000001) * 2)
+    if (kde-index > 5)
+    [
+      set kde-index 5
     ]
     
-    file-close
+    ask caribou [
+      ask patch-here [
+        let last-val-add-one (array:item patch-caribou-KDE kde-index) + 1
+        array:set patch-caribou-KDE kde-index last-val-add-one
+      ]
+      
+  ;    file-print ""
+  ;    file-write ticks
+  ;    file-write who
+  ;    file-write xcor
+  ;    file-write ycor
+    ]
+    
+  ;  file-close
   ]
 end
 
 to collect-hunter-coordinates
   if collect-kde? [
-    let file-out "control-scenario-hunter-kde-data.txt"
-    file-open file-out
-    
-    ask hunters [
-      file-print ""
-      file-write ticks
-      file-write who
-      file-write xcor
-      file-write ycor
+ ;   let file-out "control-scenario-hunter-kde-data.txt"
+ ;   file-open file-out
+    ; Keep 100% month completions in the same month, since these functions are by day
+    let kde-index floor (((day-to-month - 6) + percent-of-month-complete - .000001) * 2)
+    if (kde-index > 5)
+    [
+      set kde-index 5
     ]
     
+    ask hunters [
+      ask patch-here [
+        let last-val-add-one (array:item patch-hunter-KDE kde-index) + 1
+        array:set patch-hunter-KDE kde-index last-val-add-one
+      ]       
+   ;   file-print ""
+   ;   file-write ticks
+   ;   file-write who
+   ;   file-write xcor
+   ;   file-write ycor
+    ]
+    
+ ;   file-close
+  ]
+end
+
+to kde-write-out-files 
+  if collect-kde?
+  [
+    let file-out "control-scenario-caribou-kde-data.txt"
+    file-open file-out
+    ask patches [
+      file-print ""
+      file-write year
+      file-write pxcor
+      file-write pycor
+      file-write array:to-list patch-caribou-KDE
+    ]
+    file-print ""
+    file-print ""
+    file-print ""
     file-close
+    
+    set file-out "control-scenario-hunter-kde-data.txt"
+    file-open file-out
+    ask patches [
+      file-print ""
+      file-write year
+      file-write pxcor
+      file-write pycor
+      file-write array:to-list patch-hunter-KDE
+    ]
+    file-print ""
+    file-print ""
+    file-print ""
+    file-close
+    
   ]
 end

@@ -5,7 +5,46 @@
 ;      set fcm-adja matrix:map mutate-nonzero fcm-adja ;also, don't forget to make a new fcm-adja based on the most succesful fcm-adja (after saving it into fcm-adja-base)
 ;      ]
 ;end
-
+globals [
+ 
+  ;Matrix Adds
+  caribou-prev-fcm-node-states-0
+  caribou-fcm-perceptions-0
+  caribou-fcm-perception-weights-0
+  fcm-adja-0
+  caribou-fcm-node-states-0
+  
+  caribou-prev-fcm-node-states-1
+  caribou-fcm-perceptions-1
+  caribou-fcm-perception-weights-1
+  fcm-adja-1
+  caribou-fcm-node-states-1
+  
+  caribou-prev-fcm-node-states-2
+  caribou-fcm-perceptions-2
+  caribou-fcm-perception-weights-2
+  fcm-adja-2
+  caribou-fcm-node-states-2
+  
+  caribou-prev-fcm-node-states-3
+  caribou-fcm-perceptions-3
+  caribou-fcm-perception-weights-3
+  fcm-adja-3
+  caribou-fcm-node-states-3
+  
+  caribou-prev-fcm-node-states-4
+  caribou-fcm-perceptions-4
+  caribou-fcm-perception-weights-4
+  fcm-adja-4
+  caribou-fcm-node-states-4
+  
+    ;Counts
+  c-action-0-count
+  c-action-1-count
+  c-action-2-count
+  c-action-3-count
+  c-action-4-count
+]
 
 caribou-own
 [
@@ -68,7 +107,10 @@ caribou-own
   caribou-fcm-perception-weights
   caribou-fcm-perceptions
   caribou-prev-fcm-node-states
-
+  save-caribou-prev-fcm-node-states
+  save-caribou-fcm-node-states
+  
+  
   ;Q-Net
   net-x
   net-w1
@@ -101,7 +143,9 @@ caribou-own
   fcm-mat-sensor ;sensor values placed into a matrix representing the previous values
   fcm-mat-conc-delta ; the stored values for concepts and motor states 1 x 11 (top 6 represent concepts, trailing 5 represent motor states)
   fcm-adja ; Adjacency list for all actions, sub-list taken for matrix operations
-
+  caribou-last-action 
+  
+  
   last-taxi-vals
   last-taxi-index
 
@@ -124,6 +168,7 @@ caribou-own
   current-grid
   last-grid
 
+  
 
   centroid-attraction
  ; centroid-attraction-min
@@ -145,6 +190,38 @@ caribou-own
 
 to setup-caribou
   ;;TO DO: CORRECT IMPORT CARIBOU FCM CODE TO READ IN CORRECT MATRIX DIMENSIONS.
+
+  
+  
+  set caribou-prev-fcm-node-states-0 matrix:make-constant 1 5 0
+  set caribou-fcm-perceptions-0 matrix:make-constant 1 21 0
+  set caribou-fcm-perception-weights-0 matrix:make-constant 21 21 0
+  set fcm-adja-0 matrix:make-constant 21 21 0
+  set caribou-fcm-node-states-0 matrix:make-constant 1 5 0
+  
+  set caribou-prev-fcm-node-states-1 matrix:make-constant 1 5 0
+  set caribou-fcm-perceptions-1 matrix:make-constant 1 21 0
+  set caribou-fcm-perception-weights-1 matrix:make-constant 21 21 0
+  set fcm-adja-1 matrix:make-constant 21 21 0
+  set caribou-fcm-node-states-1 matrix:make-constant 1 5 0
+  
+  set caribou-prev-fcm-node-states-2 matrix:make-constant 1 5 0
+  set caribou-fcm-perceptions-2 matrix:make-constant 1 21 0
+  set caribou-fcm-perception-weights-2 matrix:make-constant 21 21 0
+  set fcm-adja-2 matrix:make-constant 21 21 0
+  set caribou-fcm-node-states-2 matrix:make-constant 1 5 0
+  
+  set caribou-prev-fcm-node-states-3 matrix:make-constant 1 5 0
+  set caribou-fcm-perceptions-3 matrix:make-constant 1 21 0
+  set caribou-fcm-perception-weights-3 matrix:make-constant 21 21 0
+  set fcm-adja-3 matrix:make-constant 21 21 0
+  set caribou-fcm-node-states-3 matrix:make-constant 1 5 0
+  
+  set caribou-prev-fcm-node-states-4 matrix:make-constant 1 5 0
+  set caribou-fcm-perceptions-4 matrix:make-constant 1 21 0
+  set caribou-fcm-perception-weights-4 matrix:make-constant 21 21 0
+  set fcm-adja-4 matrix:make-constant 21 21 0
+  set caribou-fcm-node-states-4 matrix:make-constant 1 5 0
   
   ifelse import-caribou-fcm? 
   [
@@ -159,6 +236,9 @@ to setup-caribou
       let matrix-perc file-read
       create-caribou num-caribou
       [
+        set save-caribou-prev-fcm-node-states matrix:make-constant 1 5 0
+        set save-caribou-fcm-node-states matrix:make-constant 1 5 1
+        set caribou-prev-fcm-node-states matrix:make-constant 1 21 0
         ;;initialize state memory list: positions from 0:4 = evade, interforage, taxi/migrate, rest, intraforage
         ;;numbers stored in list are the amount of ticks for a given year the caribou has spent in the different
         ;;states.
@@ -339,10 +419,13 @@ to setup-caribou
     
     
     ;set fcm-adja-base matrix:make-constant 21 11 0 ;For making a random map to mutate.
+
     
     
     create-caribou caribou-group-amt
     [
+      set save-caribou-prev-fcm-node-states matrix:make-constant 1 5 0
+      set caribou-prev-fcm-node-states matrix:make-constant 1 21 0
       ;;initialize state memory list: positions from 0:4 = evade, interforage, taxi/migrate, rest, intraforage
       ;;numbers stored in list are the amount of ticks for a given year the caribou has spent in the different
       ;;states.
@@ -390,7 +473,7 @@ to setup-caribou
       
       ;fcm setup new
       set caribou-fcm-perceptions matrix:make-constant 1 21 0
-      set caribou-fcm-node-states matrix:make-constant 1 21 1
+      set caribou-fcm-node-states matrix:make-constant 1 5 1
       set fcm-adja matrix:copy fcm-adja-base ;refactor this
       set caribou-fcm-perception-weights matrix:copy caribou-fcm-perception-weights-base
       
@@ -598,6 +681,7 @@ to go-caribou
     set caribou-fcm-node-states matrix:map fcm-sigmoid-simple caribou-fcm-node-states
     let node-states matrix:submatrix caribou-fcm-node-states 0 16 1 21
     set caribou-prev-fcm-node-states node-states
+    set save-caribou-fcm-node-states node-states
    ; Submatrix to return new state list for x+1
    ; let final-states [0 1]
     set state fcm-index-max matrix:transpose node-states
@@ -616,6 +700,7 @@ to go-caribou
     ;other-state-found used to get around if-else limitations
     if(state = 4) ;intra forage
     [
+      set c-action-4-count (c-action-4-count + 1)
       set fd-amt fga-amt
       
       set energy-loss  296.1 ; foraging expense (Boertje 1985, 105 kg caribou for 1.5 hr)
@@ -626,6 +711,7 @@ to go-caribou
     
     if(state = 2 and not other-state-found);taxi/migrate
     [
+      set c-action-2-count (c-action-2-count + 1)
       
       ifelse dist-grid <= 1
       [ select-grid 
@@ -657,6 +743,7 @@ to go-caribou
     
     if(state = 1 and not other-state-found);interforage
     [
+      set c-action-1-count (c-action-1-count + 1)
       set fd-amt fge-amt
       
       if (season = 1 or season = 2)
@@ -676,6 +763,7 @@ to go-caribou
     
     if(state = 0 and not other-state-found) ;Evade
     [
+      set c-action-0-count (c-action-0-count + 1)
       ;move away from the perceived threat
       ; running distance
       set fd-amt mg-amt-max 
@@ -699,6 +787,7 @@ to go-caribou
     
     if(state = 3 and not other-state-found) ; rest
     [
+      set c-action-3-count (c-action-3-count + 1)
       set fd-amt 0
       if (season = 1 or season = 2)
       [
@@ -716,7 +805,51 @@ to go-caribou
       ]
       
     ]
+    ;ADD Matrices
+    set caribou-last-action state
     
+    if caribou-last-action = 0 
+    [
+      set caribou-prev-fcm-node-states-0 matrix:plus caribou-prev-fcm-node-states-0 save-caribou-prev-fcm-node-states
+      set caribou-fcm-perceptions-0 matrix:plus caribou-fcm-perceptions-0 caribou-fcm-perceptions
+      set caribou-fcm-perception-weights-0 matrix:plus caribou-fcm-perception-weights-0 caribou-fcm-perception-weights
+      set fcm-adja-0 matrix:plus fcm-adja-0 fcm-adja
+      set caribou-fcm-node-states-0 matrix:plus caribou-fcm-node-states-0 save-caribou-fcm-node-states
+    ]
+    if caribou-last-action = 1 
+    [
+      set caribou-prev-fcm-node-states-1 matrix:plus caribou-prev-fcm-node-states-1 save-caribou-prev-fcm-node-states
+      set caribou-fcm-perceptions-1 matrix:plus caribou-fcm-perceptions-1 caribou-fcm-perceptions
+      set caribou-fcm-perception-weights-1 matrix:plus caribou-fcm-perception-weights-1 caribou-fcm-perception-weights
+      set fcm-adja-1 matrix:plus fcm-adja-1 fcm-adja
+      set caribou-fcm-node-states-1 matrix:plus caribou-fcm-node-states-1 save-caribou-fcm-node-states
+    ]
+    if caribou-last-action = 2 
+    [
+      set caribou-prev-fcm-node-states-2 matrix:plus caribou-prev-fcm-node-states-2 save-caribou-prev-fcm-node-states
+      set caribou-fcm-perceptions-2 matrix:plus caribou-fcm-perceptions-2 caribou-fcm-perceptions
+      set caribou-fcm-perception-weights-2 matrix:plus caribou-fcm-perception-weights-2 caribou-fcm-perception-weights
+      set fcm-adja-2 matrix:plus fcm-adja-2 fcm-adja
+      set caribou-fcm-node-states-2 matrix:plus caribou-fcm-node-states-2 save-caribou-fcm-node-states
+    ]
+    if caribou-last-action = 3 
+    [
+      set caribou-prev-fcm-node-states-3 matrix:plus caribou-prev-fcm-node-states-3 save-caribou-prev-fcm-node-states
+      set caribou-fcm-perceptions-3 matrix:plus caribou-fcm-perceptions-3 caribou-fcm-perceptions
+      set caribou-fcm-perception-weights-3 matrix:plus caribou-fcm-perception-weights-3 caribou-fcm-perception-weights
+      set fcm-adja-3 matrix:plus fcm-adja-3 fcm-adja
+      set caribou-fcm-node-states-3 matrix:plus caribou-fcm-node-states-3 save-caribou-fcm-node-states
+    ]
+    if caribou-last-action = 4
+    [
+      set caribou-prev-fcm-node-states-4 matrix:plus caribou-prev-fcm-node-states-4 save-caribou-prev-fcm-node-states
+      set caribou-fcm-perceptions-4 matrix:plus caribou-fcm-perceptions-4 caribou-fcm-perceptions
+      set caribou-fcm-perception-weights-4 matrix:plus caribou-fcm-perception-weights-4 caribou-fcm-perception-weights
+      set fcm-adja-4 matrix:plus fcm-adja-4 fcm-adja
+      set caribou-fcm-node-states-4 matrix:plus caribou-fcm-node-states-4 save-caribou-fcm-node-states
+    ]
+    
+    set save-caribou-prev-fcm-node-states node-states
     
     ;Move according to state and centroid values
     ifelse(caribou-class = 2 and (day > 151 and day < 167))

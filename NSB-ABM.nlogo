@@ -28,6 +28,7 @@ directed-link-breed [ cent-links cent-link ]
 globals
 [
   file-output-prepend
+  enable-kde-write
 
   npGridId
   npGridQual
@@ -277,6 +278,9 @@ patches-own
   ;bool-ocean
 
   patch-historic-utility-caribou
+
+  patch-caribou-KDE
+  patch-hunter-KDE
 ]
 
 caribou-harvests-own
@@ -437,7 +441,8 @@ to setup
     setup-hunter-nls
   ]
 
-
+  ;KDE-SAMPLE
+  setup-kde-sample
   setup-caribou-kde-file
   setup-hunter-kde-file
 
@@ -815,12 +820,14 @@ to scenario-controller
     if scenario = "control-w-hunters-hi" [
       ;; evolve agents for 1000 years.
       	  set use-high-res-ndvi? true
+      set enable-kde-write false
+
       while [ year != 1000 ] [
         go
       ]
 
       scenario-var-reset
-
+      set enable-kde-write true
       ;; run scenario and collect results for 100 years.
       while [ year != 100 ] [
         go
@@ -852,6 +859,7 @@ to scenario-controller
     if scenario = "obd-w-hunters-hi" [
       set deflect-pipeline? true
       set deflect-oil? true
+      set enable-kde-write false
       set deflect-roads? true
       	  set use-high-res-ndvi? true
       while [ year != 1000 ] [
@@ -859,7 +867,7 @@ to scenario-controller
       ]
 
       scenario-var-reset
-
+      set enable-kde-write true
       while [ year != 100 ] [
         go
       ]
@@ -893,13 +901,13 @@ to scenario-controller
       ;; add in matrix shift...
       	  set use-high-res-ndvi? true
       set-later-shifted-ndvi-data-list
-
+      set enable-kde-write false
       while [ year != 1000 ] [
         go
       ]
 
       scenario-var-reset
-
+      set enable-kde-write true
       while [ year != 100 ] [
         go
       ]
@@ -929,13 +937,13 @@ to scenario-controller
       ;; add in matrix shift...
       	  set use-high-res-ndvi? true
       set-early-shifted-ndvi-data-list
-
+      set enable-kde-write false
       while [ year != 1000 ] [
         go
       ]
 
       scenario-var-reset
-
+      set enable-kde-write true
       while [ year != 100 ] [
         go
       ]
@@ -988,12 +996,13 @@ to scenario-controller
       set-early-shifted-ndvi-data-list
       set use-high-res-ndvi? true
       set use-hunters? true
+      set enable-kde-write false
       while [ year != 1000 ] [
         go
       ]
       	
       	        scenario-var-reset
-
+      set enable-kde-write true
       while [ year != 100 ] [
         go
       ]
@@ -1020,12 +1029,13 @@ to scenario-controller
       set-later-shifted-ndvi-data-list
       set use-high-res-ndvi? true
       set use-hunters? true
+      set enable-kde-write false
       while [ year != 1000 ] [
         go
       ]
       	
       	        scenario-var-reset
-
+      set enable-kde-write true
       while [ year != 100 ] [
         go
       ]
@@ -1040,13 +1050,13 @@ to scenario-controller
       set hunter-mutate? false
       set hunter-recombine? false
       set hunter-training? false
-
+      set enable-kde-write false
       while [ year != 1000 ] [
         go
       ]
       	
       	        scenario-var-reset
-
+      set enable-kde-write true
       while [ year != 100 ] [
         go
       ]
@@ -1144,6 +1154,19 @@ end
 ;Go, wraps to other go's
 to go
   ; set day (ticks mod 365)
+
+
+  if (hour = 0 and day = 257 and enable-kde-write)
+  [
+      print "KDE WRITE"
+      kde-write-out-files
+    ask patches [
+      set patch-caribou-KDE array:from-list n-values 6 [0]
+      set patch-hunter-KDE array:from-list n-values 6 [0]
+    ]
+
+  ]
+
   set hour hour + 1.5
   if(hour = 24)
   [
@@ -1171,13 +1194,15 @@ to go
       if(hunter-training?) [ update-hunter-fcms ]
 
       if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
-
+      if exportSmallHunter? [export-logger-year-data]
+      if exportSmallCaribou? [export-logger-year-data-caribou]
       set year year + 1
       set day 152
 
       set avg-sim-time lput timer avg-sim-time
       reset-timer
     ]
+
 
 
 
@@ -1237,6 +1262,111 @@ to go
   tick
 end
 
+to-report day-to-month ;reports month as 1-12 value
+
+  if day >= 1 and day <= 31 [
+    report 1
+  ]
+
+  if day >= 32 and day <= 59 [
+    report 2
+  ]
+
+  if day >= 60 and day <= 90 [
+    report 3
+  ]
+
+  if day >= 91 and day <= 120 [
+    report 4
+  ]
+
+  if day >= 121 and day <= 151 [
+    report 5
+  ]
+
+  if day >= 152 and day <= 181 [
+    report 6
+  ]
+
+  if day >= 182 and day <= 212 [
+    report 7
+  ]
+
+  if day >= 213 and day <= 243 [
+    report 8
+  ]
+
+  if day >= 244 and day <= 273 [
+    report 9
+  ]
+
+  if day >= 274 and day <= 304 [
+    report 10
+  ]
+
+  if day >= 305 and day <= 334 [
+    report 11
+  ]
+
+  if day >= 335 and day <= 365 [
+    report 12
+  ]
+
+end
+
+to-report percent-of-month-complete ;reports the current completeness of the month. Ex: Day = 105 => Month = 4 (April 15th), value returned = 0.50
+
+  if day >= 1 and day <= 31 [
+    report (day - 0) / (31 - 0)
+  ]
+
+  if day >= 32 and day <= 59 [
+    report (day - 31) / (59 - 31)
+  ]
+
+  if day >= 60 and day <= 90 [
+    report (day - 59) / (90 - 59)
+  ]
+
+  if day >= 91 and day <= 120 [
+    report (day - 90) / (120 - 91)
+  ]
+
+  if day >= 121 and day <= 151 [
+    report (day - 120) / (151 - 120)
+  ]
+
+  if day >= 152 and day <= 181 [
+    report (day - 151) / (181 - 151)
+  ]
+
+  if day >= 182 and day <= 212 [
+    report (day - 181) / (212 - 181)
+  ]
+
+  if day >= 213 and day <= 243 [
+    report (day - 212) / (243 - 212)
+  ]
+
+  if day >= 244 and day <= 273 [
+    report (day - 243) / (273 - 243)
+  ]
+
+  if day >= 274 and day <= 304 [
+    report (day - 273) / (304 - 273)
+  ]
+
+  if day >= 305 and day <= 334 [
+    report (day - 304) / (334 - 304)
+  ]
+
+  if day >= 335 and day <= 365 [
+    report (day - 334) / (365 - 334)
+  ]
+
+end
+
+
 to setup-logger-data
   let hunter-logger-ex "hunter-logger.txt"
   let caribou-logger-ex "caribou-logger.txt"
@@ -1263,6 +1393,96 @@ to setup-logger-data
   file-close
 end
 
+to export-logger-year-data
+  file-open "fcm-mats/h/hunter-0-dat.txt"
+  file-write word matrix:to-row-list h-previous-activations-0 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-sensory-0 ", \n"
+  file-write word matrix:to-row-list h-hunter-input-matrix-0 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-matrix-0 ", \n"
+  file-write word matrix:to-row-list h-current-activations-0 ", \n"
+  file-write word h-action-0-count ", \n \n \n"
+  file-close
+
+  file-open "fcm-mats/h/hunter-1-dat.txt"
+  file-write word matrix:to-row-list h-previous-activations-1 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-sensory-1 ", \n"
+  file-write word matrix:to-row-list h-hunter-input-matrix-1 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-matrix-1 ", \n"
+  file-write word matrix:to-row-list h-current-activations-1 ", \n"
+  file-write word h-action-1-count ", \n \n \n"
+  file-close
+
+  file-open "fcm-mats/h/hunter-2-dat.txt"
+  file-write word matrix:to-row-list h-previous-activations-2 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-sensory-2 ", \n"
+  file-write word matrix:to-row-list h-hunter-input-matrix-2 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-matrix-2 ", \n"
+  file-write word matrix:to-row-list h-current-activations-2 ", \n"
+  file-write word h-action-2-count ", \n \n \n"
+  file-close
+
+  file-open "fcm-mats/h/hunter-3-dat.txt"
+  file-write word matrix:to-row-list h-previous-activations-3 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-sensory-3 ", \n"
+  file-write word matrix:to-row-list h-hunter-input-matrix-3 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-matrix-3 ", \n"
+  file-write word matrix:to-row-list h-current-activations-3 ", \n"
+  file-write word h-action-3-count ", \n \n \n"
+  file-close
+
+
+end
+
+to export-logger-year-data-caribou
+
+  file-open "fcm-mats/c/caribou-0-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-0 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-0 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-0 ", \n"
+  file-write word matrix:to-row-list fcm-adja-0 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-0 ", \n"
+  file-write word c-action-0-count ", \n \n \n"
+  file-close
+
+  file-open "fcm-mats/c/caribou-1-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-1 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-1 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-1 ", \n"
+  file-write word matrix:to-row-list fcm-adja-1 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-1 ", \n"
+  file-write word c-action-1-count ", \n \n \n"
+  file-close
+
+  file-open "fcm-mats/c/caribou-2-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-2 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-2 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-2 ", \n"
+  file-write word matrix:to-row-list fcm-adja-2 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-2 ", \n"
+  file-write word c-action-2-count ", \n \n \n"
+  file-close
+
+  file-open "fcm-mats/c/caribou-3-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-3 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-3 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-3 ", \n"
+  file-write word matrix:to-row-list fcm-adja-3 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-3 ", \n"
+  file-write word c-action-3-count ", \n \n \n"
+  file-close
+
+  file-open "fcm-mats/c/caribou-4-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-4 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-4 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-4 ", \n"
+  file-write word matrix:to-row-list fcm-adja-4 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-4 ", \n"
+  file-write word c-action-4-count ", \n \n \n"
+  file-close
+
+end
+
+
 to export-logger-data
   file-open "hunter-logger.txt"
   ask hunters
@@ -1270,10 +1490,11 @@ to export-logger-data
     file-print ""
     file-write word scenario ","
     file-write word ([who] of self) ","
-    file-write word matrix:to-row-list hunter-fcm-matrix ","
-    file-write word matrix:to-row-list hunter-input-matrix ","
-    file-write word matrix:to-row-list hunter-fcm-sensory ","
     file-write word matrix:to-row-list previous-activations ","
+    file-write word matrix:to-row-list hunter-fcm-sensory ","
+    file-write word matrix:to-row-list hunter-input-matrix ","
+    file-write word matrix:to-row-list hunter-fcm-matrix ","
+    file-write word matrix:to-row-list current-activations ","
   ]
   file-close
 
@@ -1283,10 +1504,11 @@ to export-logger-data
     file-print ""
     file-write word scenario ","
     file-write word ([who] of self) ","
-    file-write word matrix:to-row-list fcm-adja ","
-    file-write word matrix:to-row-list caribou-fcm-perception-weights ","
-    file-write word matrix:to-row-list caribou-fcm-perceptions ","
     file-write word matrix:to-row-list caribou-prev-fcm-node-states ","
+    file-write word matrix:to-row-list caribou-fcm-perceptions ","
+    file-write word matrix:to-row-list caribou-fcm-perception-weights ","
+    file-write word matrix:to-row-list fcm-adja ","
+    file-write word matrix:to-row-list caribou-fcm-node-states ","
   ]
   file-close
 end
@@ -2904,7 +3126,7 @@ SWITCH
 1063
 is-training?
 is-training?
-0
+1
 1
 -1000
 
@@ -3758,7 +3980,7 @@ SWITCH
 625
 hunter-training?
 hunter-training?
-0
+1
 1
 -1000
 
@@ -3931,7 +4153,7 @@ CHOOSER
 scenario
 scenario
 "none" "hunter-evolution-lo" "caribou-evolution-lo" "control-w-hunters-lo" "control-no-hunters-lo" "obd-w-hunters-lo" "obd-no-hunters-lo" "veg-later-shift-w-hunters-lo" "veg-later-shift-no-hunters-lo" "veg-early-shift-w-hunters-lo" "veg-early-shift-no-hunters-lo" "combined-early-ndvi-no-hunters-lo" "combined-early-ndvi-w-hunters-lo" "combined-late-ndvi-no-hunters-lo" "combined-late-ndvi-w-hunters-lo" "hunter-evolution-hi" "caribou-evolution-hi" "control-w-hunters-hi" "control-no-hunters-hi" "obd-w-hunters-hi" "obd-no-hunters-hi" "veg-later-shift-w-hunters-hi" "veg-later-shift-no-hunters-hi" "veg-early-shift-w-hunters-hi" "veg-early-shift-no-hunters-hi" "combined-early-ndvi-no-hunters-hi" "combined-early-ndvi-w-hunters-hi" "combined-late-ndvi-no-hunters-hi" "combined-late-ndvi-w-hunters-hi"
-1
+17
 
 SWITCH
 371
@@ -3940,7 +4162,7 @@ SWITCH
 1132
 use-high-res-ndvi?
 use-high-res-ndvi?
-1
+0
 1
 -1000
 
@@ -3986,6 +4208,28 @@ SWITCH
 export-logger-data?
 export-logger-data?
 1
+1
+-1000
+
+SWITCH
+1572
+743
+1736
+776
+exportSmallHunter?
+exportSmallHunter?
+0
+1
+-1000
+
+SWITCH
+1573
+785
+1742
+818
+exportSmallCaribou?
+exportSmallCaribou?
+0
 1
 -1000
 
@@ -4331,7 +4575,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.3
+NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

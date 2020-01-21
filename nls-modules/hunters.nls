@@ -23,6 +23,40 @@ globals [
           
           num-harvests-global
           home-patch-global
+  
+  ;Matrix Adds
+  h-previous-activations-0
+  h-hunter-fcm-sensory-0
+  h-hunter-input-matrix-0
+  h-hunter-fcm-matrix-0
+  h-current-activations-0
+  
+  h-previous-activations-1
+  h-hunter-fcm-sensory-1
+  h-hunter-input-matrix-1
+  h-hunter-fcm-matrix-1
+  h-current-activations-1
+  
+  h-previous-activations-2
+  h-hunter-fcm-sensory-2
+  h-hunter-input-matrix-2
+  h-hunter-fcm-matrix-2
+  h-current-activations-2
+  
+  h-previous-activations-3
+  h-hunter-fcm-sensory-3
+  h-hunter-input-matrix-3
+  h-hunter-fcm-matrix-3
+  h-current-activations-3
+  
+  ;Counts
+  h-action-0-count
+  h-action-1-count
+  h-action-2-count
+  h-action-3-count
+  
+  
+  
         ]
 
 ;HUNTERS
@@ -69,7 +103,9 @@ hunters-own [
              vector-A
              vector-B
              vector-AB-sum
-             
+             ;Mat-Sort
+  action-last-index
+
              ;data
              boat-return 
              local-search 
@@ -149,6 +185,34 @@ to setup-hunter-nls
   kill-hunters
   initialize-FCM-hunters
   new-hunters
+  
+  
+  
+  ;Initialize for Safety
+  
+  set h-previous-activations-0 matrix:make-constant 1 23 0
+  set h-hunter-fcm-sensory-0 matrix:make-constant 1 11 0
+  set h-hunter-input-matrix-0 matrix:make-constant 11 23 0
+  set h-hunter-fcm-matrix-0 matrix:make-constant 23 23 0
+  set h-current-activations-0 matrix:make-constant 1 23 0
+  
+  set h-previous-activations-1 matrix:make-constant 1 23 0
+  set h-hunter-fcm-sensory-1 matrix:make-constant 1 11 0
+  set h-hunter-input-matrix-1 matrix:make-constant 11 23 0
+  set h-hunter-fcm-matrix-1 matrix:make-constant 23 23 0
+  set h-current-activations-1 matrix:make-constant 1 23 0
+  
+  set h-previous-activations-2 matrix:make-constant 1 23 0
+  set h-hunter-fcm-sensory-2 matrix:make-constant 1 11 0
+  set h-hunter-input-matrix-2 matrix:make-constant 11 23 0
+  set h-hunter-fcm-matrix-2 matrix:make-constant 23 23 0
+  set h-current-activations-2 matrix:make-constant 1 23 0
+  
+  set h-previous-activations-3 matrix:make-constant 1 23 0
+  set h-hunter-fcm-sensory-3 matrix:make-constant 1 11 0
+  set h-hunter-input-matrix-3 matrix:make-constant 11 23 0
+  set h-hunter-fcm-matrix-3 matrix:make-constant 23 23 0
+  set h-current-activations-3 matrix:make-constant 1 23 0
 end
 
 to go-hunters-nls
@@ -174,6 +238,42 @@ to go-hunters-nls
     ]
     if (new-trip? = false)
     [ execute-FCM ]
+  
+    
+    ; Add Matrices 
+    if action-last-index = 0
+    [
+      set h-previous-activations-0 matrix:plus h-previous-activations-0 previous-activations
+      set h-hunter-fcm-sensory-0 matrix:plus h-hunter-fcm-sensory-0 hunter-fcm-sensory
+      set h-hunter-input-matrix-0 matrix:plus h-hunter-input-matrix-0 hunter-input-matrix
+      set h-hunter-fcm-matrix-0 matrix:plus h-hunter-fcm-matrix-0 hunter-fcm-matrix
+      set h-current-activations-0 matrix:plus h-current-activations-0 current-activations
+    ]
+    if action-last-index = 1
+    [
+      set h-previous-activations-1 matrix:plus h-previous-activations-1 previous-activations
+      set h-hunter-fcm-sensory-1 matrix:plus h-hunter-fcm-sensory-1 hunter-fcm-sensory
+      set h-hunter-input-matrix-1 matrix:plus h-hunter-input-matrix-1 hunter-input-matrix
+      set h-hunter-fcm-matrix-1 matrix:plus h-hunter-fcm-matrix-1 hunter-fcm-matrix
+      set h-current-activations-1 matrix:plus h-current-activations-1 current-activations
+    ]
+    if action-last-index = 2
+    [
+      set h-previous-activations-2 matrix:plus h-previous-activations-2 previous-activations
+      set h-hunter-fcm-sensory-2 matrix:plus h-hunter-fcm-sensory-2 hunter-fcm-sensory
+      set h-hunter-input-matrix-2 matrix:plus h-hunter-input-matrix-2 hunter-input-matrix
+      set h-hunter-fcm-matrix-2 matrix:plus h-hunter-fcm-matrix-2 hunter-fcm-matrix
+      set h-current-activations-2 matrix:plus h-current-activations-2 current-activations
+    ]
+    if action-last-index = 3
+    [
+      set h-previous-activations-3 matrix:plus h-previous-activations-3 previous-activations
+      set h-hunter-fcm-sensory-3 matrix:plus h-hunter-fcm-sensory-3 hunter-fcm-sensory
+      set h-hunter-input-matrix-3 matrix:plus h-hunter-input-matrix-3 hunter-input-matrix
+      set h-hunter-fcm-matrix-3 matrix:plus h-hunter-fcm-matrix-3 hunter-fcm-matrix
+      set h-current-activations-3 matrix:plus h-current-activations-3 current-activations
+    ]    
+    
   ]
 end
 
@@ -371,8 +471,10 @@ to set-action
 end
 
 to run-motor-function
+  set action-last-index motor-concept-index
   if motor-concept-index = 0
   [
+    set h-action-0-count (h-action-0-count + 1)
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 0
     set foot-travel false
@@ -385,6 +487,7 @@ to run-motor-function
   ]
   if motor-concept-index = 1
   [
+    set h-action-1-count (h-action-1-count + 1)
     if prev-motor-state = 2 [ save-target-river-patch ] ;save closest river patch 
     set prev-motor-state 1
     set hunt false
@@ -396,6 +499,7 @@ to run-motor-function
   ]
   if motor-concept-index = 2 ;CHECK TO RETURN BACK TO RIVER PATCH 
   [
+    set h-action-2-count (h-action-2-count + 1)
     set prev-motor-state 2
     set hunt false
     set foot-travel false
@@ -409,6 +513,7 @@ to run-motor-function
   ]
   if motor-concept-index = 3
   [
+    set h-action-3-count (h-action-3-count + 1)
     if prev-motor-state = 2 [ save-target-river-patch ]
     set prev-motor-state 3
     set hunt false
