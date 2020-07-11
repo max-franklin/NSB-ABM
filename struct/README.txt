@@ -1,0 +1,1 @@
+Directory is template used to be copied to the top level of the project. The folders are used to run multiple instances of the simulation in behaviorspace by seed.
