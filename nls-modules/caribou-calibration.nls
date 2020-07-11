@@ -373,13 +373,13 @@ to-report calculate-var-prob ;;calculates the probability of variable calibratio
   let varProb (y * convergence) - (x * fitness)
   
   if test? [
-    print "fitness from caribou seasonal bioE:"
+    ;print "fitness from caribou seasonal bioE:"
     show fitness
     
-    print "convergence:"
+    ;print "convergence:"
     show convergence
     
-    print "probability of mutating one of caribou variables:"
+    ;print "probability of mutating one of caribou variables:"
     show varProb
   ]
   

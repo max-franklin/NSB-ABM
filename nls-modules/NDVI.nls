@@ -10,82 +10,30 @@ to load-gis-ndvi
   ]
   ;Fix out of bounds error by setting the ndvi data back to zero at the end of the year
 
-  
   let matrix (item ndvi-matrix vegetation-ndvi-list)
   set ndvi-dataset gis:load-dataset matrix
   set ndvi-max (gis:maximum-of ndvi-dataset)
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of ndvi-dataset))
   gis:apply-raster ndvi-dataset ndvi-quality
-  let ndvi-all-max-lo 247 ;low resolution maximum value
   let ndvi-all-max-hi 189 ;high resoltuion maximum value
   
-  ifelse(use-high-res-ndvi?)
-  [
-   set ndvi-all-max ndvi-all-max-hi 
-  ]
-  [
-   set ndvi-all-max ndvi-all-max-lo
-  ]
-  
+   set ndvi-all-max ndvi-all-max-hi  
   correct-ndvi
 end
 
-;wrapper function to select the right type of ndvi base on the switch
+;wrapper function to select the right type of ndvi base on the switch (Only hi-res now)
 to set-ndvi-data-list
-  ifelse(use-high-res-ndvi?)
-  [
     set-ndvi-data-list-hi
-  ]
-  [
-    set-ndvi-data-list-lo
-  ]
 end
 
-;wrapper function to select the right type of ndvi base on the switch
+;wrapper function to select the right type of ndvi base on the switch (Only hi-res now)
 to set-later-shifted-ndvi-data-list
-  ifelse(use-high-res-ndvi?)
-  [
     set-later-shifted-ndvi-data-list-hi
-  ]
-  [
-    set-later-shifted-ndvi-data-list-lo
-  ]
 end
 
-;wrapper function to select the right type of ndvi base on the switch
+;wrapper function to select the right type of ndvi base on the switch (Only hi-res now)
 to set-early-shifted-ndvi-data-list
-  ifelse(use-high-res-ndvi?)
-  [
     set-early-shifted-ndvi-data-list-hi
-  ]
-  [
-    set-early-shifted-ndvi-data-list-lo
-  ]
-end
-
-;;SET LOW RESOLUTION DATA
-;SET VEG LIST
-to set-ndvi-data-list-lo
- carefully [ set vegetation-ndvi-list ["NDVI-LO Matrices/GreenMatrix1.asc" "NDVI-LO Matrices/GreenMatrix2.asc" "NDVI-LO Matrices/GreenMatrix3.asc" "NDVI-LO Matrices/GreenMatrix4.asc" "NDVI-LO Matrices/GreenMatrix5.asc" "NDVI-LO Matrices/GreenMatrix6.asc" "NDVI-LO Matrices/GreenMatrix7.asc"
-                            "NDVI-LO Matrices/GreenMatrix8.asc" "NDVI-LO Matrices/GreenMatrix9.asc" "NDVI-LO Matrices/GreenMatrix10.asc" "NDVI-LO Matrices/GreenMatrix11.asc" "NDVI-LO Matrices/GreenMatrix12.asc" "NDVI-LO Matrices/GreenMatrix13.asc" "NDVI-LO Matrices/GreenMatrix14.asc"
-                            "NDVI-LO Matrices/GreenMatrix15.asc" "NDVI-LO Matrices/GreenMatrix16.asc" "NDVI-LO Matrices/GreenMatrix17.asc"] ]
- [ print "Failed to load the NDVI files. Please make sure you are referencing the correct directory." ]
-end
-
-;SET LATER SHIFTED VEG LIST
-to set-later-shifted-ndvi-data-list-lo
- carefully [ set vegetation-ndvi-list ["NDVI-LO Matrices/GreenMatrix1.asc" "NDVI-LO Matrices/GreenMatrix1.asc" "NDVI-LO Matrices/GreenMatrix1.asc" "NDVI-LO Matrices/GreenMatrix2.asc" "NDVI-LO Matrices/GreenMatrix5.asc" "NDVI-LO Matrices/GreenMatrix6.asc" "NDVI-LO Matrices/GreenMatrix7.asc"
-                            "NDVI-LO Matrices/GreenMatrix8.asc" "NDVI-LO Matrices/GreenMatrix9.asc" "NDVI-LO Matrices/GreenMatrix10.asc" "NDVI-LO Matrices/GreenMatrix11.asc" "NDVI-LO Matrices/GreenMatrix12.asc" "NDVI-LO Matrices/GreenMatrix13.asc" "NDVI-LO Matrices/GreenMatrix14.asc"
-                            "NDVI-LO Matrices/GreenMatrix15.asc" "NDVI-LO Matrices/GreenMatrix16.asc" "NDVI-LO Matrices/GreenMatrix17.asc"] ]
- [ print "Failed to load the NDVI files. Please make sure you are referencing the correct directory." ]
-end
-
-;SET EARLY SHIFTED VEG LIST
-to set-early-shifted-ndvi-data-list-lo
- carefully [ set vegetation-ndvi-list ["NDVI-LO Matrices/GreenMatrix3.asc" "NDVI-LO Matrices/GreenMatrix4.asc" "NDVI-LO Matrices/GreenMatrix5.asc" "NDVI-LO Matrices/GreenMatrix5.asc" "NDVI-LO Matrices/GreenMatrix5.asc" "NDVI-LO Matrices/GreenMatrix6.asc" "NDVI-LO Matrices/GreenMatrix7.asc"
-                            "NDVI-LO Matrices/GreenMatrix8.asc" "NDVI-LO Matrices/GreenMatrix9.asc" "NDVI-LO Matrices/GreenMatrix10.asc" "NDVI-LO Matrices/GreenMatrix11.asc" "NDVI-LO Matrices/GreenMatrix12.asc" "NDVI-LO Matrices/GreenMatrix13.asc" "NDVI-LO Matrices/GreenMatrix14.asc"
-                            "NDVI-LO Matrices/GreenMatrix15.asc" "NDVI-LO Matrices/GreenMatrix16.asc" "NDVI-LO Matrices/GreenMatrix17.asc"] ]
- [ print "Failed to load the NDVI files. Please make sure you are referencing the correct directory." ]
 end
 
 ;;SET HIGH RESOLUTION DATA

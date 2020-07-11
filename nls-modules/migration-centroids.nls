@@ -203,7 +203,7 @@ to profile-net-setup
   profiler:start
   setup-cent-layers
   profiler:stop
-  print profiler:report
+ ; print profiler:report
 
 end
 
@@ -290,7 +290,7 @@ to setup-network
   file-write matrix:to-row-list p-centroid-network
   file-close-all
 
-   print "done!"
+   ;print "done!"
 end
 
 to mod-np-network
@@ -301,7 +301,7 @@ to mod-np-network
  ; show ((matrix:get np-centroid-network row col) + 1) 
   if row != 0 and col != 0 [ ;prevents caribou agents who have 'throw-away' last centroids from modifying the network.
     ifelse (row = col)
-    [ print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
+    [ ;print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
       ;inspect self ]
       stop ] 
     [ set np-centroid-network matrix:set-and-report np-centroid-network (row - 1) (col - 1) ((matrix:get np-centroid-network (row - 1) (col - 1) ) + 1) ] ;site of matrix index error
@@ -313,7 +313,7 @@ to mod-p-network
     let col [p-network-id] of current-centroid
   if row != 0 and col != 0 [  ;prevents caribou agents who have 'throw-away' last centroids from modifying the network.
     ifelse (row = col)
-    [ print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
+    [ ;print "run-time error in mig-cents, check either centroid assignment or matrix storage method"
       ;inspect self ]
       stop ]
     [ set p-centroid-network matrix:set-and-report p-centroid-network (row - 1) (col - 1) ((matrix:get p-centroid-network (row - 1) (col - 1) ) + 1) ]
@@ -374,7 +374,7 @@ to display-weighting
     ]
   ]
   
-  print "stop check 1"
+  ;print "stop check 1"
   
   let x 1
   let num-rows item 0 matrix:dimensions np-centroid-network 
@@ -404,7 +404,7 @@ to display-weighting
     set x x + 1
   ]
   
-  print "stop check 2"
+  ;print "stop check 2"
   
 end
 
