@@ -940,6 +940,7 @@ to global-on-new-day
 
   if (day - 12) mod 14 = 0
   [
+
     centroid-read day
     grid-read
 
@@ -978,6 +979,10 @@ to global-on-new-year
   if exportSmallCaribou? [export-logger-year-data-caribou]
   set year year + 1
   set day 152
+  centroid-read day
+  grid-read
+
+  ask caribou [ reset-caribou-centroids ]
 
   set avg-sim-time lput timer avg-sim-time
   reset-timer
