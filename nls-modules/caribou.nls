@@ -441,7 +441,7 @@ to setup-caribou
           set caribou-class 2
         ]
       ]
-      
+      ;TODO - move from 1.5 hours to 3 hours
       ;forage intra-patch
       set fga-amt 135 / 2195 ;SemeniukVal * 3 / patch width&height in meters
                              ;forage inter-patch

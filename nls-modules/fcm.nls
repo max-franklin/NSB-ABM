@@ -618,7 +618,7 @@ to update-caribou-fcm
       ;print word "previous fcm: " fcm-adja
       ifelse caribou-recombine?
       [ 
-        	          let list-pos-1 select-weighted-val-new prob-list
+        let list-pos-1 select-weighted-val-new prob-list
         let list-pos-2 select-weighted-val-new prob-list
         	  
         let genome-1 item list-pos-1 caribou-fcm-adja-list
