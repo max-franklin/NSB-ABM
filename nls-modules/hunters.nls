@@ -791,8 +791,8 @@ to spend-trip-length
 end
 
 to print-trip-length 
-  print "Trip length:"
-  print trip-length   
+  ;print "Trip length:"
+  ;print trip-length   
 end 
 
 to check-target-river-centroid ;check the centroid you're at for the target 

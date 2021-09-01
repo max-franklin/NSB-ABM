@@ -17,7 +17,7 @@ to setup-caribou-kde-file
   if collect-kde? [
     
     
-    let file-out "control-scenario-caribou-kde-data.txt"
+    let file-out word run-num "/control-scenario-caribou-kde-data.txt"
     if file-exists? file-out [ file-delete file-out ]
     file-open file-out
     file-write "xcor"
@@ -30,7 +30,7 @@ end
 
 to setup-hunter-kde-file
   if collect-kde? [
-    let file-out "control-scenario-hunter-kde-data.txt"
+    let file-out word run-num "/control-scenario-hunter-kde-data.txt"
     if file-exists? file-out [ file-delete file-out ]
     file-open file-out
     file-write "xcor"
@@ -97,7 +97,7 @@ end
 to kde-write-out-files 
   if collect-kde?
   [
-    let file-out "control-scenario-caribou-kde-data.txt"
+    let file-out word run-num "/control-scenario-caribou-kde-data.txt"
     file-open file-out
     ask patches [
       file-print ""
@@ -111,7 +111,7 @@ to kde-write-out-files
     file-print ""
     file-close
     
-    set file-out "control-scenario-hunter-kde-data.txt"
+    set file-out word run-num "/control-scenario-hunter-kde-data.txt"
     file-open file-out
     ask patches [
       file-print ""

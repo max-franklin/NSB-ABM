@@ -1,0 +1,55 @@
+globals [
+  logging-caribou-header-written
+]
+
+to setup-logging 
+  ;set globals
+  set logging-caribou-header-written false
+end
+
+
+to logging-caribou-bio-state [print-year-fcm]
+  let filename word run-num "/caribou-state-log.txt"
+  file-open filename
+  if (logging-caribou-header-written = false)
+    [
+      file-print "#FORMAT:"
+      file-print "#YEAR"
+      file-print "#[who] FCM-ADJA FCM-PERC"
+      file-print "#Day"
+      file-print "#ID \t STATE-LIST \t BIOENERGY (50 lines)"
+    
+      ;print first year
+      logging-caribou-bio-state-year-data
+
+      set logging-caribou-header-written true
+  ]
+  
+  ;Is it a new year? Then print our master data
+  if (print-year-fcm = true)
+  [
+    logging-caribou-bio-state-year-data
+  ]
+  
+    file-print day
+  ask caribou
+    [
+      file-write ([who] of self)
+      file-write day-states
+      file-write bioenergy
+      file-print "" 
+  ]
+  file-close
+  
+  ; agent data order:  id bio-energy daily states
+end
+
+to logging-caribou-bio-state-year-data
+  file-print year
+  ask caribou
+  [
+    file-write word ([who] of self) word "\t" matrix:to-row-list fcm-adja
+    file-write word "\t"  matrix:to-row-list caribou-fcm-perception-weights
+  ]
+  file-print ""
+end

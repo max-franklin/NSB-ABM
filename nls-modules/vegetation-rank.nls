@@ -30,10 +30,6 @@ to set-vegetation-rank-lists
   set vegetation-CP-list [1 10 9 7 8 1 1 1 9]
   set vegetation-CNP-list [1 9 10 9 7 1 1 1 10]
   set vegetation-PC-list [1 8 10 10 7 1 1 1 10]
-  set vegetation-MH-list [10 1 10 5 7 1 1 1 10]
-  set vegetation-ML-list [3 1 10 8 5 1 1 1 10]
-  set vegetation-OH-list [10 2 2 3 1 1 1 1 2]
-  set vegetation-OL-list [10 1 4 6 1 1 1 1 4]
   set vegetation-LS-list [10 10 7 10 1 1 1 1 7]
 end
 
@@ -91,66 +87,6 @@ to set-vegetation-betas-PC
   ]
 end
 
-to set-vegetation-betas-MH
-  ask patches with [ocean = 0 and mosquito-density > 0.5] ;definition of high mosquito activity.
-  [
-    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-MH-list) ]
-    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-MH-list) ]
-    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-MH-list) ]
-    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-MH-list) ]
-    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-MH-list) ]
-    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-MH-list) ]
-    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-MH-list) ]
-    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-MH-list) ]
-    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-MH-list) ]
-  ]
-end
-
-to set-vegetation-betas-ML
-  ask patches with [ocean = 0 and mosquito-density <= 0.5] ;defintion of low mosquito activity.
-  [
-    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-ML-list) ]
-    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-ML-list) ]
-    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-ML-list) ]
-    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-ML-list) ]
-    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-ML-list) ]
-    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-ML-list) ]
-    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-ML-list) ]
-    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-ML-list) ]
-    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-ML-list) ]
-  ]
-end
-
-to set-vegetation-betas-OH
-  ask patches with [ocean = 0 and oestrid-density > 0.5] ;definition of high oestrid activity.
-  [
-    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-OH-list) ]
-    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-OH-list) ]
-    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-OH-list) ]
-    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-OH-list) ]
-    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-OH-list) ]
-    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-OH-list) ]
-    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-OH-list) ]
-    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-OH-list) ]
-    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-OH-list) ]
-  ]
-end
-
-to set-vegetation-betas-OL
-  ask patches with [ocean = 0 and oestrid-density <= 0.5] ;definition of low oestrid activity.
-  [
-    if vegetation-type = 1 [set vegNonParRank (item 0 vegetation-OL-list) ]
-    if vegetation-type = 2 [set vegNonParRank (item 1 vegetation-OL-list) ]
-    if vegetation-type = 3 [set vegNonParRank (item 2 vegetation-OL-list) ]
-    if vegetation-type = 4 [set vegNonParRank (item 3 vegetation-OL-list) ]
-    if vegetation-type = 5 [set vegNonParRank (item 4 vegetation-OL-list) ]
-    if vegetation-type = 6 [set vegNonParRank (item 5 vegetation-OL-list) ]
-    if vegetation-type = 7 [set vegNonParRank (item 6 vegetation-OL-list) ]
-    if vegetation-type = 8 [set vegNonParRank (item 7 vegetation-OL-list) ]
-    if vegetation-type = 9 [set vegNonParRank (item 8 vegetation-OL-list) ]
-  ]
-end
-
 to set-vegetation-betas-LS
   ask patches with [ocean = 0]
   [
@@ -200,17 +136,7 @@ to go-veg-ranking
   [ 
     set-vegetation-betas-PC
   ] 
-  if day > 181 and day <= 196
-  [ 
-    set-vegetation-betas-MH
-    set-vegetation-betas-ML
-  ] 
-  if day > 196 and day <= 219
-  [ 
-    set-vegetation-betas-OH
-    set-vegetation-betas-OL
-  ] 
-  if day >= 219 and day <= 258
+  if day > 181 and day <= 258
   [ 
     set-vegetation-betas-LS
   ] 
