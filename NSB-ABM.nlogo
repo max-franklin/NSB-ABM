@@ -203,11 +203,13 @@ patches-own
   pid
   cent-util-para
   cent-util-non-para
+
   wetness
   streams
   ocean
   roughness
   elevation
+
   boundsTest
   vegetation-type
   ndvi-quality
@@ -701,9 +703,15 @@ to scenario-controller
       ]
 
       set stop-run 1
+<<<<<<< Updated upstream
 
     ]
 
+=======
+
+    ]
+
+>>>>>>> Stashed changes
     if scenario = "veg-later-shift-no-hunters" [
       ;; add in matrix shift...
 
@@ -1450,44 +1458,59 @@ to setup-terrain-layers
   ;(day 1 = Jan. 1)
   ask patches [ set ndvi-quality 0 ]
   if day >= 151 [ set day 151 go-ndvi set day 152 ] ;bug fix that maintains logic behind NDVI load in procedures.
-  set patch-wetness-dataset gis:load-dataset "data/patches/PatchWetness.asc"
-  set patch-streams-dataset gis:load-dataset "data/patches/PatchStreams.asc"
-  set patch-elevation-dataset gis:load-dataset "data/patches/PatchElevation.asc"
-  set patch-ocean-dataset gis:load-dataset "data/patches/PatchOcean.asc"
-  set patch-roughness-dataset gis:load-dataset "data/patches/PatchRoughness.asc"
+
+  ;; GIS Apply layers: removed to use file i/o for memory efficiency
+  ;set patch-wetness-dataset gis:load-dataset "data/patches/PatchWetness.asc"
+  ;set patch-streams-dataset gis:load-dataset "data/patches/PatchStreams.asc"
+  ;set patch-elevation-dataset gis:load-dataset "data/patches/PatchElevation.asc"
+  ;set patch-ocean-dataset gis:load-dataset "data/patches/PatchOcean.asc"
+  ;set patch-roughness-dataset gis:load-dataset "data/patches/PatchRoughness.asc"
+
   set patch-vegetation-dataset gis:load-dataset "data/patches/NorthSlopeVegetation.asc"
   ;set patch-whitefish-dataset gis:load-dataset "data/ascBounds/whitefish10Y.asc"
   set patch-caribou-harvest-dataset gis:load-dataset "data/ascBounds/caribou12m-scale.asc"
 
+<<<<<<< Updated upstream
   ; Spawn value datasets
   set patch-caribou-spawn-calving-nonparturient gis:load-dataset "data/distribution/calving-nonparturient-b.asc"
   set patch-caribou-spawn-parturient gis:load-dataset "data/distribution/calving-parturient-a.asc"
   set patch-caribou-spawn-summer gis:load-dataset "data/distribution/late-summer-b.asc"
   set patch-caribou-spawn-post-calving gis:load-dataset "data/distribution/post-calving-a.asc"
+=======
+  ;; GIS load layers: removed to use file i/o for memory efficiency
+  ;; Spawn value datasets
+  ;set patch-caribou-spawn-calving-nonparturient gis:load-dataset "data/distribution/calving-nonparturient-b.asc"
+  ;set patch-caribou-spawn-parturient gis:load-dataset "data/distribution/calving-parturient-a.asc"
+  ;set patch-caribou-spawn-summer gis:load-dataset "data/distribution/late-summer-b.asc"
+  ;set patch-caribou-spawn-post-calving gis:load-dataset "data/distribution/post-calving-a.asc"
+
+>>>>>>> Stashed changes
 
 
 
   ;development regions
-  set patch-boundary-beartooth gis:load-dataset "data/development-regions/sm_Bear_Tooth.asc"
-  set patch-boundary-beecheypoint gis:load-dataset "data/development-regions/sm_Beechey_Point.asc"
-  set patch-boundary-colvilleriver gis:load-dataset "data/development-regions/sm_Colville_River.asc"
-  set patch-boundary-dewline gis:load-dataset "data/development-regions/sm_Dewline.asc"
-  set patch-boundary-duckisland gis:load-dataset "data/development-regions/sm_Duck_Island.asc"
-  set patch-boundary-greatermoosestooth gis:load-dataset "data/development-regions/sm_Greater_Mooses_Tooth.asc"
-  set patch-boundary-kuparukriver gis:load-dataset "data/development-regions/sm_Kuparuk_River.asc"
-  set patch-boundary-liberty gis:load-dataset "data/development-regions/sm_Liberty.asc"
-  set patch-boundary-milnepoint gis:load-dataset "data/development-regions/sm_Milne_Point.asc"
-  set patch-boundary-nikaitchuq gis:load-dataset "data/development-regions/sm_Nikaitchuq.asc"
-  set patch-boundary-northstar gis:load-dataset "data/development-regions/sm_Northstar.asc"
-  set patch-boundary-oooguruk gis:load-dataset "data/development-regions/sm_Oooguruk.asc"
-  set patch-boundary-pikka gis:load-dataset "data/development-regions/sm_Pikka.asc"
-  set patch-boundary-placer gis:load-dataset "data/development-regions/sm_Placer.asc"
-  set patch-boundary-prudhoebay gis:load-dataset "data/development-regions/sm_Prudhoe_Bay.asc"
-  set patch-boundary-smiluveach gis:load-dataset "data/development-regions/sm_S_Miluveach.asc"
+  ;set patch-boundary-beartooth gis:load-dataset "data/development-regions/sm_Bear_Tooth.asc"
+  ;set patch-boundary-beecheypoint gis:load-dataset "data/development-regions/sm_Beechey_Point.asc"
+  ;set patch-boundary-colvilleriver gis:load-dataset "data/development-regions/sm_Colville_River.asc"
+  ;set patch-boundary-dewline gis:load-dataset "data/development-regions/sm_Dewline.asc"
+  ;set patch-boundary-duckisland gis:load-dataset "data/development-regions/sm_Duck_Island.asc"
+  ;set patch-boundary-greatermoosestooth gis:load-dataset "data/development-regions/sm_Greater_Mooses_Tooth.asc"
+  ;set patch-boundary-kuparukriver gis:load-dataset "data/development-regions/sm_Kuparuk_River.asc"
+  ;set patch-boundary-liberty gis:load-dataset "data/development-regions/sm_Liberty.asc"
+  ;set patch-boundary-milnepoint gis:load-dataset "data/development-regions/sm_Milne_Point.asc"
+  ;set patch-boundary-nikaitchuq gis:load-dataset "data/development-regions/sm_Nikaitchuq.asc"
+  ;set patch-boundary-northstar gis:load-dataset "data/development-regions/sm_Northstar.asc"
+  ;set patch-boundary-oooguruk gis:load-dataset "data/development-regions/sm_Oooguruk.asc"
+  ;set patch-boundary-pikka gis:load-dataset "data/development-regions/sm_Pikka.asc"
+  ;set patch-boundary-placer gis:load-dataset "data/development-regions/sm_Placer.asc"
+  ;set patch-boundary-prudhoebay gis:load-dataset "data/development-regions/sm_Prudhoe_Bay.asc"
+  ;set patch-boundary-smiluveach gis:load-dataset "data/development-regions/sm_S_Miluveach.asc"
+
   set patch-roads_layer gis:load-dataset "data/development-regions/roads_layer.asc"
   set patch-pipes_layer gis:load-dataset "data/development-regions/pipes_layer.asc"
 
 
+<<<<<<< Updated upstream
 
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-wetness-dataset))
 
@@ -1502,47 +1525,136 @@ to setup-terrain-layers
   gis:apply-raster patch-elevation-dataset elevation
   gis:apply-raster patch-ocean-dataset ocean
   gis:apply-raster patch-vegetation-dataset vegetation-type
+=======
+  ;; Used 'patch-wetness-dataset' formerly
+  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-vegetation-dataset))
 
-  gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-boundary-beartooth))
+  file-open "patch-wetness.pdata"
+  foreach sort patches [x -> ask x[set wetness file-read ]]
+  file-close
+
+  file-open "patch-elevation.pdata"
+  foreach sort patches [x -> ask x[set elevation file-read ]]
+  file-close
+
+  file-open "patch-streams.pdata"
+  foreach sort patches [x -> ask x[set streams file-read ]]
+  file-close
+
+  file-open "patch-ocean.pdata"
+  foreach sort patches [x -> ask x[set ocean file-read ]]
+  file-close
+
+  file-open "patch-roughness.pdata"
+  foreach sort patches [x -> ask x[set roughness file-read ]]
+  file-close
+
+  file-open "patch-caribou-spawn-calving-nonparturient.pdata"
+  foreach sort patches [x -> ask x[set caribou-spawn-calving-nonparturient file-read ]]
+  file-close
+>>>>>>> Stashed changes
+
+  file-open "patch-caribou-spawn-parturient.pdata"
+  foreach sort patches [x -> ask x[set caribou-spawn-parturient file-read ]]
+  file-close
+
+  file-open "patch-caribou-spawn-summer.pdata"
+  foreach sort patches [x -> ask x[set caribou-spawn-summer file-read ]]
+  file-close
+
+  file-open "patch-caribou-spawn-post-calving.pdata"
+  foreach sort patches [x -> ask x[set caribou-spawn-post-calving file-read ]]
+  file-close
+
+
+  ; OIL
+  file-open "patch-roads_layer.pdata"
+  foreach sort patches [x -> ask x[set patch-deflection-temp file-read ]]
+  file-close
+
+  file-open "patch-pipes_layer.pdata"
+  foreach sort patches [x -> ask x[set patch-deflection-temp file-read ]]
+  file-close
+
+
+
+  ;; GIS Apply layers: removed to use file i/o for memory efficiency
+  ;gis:apply-raster patch-caribou-spawn-calving-nonparturient caribou-spawn-calving-nonparturient
+  ;gis:apply-raster patch-caribou-spawn-parturient caribou-spawn-parturient
+  ;gis:apply-raster patch-caribou-spawn-summer caribou-spawn-summer
+  ;gis:apply-raster patch-caribou-spawn-post-calving caribou-spawn-post-calving
+
+  ;; GIS Apply layers: removed to use file i/o for memory efficiency
+  ;gis:apply-raster patch-wetness-dataset wetness
+  ;gis:apply-raster patch-roughness-dataset roughness
+  ;gis:apply-raster patch-streams-dataset streams
+  ;gis:apply-raster patch-elevation-dataset elevation
+  ;gis:apply-raster patch-ocean-dataset ocean
+  ;gis:apply-raster patch-vegetation-dataset vegetation-type
+
+
+  ;; Needed if reverting back to GIS loading
+  ;gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of patch-boundary-beartooth))
   if(deflect-oil?)
   [
-    gis:apply-raster patch-boundary-beartooth patch-deflection-temp
+    ;gis:apply-raster patch-boundary-beartooth patch-deflection-temp
     ;Union operation between all datasets, direct application of rasters will overwrite previous values.
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
 
     ;do the same for the rest of datasets
-    gis:apply-raster patch-boundary-beartooth patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-beecheypoint patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-colvilleriver patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-dewline patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-duckisland patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-greatermoosestooth patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-kuparukriver patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-liberty patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-milnepoint patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-nikaitchuq patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-northstar patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-oooguruk patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-pikka patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-placer patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-prudhoebay patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
-    gis:apply-raster patch-boundary-smiluveach patch-deflection-temp
-    ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+
+    ;gis:apply-raster patch-boundary-beartooth patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-beecheypoint patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-colvilleriver patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-dewline patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-duckisland patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-greatermoosestooth patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-kuparukriver patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-liberty patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-milnepoint patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-nikaitchuq patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-northstar patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-oooguruk patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-pikka patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-placer patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-prudhoebay patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    ;gis:apply-raster patch-boundary-smiluveach patch-deflection-temp
+    ;ask patches with [patch-deflection-temp > 0] [set patch-deflection-oil patch-deflection-temp]
+
+    file-open "patch-deflection-oil.pdata"
+    foreach sort patches [x -> ask x[set patch-deflection-oil file-read ]]
+    file-close
 
     set patches-oil-bounds patches with [patch-deflection-oil > 0]
 
@@ -3613,7 +3725,7 @@ SWITCH
 582
 deflect-pipeline?
 deflect-pipeline?
-1
+0
 1
 -1000
 
@@ -3624,7 +3736,7 @@ SWITCH
 617
 deflect-roads?
 deflect-roads?
-1
+0
 1
 -1000
 
@@ -3635,7 +3747,7 @@ SWITCH
 651
 deflect-oil?
 deflect-oil?
-1
+0
 1
 -1000
 
@@ -3701,7 +3813,7 @@ SWITCH
 776
 exportSmallHunter?
 exportSmallHunter?
-0
+1
 1
 -1000
 
@@ -3712,7 +3824,7 @@ SWITCH
 818
 exportSmallCaribou?
 exportSmallCaribou?
-0
+1
 1
 -1000
 
