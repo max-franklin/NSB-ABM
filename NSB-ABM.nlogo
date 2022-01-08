@@ -798,7 +798,8 @@ to scenario-controller
       ]
     ] ;; end veg-shift-no-hunters if
     if scenario = "caribou-evolution-lo" [
-      	  set use-high-res-ndvi? false
+      set enable-kde-write false
+  	  set use-high-res-ndvi? false
       set calibrateCaribouVar? true
       set randomCaribouVarStart? true
       set import-caribou-var? false
@@ -970,7 +971,8 @@ to scenario-controller
       ]
     ] ;; end veg-shift-no-hunters if
     if scenario = "caribou-evolution-hi" [
-      	  set use-high-res-ndvi? true
+      set enable-kde-write false
+  	  set use-high-res-ndvi? true
       set calibrateCaribouVar? true
       set randomCaribouVarStart? true
       set import-caribou-var? false
@@ -2640,7 +2642,7 @@ INPUTBOX
 656
 804
 caribou-veg-factor
-0.14
+0.389
 1
 0
 Number
@@ -2651,7 +2653,7 @@ INPUTBOX
 730
 804
 caribou-rough-factor
-0.215
+0.303
 1
 0
 Number
@@ -2672,7 +2674,7 @@ INPUTBOX
 805
 803
 caribou-insect-factor
-0.294
+0.438
 1
 0
 Number
@@ -2683,7 +2685,7 @@ INPUTBOX
 879
 803
 caribou-modifier-factor
-0.215
+0.816
 1
 0
 Number
@@ -2760,7 +2762,7 @@ INPUTBOX
 727
 905
 decay-rate
-0.43
+0.801
 1
 0
 Number
@@ -2826,7 +2828,7 @@ INPUTBOX
 953
 803
 caribou-deflection-factor
-0.336
+0.828
 1
 0
 Number
@@ -3126,7 +3128,7 @@ SWITCH
 1063
 is-training?
 is-training?
-1
+0
 1
 -1000
 
@@ -3158,7 +3160,7 @@ INPUTBOX
 1020
 803
 caribou-precip-factor
-0.561
+0.6
 1
 0
 Number
@@ -3209,7 +3211,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.464
+0.971
 0.01
 1
 NIL
@@ -3221,7 +3223,7 @@ INPUTBOX
 655
 906
 energy-gain-factor
-29.4
+0.3
 1
 0
 Number
@@ -3233,7 +3235,7 @@ SWITCH
 1063
 is-random?
 is-random?
-1
+0
 1
 -1000
 
@@ -3522,7 +3524,7 @@ SWITCH
 989
 calibrateCaribouVar?
 calibrateCaribouVar?
-1
+0
 1
 -1000
 
@@ -3533,7 +3535,7 @@ SWITCH
 1024
 randomCaribouVarStart?
 randomCaribouVarStart?
-1
+0
 1
 -1000
 
@@ -3980,7 +3982,7 @@ SWITCH
 625
 hunter-training?
 hunter-training?
-1
+0
 1
 -1000
 
@@ -4075,7 +4077,7 @@ SWITCH
 1097
 import-caribou-var?
 import-caribou-var?
-0
+1
 1
 -1000
 
@@ -4097,7 +4099,7 @@ SWITCH
 596
 Nuiqsut?
 Nuiqsut?
-0
+1
 1
 -1000
 
@@ -4108,7 +4110,7 @@ SWITCH
 597
 CD5?
 CD5?
-0
+1
 1
 -1000
 
@@ -4153,7 +4155,7 @@ CHOOSER
 scenario
 scenario
 "none" "hunter-evolution-lo" "caribou-evolution-lo" "control-w-hunters-lo" "control-no-hunters-lo" "obd-w-hunters-lo" "obd-no-hunters-lo" "veg-later-shift-w-hunters-lo" "veg-later-shift-no-hunters-lo" "veg-early-shift-w-hunters-lo" "veg-early-shift-no-hunters-lo" "combined-early-ndvi-no-hunters-lo" "combined-early-ndvi-w-hunters-lo" "combined-late-ndvi-no-hunters-lo" "combined-late-ndvi-w-hunters-lo" "hunter-evolution-hi" "caribou-evolution-hi" "control-w-hunters-hi" "control-no-hunters-hi" "obd-w-hunters-hi" "obd-no-hunters-hi" "veg-later-shift-w-hunters-hi" "veg-later-shift-no-hunters-hi" "veg-early-shift-w-hunters-hi" "veg-early-shift-no-hunters-hi" "combined-early-ndvi-no-hunters-hi" "combined-early-ndvi-w-hunters-hi" "combined-late-ndvi-no-hunters-hi" "combined-late-ndvi-w-hunters-hi"
-17
+16
 
 SWITCH
 371
@@ -4575,7 +4577,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.4
+NetLogo 6.0.3
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
