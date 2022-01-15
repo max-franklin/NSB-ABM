@@ -6270,6 +6270,18 @@ NetLogo 6.0.3
       <value value="false"/>
     </enumeratedValueSet>
   </experiment>
+  <experiment name="caribou-evolution-hi" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <enumeratedValueSet variable="scenario">
+      <value value="&quot;caribou-evolution-hi&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="caribou-evolution-lo" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <enumeratedValueSet variable="scenario">
+      <value value="&quot;caribou-evolution-lo&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
 </experiments>
 @#$#@#$#@
 @#$#@#$#@
