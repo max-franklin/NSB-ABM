@@ -1,0 +1,151 @@
+extensions [gis]
+
+globals [raster-dataset]
+
+patches-own [raster-value]
+
+to load-and-export-gis-raster
+  let prefix "/data/patches/Vegetation/"
+  let input-file word prefix "vacvit.asc"
+  let output-file "vacvit.pdata"
+
+  ; Load the GIS raster dataset
+  set raster-dataset gis:load-dataset input-file
+
+  ; Apply the raster values to the patches
+  gis:set-world-envelope gis:envelope-of raster-dataset
+  gis:apply-raster raster-dataset raster-value ; Store the raster values in the patch variable 'raster-value'
+
+  ; Open the output file for writing
+  file-open output-file
+
+  ; Export the raster values for each patch
+  ask patches [
+    file-print raster-value
+  ]
+
+  ; Close the file
+  file-close
+
+  ; Display a message when done
+  user-message (word "Exported patch values to " output-file)
+end
+
+
+;Converts NAD27 Coordinates to Patches in the model
+to nad-to-patch-pos [x y]
+  ;extents of the data used
+  let hmin 2099760
+  let hmax 2382960
+  let wmin -27000
+  let wmax 256200
+
+  ;Output of the previous to ensure extents are correct.
+  show "NAD83 Height Min and Max"
+  show hmin
+  show hmax
+  show "NAD83 Width Min and Max"
+  show wmin
+  show wmax
+
+  ;how many nad coordinates per patch height and width
+  let nad-per-x (wmax - wmin) / (max-pxcor - min-pxcor)
+  let nad-per-y (hmax - hmin) / (max-pycor - min-pycor)
+
+  ;distance of x from the minimum width. Divide by nad-per-x (nad units per x patches) and divide the total by two and subtract
+  ;  assumes origin is center.
+  let patch-x ((x - wmin) / nad-per-x) - ((max-pxcor - min-pxcor) / 2)
+  let patch-y ((y - hmin) / nad-per-y) - ((max-pycor - min-pycor) / 2)
+  show "RESULT X Y"
+  show patch-x
+  show patch-y
+
+end
+
+;Spawn location checking for better testing.
+to-report check-location [x y]
+  let ocean-good true
+  let wetness-good true
+  let elevation-good true
+
+  let spawn-prob (random 4) + 1
+
+  if x < -64.5 or x > 64.5
+  [
+    report false
+  ]
+
+  if y < -64.5 or y > 64.5
+  [
+    report false
+  ]
+
+  ifelse ([ocean] of patch x y) = 1
+  [
+    set ocean-good  false
+  ]
+
+  [
+    set ocean-good true
+  ]
+
+  ifelse ([wetness] of patch x y) > 0.95
+  [
+    set wetness-good false
+  ]
+  [
+    set wetness-good true
+  ]
+
+  ifelse ([elevation] of patch x y) > elevation-limit
+  [
+    set elevation-good  false
+  ]
+
+  [
+    set elevation-good true
+  ]
+
+  ifelse wetness-good = true and ocean-good = true and elevation-good = true
+  [
+    report true
+  ]
+  [
+    report false
+  ]
+end
+
+to-report patch-exists [x y]
+  if (x > 64 or x < -64)
+  [
+    report false
+  ]
+
+  if (y > 64 or y < 64)
+  [
+    report false
+  ]
+
+  report true
+end
+
+
+
+
+to-report matrix-element-sum [matin]
+  let matSum 0
+  let i 0
+  while [i < 4]
+  [
+   set matSum matrix:get matin 0 i
+   
+   set i (i + 1)
+  ]
+  
+  report matSum
+end
+
+to-report sigmoid-derivative [x]
+  let temp-x fcm-sigmoid-simple x
+  report temp-x * (1 - temp-x)
+end

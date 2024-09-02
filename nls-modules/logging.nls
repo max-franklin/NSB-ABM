@@ -1,0 +1,333 @@
+globals [
+  logging-caribou-header-written
+]
+
+to setup-logging 
+  ;set globals
+  set logging-caribou-header-written false
+end
+
+
+to logging-caribou-bio-state [print-year-fcm]
+  let filename word run-num "/caribou-state-log.txt"
+  file-open filename
+  if (logging-caribou-header-written = false)
+    [
+      file-print "#FORMAT:"
+      file-print "#YEAR"
+      file-print "#[who] FCM-ADJA FCM-PERC"
+      file-print "#Day"
+      file-print "#ID \t STATE-LIST \t BIOENERGY (50 lines)"
+    
+      ;print first year
+      logging-caribou-bio-state-year-data
+
+      set logging-caribou-header-written true
+  ]
+  
+  ;Is it a new year? Then print our master data
+  if (print-year-fcm = true)
+  [
+    logging-caribou-bio-state-year-data
+  ]
+  
+    file-print day
+  ask caribou
+    [
+      file-write ([who] of self)
+      file-write day-states
+      file-write bioenergy
+      file-print "" 
+  ]
+  file-close
+  
+  ; agent data order:  id bio-energy daily states
+end
+
+to logging-caribou-bio-state-year-data
+  file-print year
+  ask caribou
+  [
+    file-write word ([who] of self) word "\t" matrix:to-row-list fcm-adja
+    file-write word "\t"  matrix:to-row-list caribou-fcm-perception-weights
+  ]
+  file-print ""
+end
+
+
+
+
+to setup-logger-data
+  let hunter-logger-ex word run-num "/hunter-logger.txt"
+  let caribou-logger-ex word run-num  "/caribou-logger.txt"
+
+  if file-exists? hunter-logger-ex [ file-delete hunter-logger-ex ]
+  if file-exists? caribou-logger-ex [ file-delete caribou-logger-ex ]
+
+  file-open hunter-logger-ex
+  file-write "scenario"
+  file-write "agent"
+  file-write "FCM"
+  file-write "input-matrix"
+  file-write "sensory"
+  file-write "states"
+  file-close
+
+  file-open caribou-logger-ex
+  file-write "scenario"
+  file-write "agent"
+  file-write "FCM"
+  file-write "input-matrix"
+  file-write "sensory"
+  file-write "states"
+  file-close
+end
+
+to export-logger-year-data
+  file-open word run-num "/fcm-mats/h/hunter-0-dat.txt"
+  file-write word matrix:to-row-list h-previous-activations-0 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-sensory-0 ", \n"
+  file-write word matrix:to-row-list h-hunter-input-matrix-0 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-matrix-0 ", \n"
+  file-write word matrix:to-row-list h-current-activations-0 ", \n"
+  file-write word h-action-0-count ", \n \n \n"
+  file-close
+
+  file-open word run-num "/fcm-mats/h/hunter-1-dat.txt"
+  file-write word matrix:to-row-list h-previous-activations-1 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-sensory-1 ", \n"
+  file-write word matrix:to-row-list h-hunter-input-matrix-1 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-matrix-1 ", \n"
+  file-write word matrix:to-row-list h-current-activations-1 ", \n"
+  file-write word h-action-1-count ", \n \n \n"
+  file-close
+
+  file-open word run-num "/fcm-mats/h/hunter-2-dat.txt"
+  file-write word matrix:to-row-list h-previous-activations-2 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-sensory-2 ", \n"
+  file-write word matrix:to-row-list h-hunter-input-matrix-2 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-matrix-2 ", \n"
+  file-write word matrix:to-row-list h-current-activations-2 ", \n"
+  file-write word h-action-2-count ", \n \n \n"
+  file-close
+
+  file-open word run-num "/fcm-mats/h/hunter-3-dat.txt"
+  file-write word matrix:to-row-list h-previous-activations-3 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-sensory-3 ", \n"
+  file-write word matrix:to-row-list h-hunter-input-matrix-3 ", \n"
+  file-write word matrix:to-row-list h-hunter-fcm-matrix-3 ", \n"
+  file-write word matrix:to-row-list h-current-activations-3 ", \n"
+  file-write word h-action-3-count ", \n \n \n"
+  file-close
+
+
+end
+
+to export-logger-year-data-caribou
+
+  file-open word run-num "/fcm-mats/c/caribou-0-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-0 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-0 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-0 ", \n"
+  file-write word matrix:to-row-list fcm-adja-0 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-0 ", \n"
+  file-write word c-action-0-count ", \n \n \n"
+  file-close
+
+  file-open word run-num "/fcm-mats/c/caribou-1-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-1 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-1 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-1 ", \n"
+  file-write word matrix:to-row-list fcm-adja-1 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-1 ", \n"
+  file-write word c-action-1-count ", \n \n \n"
+  file-close
+
+  file-open word run-num "/fcm-mats/c/caribou-2-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-2 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-2 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-2 ", \n"
+  file-write word matrix:to-row-list fcm-adja-2 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-2 ", \n"
+  file-write word c-action-2-count ", \n \n \n"
+  file-close
+
+  file-open word run-num "/fcm-mats/c/caribou-3-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-3 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-3 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-3 ", \n"
+  file-write word matrix:to-row-list fcm-adja-3 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-3 ", \n"
+  file-write word c-action-3-count ", \n \n \n"
+  file-close
+
+  file-open word run-num "/fcm-mats/c/caribou-4-dat.txt"
+  file-write word matrix:to-row-list caribou-prev-fcm-node-states-4 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perceptions-4 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-perception-weights-4 ", \n"
+  file-write word matrix:to-row-list fcm-adja-4 ", \n"
+  file-write word matrix:to-row-list caribou-fcm-node-states-4 ", \n"
+  file-write word c-action-4-count ", \n \n \n"
+  file-close
+
+end
+
+
+to export-logger-data
+  file-open word run-num "/hunter-logger.txt"
+  ask hunters
+  [
+    file-print ""
+    file-write word scenario ","
+    file-write word ([who] of self) ","
+    file-write word matrix:to-row-list previous-activations ","
+    file-write word matrix:to-row-list hunter-fcm-sensory ","
+    file-write word matrix:to-row-list hunter-input-matrix ","
+    file-write word matrix:to-row-list hunter-fcm-matrix ","
+    file-write word matrix:to-row-list current-activations ","
+  ]
+  file-close
+
+  file-open word run-num "/caribou-logger.txt"
+  ask caribou
+  [
+    file-print ""
+    file-write word scenario ","
+    file-write word ([who] of self) ","
+    file-write word matrix:to-row-list caribou-prev-fcm-node-states ","
+    file-write word matrix:to-row-list caribou-fcm-perceptions ","
+    file-write word matrix:to-row-list caribou-fcm-perception-weights ","
+    file-write word matrix:to-row-list fcm-adja ","
+    file-write word matrix:to-row-list caribou-fcm-node-states ","
+  ]
+  file-close
+end
+to setup-caribou-state-data
+  let file-ex word run-num "/caribou-state-flux-bioE-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
+
+  if file-exists? file-ex [ file-delete file-ex ]
+
+  file-open file-ex
+
+  file-write "ticks"
+  file-write "state 0"
+  file-write "state 1"
+  file-write "state 2"
+  file-write "state 3"
+  file-write "state 4"
+  file-write "bioenergy success"
+  file-close
+
+end
+
+to export-caribou-state-data
+  let file-ex word run-num "/caribou-state-flux-bioE-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
+
+  file-open file-ex
+  file-print ""
+  file-write ticks
+  file-write count caribou with [state = 0]
+  file-write count caribou with [state = 1]
+  file-write count caribou with [state = 2]
+  file-write count caribou with [state = 3]
+  file-write count caribou with [state = 4]
+  file-write mean [ bioenergy-success ] of caribou
+  file-close
+end
+
+to setup-caribou-fcm-data
+  let file-ex word run-num "/caribou-fcms-agentnum-success-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
+
+  if file-exists? file-ex [ file-delete file-ex ]
+
+  file-open file-ex
+  file-write "year,"
+  file-write "fcm agent useage,"
+  file-write "fcm success,"
+  file-write "caribou fcm-adja matrix,"
+  file-write "caribou fcm-perception-weights matrix"
+  file-close
+end
+
+to export-fcm-data
+  ;;dump all pertinent data every year for variable calibration.
+  ;set caribou-fcm-adja-list [fcm-adja] of caribou
+
+  let file-ex word run-num "/caribou-fcms-agentnum-success-"
+  set file-ex word file-ex seed
+  set file-ex word file-ex ".txt"
+
+  file-open file-ex
+
+  let x length caribou-fcm-adja-list
+  let y 0
+  while [ y < x ] [
+    file-print ""
+    file-write word year ","
+    file-write word (item y caribou-fcm-agentnum-list) ","
+    file-write word (item y caribou-fcm-success-list) ","
+    file-write matrix:to-row-list (item y caribou-fcm-adja-list)
+    file-write matrix:to-row-list (item y caribou-fcm-perception-weights-list)
+    set y y + 1
+  ]
+
+  file-close
+end
+
+
+to reset-caribou-centroids
+  ifelse day > 151 and day < 166 and caribou-class = 2
+    [ set current-centroid min-one-of patches with [pid > 0] [distance myself]
+      set last-centroid patch -64 64 ];current-centroid ]
+  [ set current-centroid min-one-of patches with [npid > 0] [distance myself]
+    set last-centroid patch -64 64 ];current-centroid ] ]
+                                    ;starting grid is closest grid
+  ifelse day > 151 and day < 166 and caribou-class = 2
+    [ set current-grid min-one-of grids with [p-qual-id > 0] [distance myself]
+      set current-grid [who] of current-grid
+      set last-grid 0 ]
+  [ set current-grid min-one-of grids with [np-qual-id > 0] [distance myself]
+    set current-grid [who] of current-grid
+    set last-grid 0 ]
+end
+
+
+
+to export-hunter-data [mode]
+  ;per trip, mode = 0
+  if(mode = 0)
+  [
+
+    file-open word run-num "/hunter-trip-data.txt"
+    ask hunters
+    [
+      file-print ""
+      file-write spent-time
+      file-write ([who] of self)
+      file-write prey-caught
+      file-write harvest-patch
+    ]
+    file-close
+  ]
+  ;per year, mode = 1
+  if(mode = 1)
+  [
+    let filename word run-num "/hunter-year-data.txt"
+    file-open filename
+    ask hunters
+    [
+      file-print ""
+      file-write year
+      file-write ([who] of self)
+      file-write harvest-amount
+      file-write matrix:to-row-list hunter-fcm-matrix
+    ]
+    file-close
+  ]
+end

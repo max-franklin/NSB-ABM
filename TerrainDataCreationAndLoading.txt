@@ -1,0 +1,69 @@
+observer> file-open "patch-wetness.pdata"
+observer> foreach sort patches [x -> ask x[file-write wetness]]
+observer> file-close 
+observer> file-open "patch-elevation.pdata"
+observer> foreach sort patches [x -> ask x[file-write elevation ]]
+observer> file-close
+observer> file-open "patch-streams.pdata"
+observer> foreach sort patches [x -> ask x[file-write streams ]]
+observer> file-close
+observer> file-open "patch-ocean.pdata"
+observer> foreach sort patches [x -> ask x[file-write ocean ]]
+observer> file-close
+observer> file-open "patch-roughness.pdata"
+observer> foreach sort patches [x -> ask x[file-write roughness ]]
+observer> file-close
+observer> file-open "patch-caribou-spawn-calving-nonparturient.pdata"
+observer> foreach sort patches [x -> ask x[file-write caribou-spawn-calving-nonparturient ]]
+observer> file-close
+observer> file-open "patch-caribou-spawn-parturient.pdata"
+observer> foreach sort patches [x -> ask x[file-write caribou-spawn-parturient ]]
+observer> file-close
+observer> file-open "patch-caribou-spawn-summer.pdata"
+observer> foreach sort patches [x -> ask x[file-write caribou-spawn-summer ]]
+observer> file-close
+observer> file-open "patch-caribou-spawn-post-calving.pdata"
+observer> foreach sort patches [x -> ask x[file-write caribou-spawn-post-calving ]]
+observer> file-close
+
+
+
+
+
+
+
+  file-open "patch-wetness.pdata"
+  foreach sort patches [x -> ask x[set wetness file-read ]]
+  file-close
+  
+  file-open "patch-elevation.pdata"
+  foreach sort patches [x -> ask x[set elevation file-read ]]
+  file-close
+  
+  file-open "patch-streams.pdata"
+  foreach sort patches [x -> ask x[set streams file-read ]]
+  file-close
+  
+  file-open "patch-ocean.pdata"
+  foreach sort patches [x -> ask x[set ocean file-read ]]
+  file-close
+  
+  file-open "patch-roughness.pdata"
+  foreach sort patches [x -> ask x[set roughness file-read ]]
+  file-close
+  
+  file-open "patch-caribou-spawn-calving-nonparturient.pdata"
+  foreach sort patches [x -> ask x[set caribou-spawn-calving-nonparturient file-read ]]
+  file-close
+  
+  file-open "patch-caribou-spawn-parturient.pdata"
+  foreach sort patches [x -> ask x[set caribou-spawn-parturient file-read ]]
+  file-close
+  
+  file-open "patch-caribou-spawn-summer.pdata"
+  foreach sort patches [x -> ask x[set caribou-spawn-summer file-read ]]
+  file-close
+  
+  file-open "patch-caribou-spawn-post-calving.pdata"
+  foreach sort patches [x -> ask x[set caribou-spawn-post-calving file-read ]]
+  file-close

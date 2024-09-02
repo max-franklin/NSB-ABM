@@ -1,0 +1,32 @@
+to setup-moose
+  create-moose moose-amt
+  [
+    set color brown
+    let rxcor random-xcor
+    let rycor random-ycor
+    set size 2.5
+
+    set fd-amt 1
+    ;check location to prevent random spawn on ocean/lake
+    while [not check-location rxcor rycor]
+   [
+     set rxcor random-xcor
+     set rycor random-ycor
+   ]
+    setxy rxcor rycor
+  ]
+end
+
+
+
+
+;; FROM-NLS: patch-list.nls
+;      
+to go-moose
+  ask moose
+  [
+    let p patch-list-moose-wrapper xcor ycor
+    face p
+    fd fd-amt
+  ]
+end

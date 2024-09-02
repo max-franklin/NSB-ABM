@@ -1,0 +1,128 @@
+;Caribou pop dynamics code.
+
+to gen-caribou-pop ;call this procedure in the mothership setup procedure.
+  set caribou-pop 11200 ;can adjust for different scenarios. This is the starting pop value.
+  set caribou/agent caribou-amt / caribou-group-amt
+
+  let num-agents round (caribou-pop / caribou/agent)
+  ask n-of num-agents patches
+  [
+   sprout-caribou 1
+  ]
+  set caribou-pop count caribou * caribou/agent
+end
+
+
+to go-caribou-pop ;call this procedure in the mothership go procedure b/w model
+                  ;iterations/years.
+  let caribou-group-number floor(caribou-amt / caribou-group-amt)
+  set caribou/agent caribou-amt / caribou-group-amt
+  set caribou-pop count caribou * caribou/agent
+
+  let carrying-cap 65000 ;Appears to be "carrying capacity" based off of ADFG GMU 26A
+                         ;data, Tab. 4, 2014.
+  let chance (caribou-pop / carrying-cap)
+  let roll (1 + random 100) / 100
+  ifelse roll <= chance
+  [
+    set r-caribou -1 * random-exponential 6.84 ;Exponential parameter from fitted ADFG
+                                       ;GMU 26A data, Tab. 4, 2014.
+                                       ;Fit was made using data from 1984-2008.
+  ]
+  [
+    set r-caribou random-exponential 6.84
+  ]
+  set r-caribou r-caribou / 100
+  let new-pop caribou-pop * (exp r-caribou)
+  let num-agents round (new-pop / caribou/agent)
+
+    ifelse count caribou > num-agents
+  [
+    let diff count caribou - num-agents
+    ask n-of diff caribou [ die ]
+  ]
+  [
+    if count caribou < num-agents
+    [
+      let diff num-agents - count caribou
+      create-caribou diff
+      [
+        ;State management
+        set last-state-migrate false
+        set allowed-to-remember false
+        set color blue + 2
+        let rxcor random-xcor
+        let rycor random-ycor
+
+
+        ;forage intra-patch
+        set fga-amt 135 / 2195 ;SemeniukVal * 3 / patch width&height in meters
+        ;forage inter-patch
+        set fge-amt 1350 / 2195 ; move-towards new patch, set as goal, check if reached, clear goal.
+        ;migrate/taxi
+        set mg-amt-min 3000 / 2195
+        set mg-amt-max 6000 / 2195
+
+        ;taxi based on upto 3 patches away
+
+
+        ;;Attraction factor to migrate
+        set attraction-factor 15
+        set test-migration 0
+        set last-patches array:from-list n-values 45 [0]
+        set last-patch-index 0
+
+        set last-taxi-vals array:from-list n-values 10 [0]
+        set last-taxi-index 0
+
+        set last-forage-vals array:from-list n-values 10 [0]
+        set last-forage-index 0
+
+
+        while[rxcor < -63 or rxcor > 63]
+        [
+          set rxcor random-xcor
+        ]
+
+        while[rycor < -63 or rycor > 63]
+        [
+          set rycor random-ycor
+        ]
+        ;Size is radius of herd
+        set radius caribou-radius
+        set shape "circle 2"
+        set size radius
+
+        set current-centroid (random 5 + 1)
+
+        set centroid-attraction set-centroid-attraction
+
+        set group-size caribou-group-amt
+        set fd-amt 0.25
+       while [not check-location rxcor rycor]
+       [
+         set rxcor random-xcor
+         set rycor random-ycor
+       ]
+        setxy rxcor rycor
+
+        ;set by group population
+        set weight (132 * caribou-group-number)
+        set bioenergy (27.5 * caribou-group-number * 1000) ; In kJ
+
+       set cog-map matrix:copy base-fcm-caribou
+
+       if(is-training?)
+       [
+         setxy -12 -27
+       ]
+
+      ]
+    ]
+  ]
+
+  set caribou-pop count caribou * caribou/agent
+  ;each iteration of this procedure represents a year of time. Should only be
+  ;called when iterating the model between summer seasons.
+end
+

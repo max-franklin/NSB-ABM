@@ -1,0 +1,189 @@
+
+;Events to run at the beginning of a new day
+to on-calendar-event [new-day new-year]
+
+
+  if (new-day = true)
+  [
+    on-new-day
+    ;fire the new day event for caribou, pass the year information
+    caribou-on-new-day new-year
+  ]
+
+
+  if (new-year = true)
+  [
+    on-new-year
+  ]
+
+end
+
+to on-new-day
+  global-on-new-day
+end
+
+to global-on-new-day
+  set hour 0
+  set day (day + 1)
+
+  go-ndvi
+
+  if day > 151 and day < 258
+  [
+    go-veg-ranking
+  ]
+
+  if (day - 12) mod 14 = 0
+  [
+
+    centroid-read day
+    grid-read
+
+    ask caribou [ reset-caribou-centroids ]
+
+  ]
+
+  if export-centroids? [ centroid-export ]
+  swap-centroid-layers
+
+  go-precipitation
+
+end
+
+;Event calls to other NLS modules for new years
+to on-new-year
+  global-on-new-year
+end
+
+;Specifically global new year calls/old calls
+to global-on-new-year
+  if caribouPopMod? = true
+  [ go-caribou-pop ]
+
+  if calibrateCaribouVar? [ go-caribou-var-cal ]
+
+  if(is-training?) [ update-caribou-fcm ]
+
+
+  if(export-hunter-data?) [ export-hunter-data 1 ];export hutner data at year end
+  set hunter-harvest-total 0
+  if(hunter-training?) [ update-hunter-fcms ]
+
+  if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
+  if exportSmallHunter? [export-logger-year-data]
+  if exportSmallCaribou? [export-logger-year-data-caribou]
+  set year year + 1
+  set day 152
+  centroid-read day
+  grid-read
+
+  ask caribou [ reset-caribou-centroids ]
+
+  set avg-sim-time lput timer avg-sim-time
+  reset-timer
+
+end
+
+to-report day-to-month ;reports month as 1-12 value
+
+  if day >= 1 and day <= 31 [
+    report 1
+  ]
+
+  if day >= 32 and day <= 59 [
+    report 2
+  ]
+
+  if day >= 60 and day <= 90 [
+    report 3
+  ]
+
+  if day >= 91 and day <= 120 [
+    report 4
+  ]
+
+  if day >= 121 and day <= 151 [
+    report 5
+  ]
+
+  if day >= 152 and day <= 181 [
+    report 6
+  ]
+
+  if day >= 182 and day <= 212 [
+    report 7
+  ]
+
+  if day >= 213 and day <= 243 [
+    report 8
+  ]
+
+  if day >= 244 and day <= 273 [
+    report 9
+  ]
+
+  if day >= 274 and day <= 304 [
+    report 10
+  ]
+
+  if day >= 305 and day <= 334 [
+    report 11
+  ]
+
+  if day >= 335 and day <= 365 [
+    report 12
+  ]
+
+end
+
+to-report percent-of-month-complete ;reports the current completeness of the month. Ex: Day = 105 => Month = 4 (April 15th), value returned = 0.50
+
+  if day >= 1 and day <= 31 [
+    report (day - 0) / (31 - 0)
+  ]
+
+  if day >= 32 and day <= 59 [
+    report (day - 31) / (59 - 31)
+  ]
+
+  if day >= 60 and day <= 90 [
+    report (day - 59) / (90 - 59)
+  ]
+
+  if day >= 91 and day <= 120 [
+    report (day - 90) / (120 - 91)
+  ]
+
+  if day >= 121 and day <= 151 [
+    report (day - 120) / (151 - 120)
+  ]
+
+  if day >= 152 and day <= 181 [
+    report (day - 151) / (181 - 151)
+  ]
+
+  if day >= 182 and day <= 212 [
+    report (day - 181) / (212 - 181)
+  ]
+
+  if day >= 213 and day <= 243 [
+    report (day - 212) / (243 - 212)
+  ]
+
+  if day >= 244 and day <= 273 [
+    report (day - 243) / (273 - 243)
+  ]
+
+  if day >= 274 and day <= 304 [
+    report (day - 273) / (304 - 273)
+  ]
+
+  if day >= 305 and day <= 334 [
+    report (day - 304) / (334 - 304)
+  ]
+
+  if day >= 335 and day <= 365 [
+    report (day - 334) / (365 - 334)
+  ]
+
+end
