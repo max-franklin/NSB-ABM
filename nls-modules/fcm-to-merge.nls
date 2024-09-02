@@ -1,0 +1,145 @@
+to-report fcm-index-max [mat]
+  let i 0
+  let max-index 0
+  let max-num 0
+  while [i < 5]
+  [
+    if (matrix:get mat i 0 >= max-num)
+    [
+      set max-num matrix:get mat i 0
+      set max-index i
+    ]
+
+    set i (i + 1)
+  ]
+ ; show (max-index)
+  report (max-index)
+end
+
+to-report fcm-ternary [mind maxd currd]
+  if (currd < mind)
+  [
+    report 0
+  ]
+
+  if (currd > maxd)
+  [
+    report 1
+  ]
+
+  report (currd - mind) / (maxd - mind)
+end
+
+to-report fcm-sigmoid-additional [scale initial altered]
+
+  report ( 1 / (1 + e ^ (-1 * scale * (altered - initial))))
+end
+
+to-report fcm-sigmoid-simple [rawVal]
+  report (1 / (1 + e ^ (-1 * rawVal)))
+end
+
+to caribou-random-fcm
+  set fcm-adja-base matrix:map random-fcm fcm-adja-base ;randomize fcm
+end
+
+;Breed Updates for FCMs
+to update-caribou-fcm
+  ;currently looks like there is no recombination of FCMs, only mutation. Check with Cory (Max)
+  ask caribou
+  [
+    ;look for highest average energy
+    ;if this.highest > last.highest
+    ;  set last.highest this.highest
+    ;change base to this.cog-map
+    ;update/reset all agents
+    ;use new base-map for all agents
+    ; apply mutations
+
+    
+    ;;Adding in a recombination of FCM section. 
+    ;degrees of recombination? start off with only 1.
+    ;;Work in progress
+    let best max-one-of caribou [bioenergy]
+    let next-best max-one-of caribou with [who != best] [bioenergy]
+    
+    let map1 matrix:copy [fcm-adja] of best
+    let map2 matrix:copy [fcm-adja] of next-best
+
+    
+    
+    
+    ;let best max-one-of caribou [bioenergy]
+    if([bioenergy] of best > best-caribou-val or best-caribou-val = 0)
+    [
+      set fcm-adja-base matrix:copy [fcm-adja] of best
+      set base-fcm-caribou matrix:copy [fcm-adja] of best
+     ; set base-fcm-caribou matrix:copy [cog-map] of best
+      set best-caribou-val [bioenergy] of best
+      export-fcm
+    ]
+
+    ask caribou
+    [
+      set fcm-adja matrix:copy fcm-adja-base ; Adj
+      set fcm-adja matrix:map mutate-nonzero fcm-adja ;mutate the map
+      
+      let caribou-group-number floor(caribou-amt / caribou-group-amt)
+      set bioenergy (27.5 * caribou-group-number * 1000) ; In kJ ;reset energy
+;      set cog-map matrix:copy base-fcm-caribou
+;
+;      let rand (random-float (mutate-amt * 2) - mutate-amt)
+;      matrix:set cog-map 0 3 ((matrix:get cog-map 0 3) + rand)
+;
+;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+;      matrix:set cog-map 0 4 ((matrix:get cog-map 0 4) + rand)
+;
+;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+;      matrix:set cog-map 1 3 ((matrix:get cog-map 1 3) + rand)
+;
+;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+;      matrix:set cog-map 1 4 ((matrix:get cog-map 1 4) + rand)
+;
+;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+;      matrix:set cog-map 2 4 ((matrix:get cog-map 2 4) + rand)
+;
+;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+;      matrix:set cog-map 2 5 ((matrix:get cog-map 2 5) + rand)
+;
+;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+;      matrix:set cog-map 2 6 ((matrix:get cog-map 2 6) + rand)
+;
+;      set rand (random-float (mutate-amt * 2) - mutate-amt)
+;      matrix:set cog-map 3 6 ((matrix:get cog-map 3 6) + rand)
+;
+      setxy -12 -27
+    ]
+
+
+  ]
+end
+
+
+to-report mutate-nonzero [x] 
+  ;if not(x = 0) ;why are we not mutating 0 values in the matrices?
+  ;[
+    let rand (random-float (mutate-amt * 2) - mutate-amt)
+    report (x + rand)
+  ;]
+
+  ;report 0
+end
+
+to-report random-fcm [x]
+  report (random-float 10) - 5
+end
+
+
+to export-fcm
+  let file-ex word "FCM-List:" date-and-time
+  set file-ex word file-ex ".txt"
+  file-open file-ex
+  file-write matrix:to-row-list base-fcm-caribou
+  file-write "\n"
+  file-close
+end

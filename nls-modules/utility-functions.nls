@@ -1,0 +1,159 @@
+to setup-caribou-utility
+  ;pseudo utility val for demonstration
+  ;ask patches [set caribou-utility (random 20 + 1)]
+
+
+  ;;base utility
+  ask patches
+  [
+    ; Try to keep values [0,1]?
+
+    set caribou-modifier 0
+
+    ;;vegetation value
+    let veg-value 0
+    let rough-value (roughness / max-roughness)
+
+    
+    ;set veg-value vegetation-beta * (ndvi-quality / ndvi-all-max) 
+    ;Utility follows form of (var * varFactor) + (var2 * var2Factor)
+    ;OLD LINE; set caribou-utility (veg-value + (caribou-rough-factor * rough-value) + (caribou-insect-factor * insect-value) - (deflection * caribou-deflection-factor))
+    ;check w/ Cory over semantics of following line.
+    set caribou-utility ((caribou-rough-factor * rough-value) - (deflection * caribou-deflection-factor))
+   ; show caribou-utility
+    
+    if(debug-layer-util?)
+    [
+      set caribou-utility patch-debug-util / 255
+    ]
+        
+    
+    ;use this when performing update ;; + (modifier-factor * caribou-modifier)
+    ;Prevent divide by 0. Rewrite this later to preven the error in new Function.
+    set caribou-utility-max caribou-utility
+  ]
+end
+
+to update-para-utility
+  ask patches
+  [
+    ;set caribou-utility 0 ;void this line after calculating centroids for each layer.
+    ;CARIBOU-UTILITY MUST ALWAYS BE CALCULATED FIRST! THIS IS DONE IN THE GO PROCEDURE!
+    set caribou-utility-para caribou-utility 
+    let ndvi-util ((ndvi-quality / ndvi-all-max) * ndvi-weight) + (1 - ndvi-weight)
+    let veg-value vegParRank * ndvi-util * caribou-veg-factor
+    set caribou-utility-para caribou-utility-para + veg-value
+    
+    if (patch-deflection-oil > 0 or patch-deflection-roads > 0 or patch-deflection-pipeline > 0)
+    [
+      ask neighbors [set patch-deflection-temp 0.156] ;value taken as mid-point from 2-3 and 3-4km adult reduction
+      set patch-deflection-temp 0.578 ;taken as midpoint for 0-1km and 1-2km adult reduction
+      
+     set patch-deflection-temp (patch-deflection-temp * caribou-utility) ;multiplied by the base utilization
+     set caribou-utility-para (caribou-utility-para - patch-deflection-temp)
+    ]
+    
+    if(debug-layer-util?)
+    [
+      set caribou-utility-para patch-debug-util / 255
+    ]
+        
+    if(caribou-utility-non-para  <= 0)
+    [
+
+      set caribou-utility-non-para 0.0000000001
+    ]
+    if(ocean = 1)
+    [
+     set caribou-utility-non-para 0.0000000001
+    ]
+    
+        
+    if(caribou-utility-para  <= 0)
+    [
+
+      set caribou-utility-para 0.0000000001 
+    ]
+    if(ocean = 1)
+    [
+     set caribou-utility-para 0.0000000001
+    ]
+    ;set caribou-utility-max caribou-utility-para  ;; Necessary???
+  ]
+end
+
+to update-non-para-utility
+  ask patches
+  [
+    ;set caribou-utility 0 ;void this line after calculating centroids for each layer.
+    ;CARIBOU-UTILITY MUST ALWAYS BE CALCULATED FIRST! THIS IS DONE IN THE GO PROCEDURE!
+    set caribou-utility-non-para caribou-utility 
+    
+    let ndvi-util ((ndvi-quality / ndvi-all-max) * ndvi-weight) + (1 - ndvi-weight)
+    let veg-value vegNonParRank * ndvi-util * caribou-veg-factor
+    set caribou-utility-non-para caribou-utility-non-para + veg-value
+    
+    if (patch-deflection-oil > 0 or patch-deflection-roads > 0 or patch-deflection-pipeline > 0)
+    [
+      ask neighbors [set patch-deflection-temp 0.156] ;value taken as mid-point from 2-3 and 3-4km adult reduction
+      set patch-deflection-temp 0.578 ;taken as midpoint for 0-1km and 1-2km adult reduction
+      
+     set patch-deflection-temp (patch-deflection-temp * caribou-utility) ;multiplied by the base utilization
+     set caribou-utility-non-para (caribou-utility-non-para - patch-deflection-temp)
+    ]
+    
+    if(debug-layer-util?)
+    [
+      set caribou-utility-non-para patch-debug-util / 255
+    ]
+    
+    if(caribou-utility-non-para  <= 0)
+    [
+
+      set caribou-utility-non-para 0.0000000001
+    ]
+    if(ocean = 1)
+    [
+     set caribou-utility-non-para 0.0000000001
+    ]
+  ]
+end
+
+to update-caribou-utility
+  ask patches
+  [
+    ;reset caribou utility
+    set caribou-utility 0
+    let rough-value (roughness / max-roughness)
+
+    if (ocean = 0)
+    [
+      ifelse (count caribou-here = 0)
+      [
+        if (caribou-modifier > 0)
+        [
+          set caribou-modifier caribou-modifier - decay-rate
+        ]
+
+        if (caribou-modifier < 0)
+        [
+          set caribou-modifier 0
+        ]
+      ]
+      ;Apply caribou-modifier
+      [
+        set caribou-utility (caribou-utility - (caribou-modifier-factor * caribou-modifier))
+      ]
+     
+      set caribou-utility (caribou-utility - (precipitation-amt / precipitation-max) * caribou-precip-factor)
+      set caribou-utility (caribou-utility - (caribou-rough-factor * rough-value))      
+      set caribou-utility (caribou-utility - (deflection * caribou-deflection-factor))
+      
+    ]
+    
+    if(debug-layer-util?)
+    [
+      set caribou-utility patch-debug-util / 255
+    ]
+  ]
+end
