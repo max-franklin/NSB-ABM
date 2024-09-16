@@ -5,9 +5,9 @@ globals [raster-dataset]
 patches-own [raster-value]
 
 to load-and-export-gis-raster
-  let prefix "/data/patches/Vegetation/"
+  let prefix "./data/patches/Vegetation/"
   let input-file word prefix "vacvit.asc"
-  let output-file "vacvit.pdata"
+  let output-file word prefix "vacvit.pdata"
 
   ; Load the GIS raster dataset
   set raster-dataset gis:load-dataset input-file

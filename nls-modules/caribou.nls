@@ -933,6 +933,52 @@ to go-caribou
   
 end
 
+
+to-report caribou-veg-type-energy [val]
+
+  ;1 - Dry prostrate-shrub tundra; barrens
+  ;2 - Moist graminoid, prostrate-shrub tundra (moist, non-acidic tundra)
+  ;3 - Moist dwarf-shrub, tussock graminoid tundra (typical acidic, tussock tundra)
+  ;4 - Moist low-shrub tundra; other shrublands
+  ;5 - Wet graminoid tundra
+  ;6 -  Water
+  ;7 - Clouds, ice
+  ;8 - Shadow
+  ;9 - Moist tussock graminoid, dwarf-shrub tundra (moist, cold, acidic, sandy tussock tundra)
+
+  ;values in MJ in patc
+  if(val = 1)
+  [
+    report 0
+  ]
+  if(val = 2)
+  [
+    report 0.15 * 48.77 ;(2195m our patch / 45m Semeniuk patch)
+  ]
+  if(val = 3)
+  [
+    report 0.15 * 48.77 ;(2195m our patch / 45m Semeniuk patch)
+  ]
+  if(val = 4)
+  [
+    report 0.15 * 48.77 ;(2195m our patch / 45m Semeniuk patch)
+  ]
+  if(val = 5)
+  [
+    report 0.58 * 48.77 ;(2195m our patch / 45m Semeniuk patch)
+  ]
+  if(val = 9)
+  [
+    report 0.365 * 48.77 ;(2195m our patch / 45m Semeniuk patch) average of wetland/shrub
+  ]
+
+  ;other patch type
+  report 0
+
+
+end
+
+
 to caribou-add-day-states
   ;Add 1 to the index of the action/state the caribou takes during the go procedure for calculation purposes
   ask caribou 
@@ -957,21 +1003,3 @@ to caribou-on-new-day [new-year]
   caribou-clear-day-states
 end
 
-
-to-report matrix-element-sum [matin]
-  let matSum 0
-  let i 0
-  while [i < 4]
-  [
-   set matSum matrix:get matin 0 i
-   
-   set i (i + 1)
-  ]
-  
-  report matSum
-end
-
-to-report sigmoid-derivative [x]
-  let temp-x fcm-sigmoid-simple x
-  report temp-x * (1 - temp-x)
-end

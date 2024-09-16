@@ -206,6 +206,23 @@ patches-own
   ndvi-quality
   vegetation-beta
 
+  dryas-prob
+  erivag-prob
+  picgla-prob
+  picmar-prob
+  salshr-prob
+  sphagn-prob
+  vacvit-prob
+  vegetation-prob-quality
+
+  veg-group-1 ; Seasonal Shorgress / Vegetation Complex (85% centers)  --  Grazing 9.60%
+  veg-group-2 ; Vegetation Complex (67% centers or troughs) / Seasonal Shortgrass  --  Grazing 9.60%
+  veg-group-3 ; Evergreen Dwarf Shrub / Seasonal Shortgrass  --  Grazing 46.70%
+  veg-group-4 ; Vegetation Complex (85% Ponds) / Deciduous Shrub Savannah / Vegetation Complex (67% centers or troughs)  --  Grazing 30.80%
+  veg-group-5 ; Deciduous Shrub   --  Grazing 1.40%
+  veg-group-6 ; Seasonal Desert Shrub / Deciduous Desert Shrub / Deciduous Dwarf Shrub  --  Grazing 1.90%
+
+
   ;; Caribou Spawn
   caribou-spawn-calving-nonparturient
   caribou-spawn-parturient
@@ -335,7 +352,8 @@ to setup
   set-ndvi-data-list ; set the default
   setup-precipitation
   setup-terrain-layers
-  setup-caribou-utility
+  ;setup-caribou-utility ; Old Utility
+  setup-patch-qual
   setup-caribou
 
   setup-patch-list
@@ -700,6 +718,58 @@ to setup-terrain-layers
   foreach sort patches [x -> ask x[set roughness file-read ]]
   file-close
 
+  file-open "data/patches/Vegetation/dryas.pdata"
+
+  ask patches [
+    set dryas-prob file-read
+  ]
+  file-close
+
+  file-open "data/patches/Vegetation/erivag.pdata"
+
+  ask patches [
+    set erivag-prob file-read
+  ]
+  file-close
+
+  file-open "data/patches/Vegetation/picgla.pdata"
+  ask patches [
+    set picgla-prob file-read
+  ]
+  file-close
+
+  file-open "data/patches/Vegetation/picmar.pdata"
+  ask patches [
+    set picmar-prob file-read
+  ]
+
+  file-close
+
+  file-open "data/patches/Vegetation/salshr.pdata"
+
+  ask patches [
+    set salshr-prob file-read
+  ]
+
+  file-close
+
+  file-open "data/patches/Vegetation/sphagn.pdata"
+
+  ask patches [
+    set sphagn-prob file-read
+  ]
+
+  file-close
+
+
+  file-open "data/patches/Vegetation/vacvit.pdata"
+
+  ask patches [
+    set vacvit-prob file-read
+  ]
+  file-close
+
+
   file-open "patch-caribou-spawn-calving-nonparturient.pdata"
   foreach sort patches [x -> ask x[set caribou-spawn-calving-nonparturient file-read ]]
   file-close
@@ -841,7 +911,29 @@ end
 
 
 
+to setup-patch-qual
+  ask patches [
 
+    set veg-group-1 ((dryas-prob + erivag-prob + salshr-prob + sphagn-prob + vacvit-prob) / 5)
+    set veg-group-2 ((dryas-prob + erivag-prob + picgla-prob + sphagn-prob + vacvit-prob) / 5)
+    set veg-group-3 ((dryas-prob + erivag-prob + picgla-prob + picmar-prob + sphagn-prob + vacvit-prob) / 6)
+    set veg-group-4 ((erivag-prob + salshr-prob + sphagn-prob) / 3)
+    set veg-group-5 ((salshr-prob))
+    set veg-group-6 ((dryas-prob + salshr-prob) / 2)
+
+    set veg-group-1 (veg-group-1 * 0.096)
+    set veg-group-2 (veg-group-2 * 0.096)
+    set veg-group-3 (veg-group-3 * 0.467)
+    set veg-group-4 (veg-group-4 * 0.308)
+    set veg-group-5 (veg-group-5 * 0.014)
+    set veg-group-6 (veg-group-6 * 0.019)
+
+    let max-value max (list veg-group-1 veg-group-2 veg-group-3 veg-group-4 veg-group-5 veg-group-6)
+
+    set caribou-utility max-value
+
+  ]
+end
 
 
 ;SET COASTLINE
@@ -2692,7 +2784,7 @@ SWITCH
 582
 deflect-pipeline?
 deflect-pipeline?
-0
+1
 1
 -1000
 
@@ -2703,7 +2795,7 @@ SWITCH
 617
 deflect-roads?
 deflect-roads?
-0
+1
 1
 -1000
 
@@ -2726,7 +2818,7 @@ CHOOSER
 scenario
 scenario
 "none" "hunter-evolution" "caribou-evolution" "control-w-hunters" "control-no-hunters" "obd-w-hunters" "obd-no-hunters" "veg-later-shift-w-hunters" "veg-later-shift-no-hunters" "veg-early-shift-w-hunters" "veg-early-shift-no-hunters" "combined-early-ndvi-no-hunters" "combined-early-ndvi-w-hunters" "combined-late-ndvi-no-hunters" "combined-late-ndvi-w-hunters"
-0
+2
 
 BUTTON
 566
@@ -3229,7 +3321,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.3
+NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
