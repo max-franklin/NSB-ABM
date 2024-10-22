@@ -6,15 +6,10 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import threading
-import json
-
 import time
-with open('config.json', 'r') as config_file:
-    config = json.load(config_file)
 
-MODEL_PATH = config['Paths']['ModelPath']
-NLOGO_HOME = config['Paths']['NetlogoPath']
-
+MODEL_PATH = '../../NSB-ABM.nlogo'
+NLOGO_HOME = 'C:\\Program Files\\NetLogo 6.4.0'
 
 current_directory = os.getcwd()
 
@@ -39,11 +34,37 @@ def setup_netlogo():
     netlogo.command('set scenario "caribou-evolution"')
     netlogo.command("setup")
 
-    setup_agents()
 
+def simulation_loop():
+    global df
+    while True:
+        netlogo.command("go")
 
+        # Get the current year
+        current_year = int(netlogo.report("year"))
 
-def setup_agents:
+        # Monitor the bio-energy of caribou
+        bio_energy_values = netlogo.report("map [c -> [bioenergy] of c] sort caribou")
+
+        # Calculate mean, median, max, and min
+        mean_bio_energy = pd.Series(bio_energy_values).mean()
+        median_bio_energy = pd.Series(bio_energy_values).median()
+        max_bio_energy = pd.Series(bio_energy_values).max()
+        min_bio_energy = pd.Series(bio_energy_values).min()
+
+        # Log data
+        tick = netlogo.report("ticks")
+        new_row = pd.DataFrame(
+            {'tick': [tick], 'mean_bio_energy': [mean_bio_energy], 'median_bio_energy': [median_bio_energy],
+             'max_bio_energy': [max_bio_energy], 'min_bio_energy': [min_bio_energy]})
+        df = pd.concat([df, new_row], ignore_index=True)
+
+        # If the year is a multiple of 20, update the data
+        if current_year >= 1000:
+            print("Simulation ended at year 1000.")
+            break
+
+        #time.sleep(1)  # Slow down the simulation for smoother updates
 
 
 def run_simulation():

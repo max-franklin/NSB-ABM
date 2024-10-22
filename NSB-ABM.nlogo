@@ -38,6 +38,8 @@ directed-link-breed [ cent-links cent-link ]
 
 globals
 [
+  is-using-external-tool
+
   ;; File and Run Control
   file-output-prepend
   stop-run
@@ -719,54 +721,33 @@ to setup-terrain-layers
   file-close
 
   file-open "data/patches/Vegetation/dryas.pdata"
-
-  ask patches [
-    set dryas-prob file-read
-  ]
+  foreach sort patches [x -> ask x[set dryas-prob file-read ]]
   file-close
 
   file-open "data/patches/Vegetation/erivag.pdata"
-
-  ask patches [
-    set erivag-prob file-read
-  ]
+  foreach sort patches [x -> ask x[set erivag-prob file-read ]]
   file-close
 
   file-open "data/patches/Vegetation/picgla.pdata"
-  ask patches [
-    set picgla-prob file-read
-  ]
+    foreach sort patches [x -> ask x[set picgla-prob file-read ]]
   file-close
 
   file-open "data/patches/Vegetation/picmar.pdata"
-  ask patches [
-    set picmar-prob file-read
-  ]
-
+    foreach sort patches [x -> ask x[set picmar-prob file-read ]]
   file-close
 
   file-open "data/patches/Vegetation/salshr.pdata"
-
-  ask patches [
-    set salshr-prob file-read
-  ]
-
+  foreach sort patches [x -> ask x[set salshr-prob file-read ]]
   file-close
 
   file-open "data/patches/Vegetation/sphagn.pdata"
-
-  ask patches [
-    set sphagn-prob file-read
-  ]
+  foreach sort patches [x -> ask x[set sphagn-prob file-read ]]
 
   file-close
 
 
   file-open "data/patches/Vegetation/vacvit.pdata"
-
-  ask patches [
-    set vacvit-prob file-read
-  ]
+  foreach sort patches [x -> ask x[set vacvit-prob file-read ]]
   file-close
 
 
@@ -912,6 +893,8 @@ end
 
 
 to setup-patch-qual
+
+
   ask patches [
 
     set veg-group-1 ((dryas-prob + erivag-prob + salshr-prob + sphagn-prob + vacvit-prob) / 5)
@@ -931,8 +914,32 @@ to setup-patch-qual
     let max-value max (list veg-group-1 veg-group-2 veg-group-3 veg-group-4 veg-group-5 veg-group-6)
 
     set caribou-utility max-value
+  ]
+
+  let min-util-value min [caribou-utility] of patches
+  let max-util-value max [caribou-utility] of patches
+
+  ask patches [
+    set caribou-utility (caribou-utility - min-util-value) / (max-util-value - min-util-value)
+  ]
+
+  let wet-detriment-factor -0.25
+  let rough-detriment-factor  -0.25
+  let height-cutoff 200
+
+  ask patches [
+    set caribou-utility (caribou-utility + (wetness * wet-detriment-factor) + (roughness * rough-detriment-factor))
+
+    if elevation > height-cutoff
+    [
+      set caribou-utility 0
+    ]
+
 
   ]
+
+
+
 end
 
 
@@ -1509,7 +1516,7 @@ INPUTBOX
 656
 804
 caribou-veg-factor
-1.0
+0.961
 1
 0
 Number
@@ -1520,7 +1527,7 @@ INPUTBOX
 730
 804
 caribou-rough-factor
-1.0
+0.509
 1
 0
 Number
@@ -1541,7 +1548,7 @@ INPUTBOX
 805
 803
 caribou-insect-factor
-1.0
+0.252
 1
 0
 Number
@@ -1552,7 +1559,7 @@ INPUTBOX
 879
 803
 caribou-modifier-factor
-1.0
+0.363
 1
 0
 Number
@@ -1629,7 +1636,7 @@ INPUTBOX
 727
 905
 decay-rate
-0.0
+0.607
 1
 0
 Number
@@ -1695,7 +1702,7 @@ INPUTBOX
 953
 803
 caribou-deflection-factor
-1.0
+0.201
 1
 0
 Number
@@ -1856,7 +1863,7 @@ INPUTBOX
 1020
 803
 caribou-precip-factor
-1.0
+0.207
 1
 0
 Number
@@ -1907,7 +1914,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-1.0
+0.645
 0.01
 1
 NIL
@@ -1919,7 +1926,7 @@ INPUTBOX
 655
 906
 energy-gain-factor
-100.0
+66.8
 1
 0
 Number
@@ -1931,7 +1938,7 @@ SWITCH
 1063
 is-random?
 is-random?
-1
+0
 1
 -1000
 
@@ -2187,7 +2194,7 @@ SWITCH
 969
 calibrateCaribouVar?
 calibrateCaribouVar?
-1
+0
 1
 -1000
 
@@ -2198,7 +2205,7 @@ SWITCH
 960
 randomCaribouVarStart?
 randomCaribouVarStart?
-1
+0
 1
 -1000
 
@@ -2433,7 +2440,7 @@ hunter-density-low-constant
 hunter-density-low-constant
 0
 0.5
-0.15
+0.4
 .05
 1
 NIL
@@ -2502,7 +2509,7 @@ SWITCH
 628
 use-hunters?
 use-hunters?
-1
+0
 1
 -1000
 
@@ -2541,7 +2548,7 @@ SWITCH
 998
 hunter-recombine?
 hunter-recombine?
-1
+0
 1
 -1000
 
@@ -2552,7 +2559,7 @@ SWITCH
 1035
 hunter-mutate?
 hunter-mutate?
-1
+0
 1
 -1000
 
@@ -2645,7 +2652,7 @@ SWITCH
 625
 hunter-training?
 hunter-training?
-1
+0
 1
 -1000
 
@@ -2740,7 +2747,7 @@ SWITCH
 1097
 import-caribou-var?
 import-caribou-var?
-0
+1
 1
 -1000
 
@@ -2762,7 +2769,7 @@ SWITCH
 596
 Nuiqsut?
 Nuiqsut?
-0
+1
 1
 -1000
 
@@ -2773,7 +2780,7 @@ SWITCH
 597
 CD5?
 CD5?
-0
+1
 1
 -1000
 
@@ -2806,7 +2813,7 @@ SWITCH
 651
 deflect-oil?
 deflect-oil?
-0
+1
 1
 -1000
 
@@ -2883,7 +2890,7 @@ SWITCH
 818
 exportSmallCaribou?
 exportSmallCaribou?
-0
+1
 1
 -1000
 
@@ -2969,6 +2976,57 @@ BUTTON
 1173
 PROCESS GIS
 load-and-export-gis-raster
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1978
+229
+2289
+262
+Utility
+  ; Find the maximum utility value across all patches\n  let max-utility max [vacvit-prob] of patches\n\n  ; Color each patch based on its utility value\n  ask patches [\n    if max-utility > 0 [\n      let utility-fraction (vacvit-prob / max-utility) ; Normalize utility between 0 and 1\n      set pcolor scale-color blue utility-fraction 0 1 ; Scale color from blue (low) to white (high)\n    ]\n  ]\n
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+2018
+403
+2110
+436
+Veg-debug
+let min-value min [caribou-utility] of patches\nlet max-value max [caribou-utility] of patches\n\nask patches [\n  let value-scale scale-color green caribou-utility 0 50\n  set pcolor value-scale\n]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+2021
+442
+2084
+475
+View
+  let prefix \"./data/patches/Vegetation/\"\n  let input-file word prefix \"vacvit.asc\"\n\n  ; Load the GIS raster dataset\n  let raster-dataset-debug gis:load-dataset input-file\n\n  ; Apply the raster values to the patches\n  gis:set-world-envelope gis:envelope-of raster-dataset-debug\n  \n  ; Overlay the raster image on the patches\n  gis:paint raster-dataset-debug 128
 NIL
 1
 T

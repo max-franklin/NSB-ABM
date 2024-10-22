@@ -230,7 +230,7 @@ to setup-caribou
       let num-caribou file-read
       let matrix-adja file-read
       let matrix-perc file-read
-      create-caribou 1; num-caribou
+      create-caribou 50; num-caribou
       [
         set save-caribou-prev-fcm-node-states matrix:make-constant 1 5 0
         set save-caribou-fcm-node-states matrix:make-constant 1 5 1
@@ -404,7 +404,7 @@ to setup-caribou
 
     
     
-    create-caribou 1 ;caribou-group-amt
+    create-caribou 50 ;caribou-group-amt
     [
       set save-caribou-prev-fcm-node-states matrix:make-constant 1 5 0
       set caribou-prev-fcm-node-states matrix:make-constant 1 21 0

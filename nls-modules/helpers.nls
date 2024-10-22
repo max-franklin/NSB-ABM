@@ -19,11 +19,10 @@ to load-and-export-gis-raster
   ; Open the output file for writing
   file-open output-file
 
-  ; Export the raster values for each patch
-  ask patches [
-    file-print raster-value
+  ; Export the raster values for each patch in the sorted order
+  foreach sort patches [x -> 
+    file-print [raster-value] of x
   ]
-
   ; Close the file
   file-close
 
