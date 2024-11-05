@@ -3,6 +3,9 @@ import numpy as np
 
 class CaribouFCM:
     def __init__(self, matrix_base=None):
+        """
+        :param matrix_base: Optional argument to initialize the matrix base
+        """
         self.perception_mat = np.zeros((1, 10))
         self.last_action_mat = np.zeros((1, 5))
 
@@ -20,7 +23,23 @@ class CaribouFCM:
         self.input_to_hidden_weights = np.zeros((15, 15))
         self.hidden_to_action_weights = np.zeros((15, 15))
 
+
     def process_forward(self):
+        """
+        Executes the forward propagation process for a neural network.
+
+        Takes the input layer and computes the hidden layer by performing
+        a dot product with the input-to-hidden weights.
+        Then, computes the action layer by performing a dot product
+        of the hidden layer with the hidden-to-action weights.
+
+        After calculating the action layer, the sigmoid activation function is
+        applied to the resulting values.
+
+        Lastly, the action layer is stored for use in any future forward processing.
+
+        :return: None
+        """
         self.hidden_layer = np.dot(self.input_layer, self.input_to_hidden_weights)
         self.action_layer = np.dot(self.hidden_layer, self.hidden_to_action_weights)
 
@@ -30,10 +49,14 @@ class CaribouFCM:
         # set our action layer for next forward process
         self.last_action_mat = self.action_layer
 
+
     def get_action(self):
         return np.argmax(self.action_layer)
 
 
+    def randomize_weights(self):
+        self.input_to_hidden_weights = np.zeros((15, 15))
+        self.hidden_to_action_weights = np.zeros((15, 15))
 
 
 

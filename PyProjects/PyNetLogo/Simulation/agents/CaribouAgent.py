@@ -1,5 +1,7 @@
+from pynetlogo import NetLogoLink
+
 from Simulation.agents.Agent import Agent
-from Simulation.fcms import CaribouFCM
+from Simulation.fcms.CaribouFCM import CaribouFCM
 from enum import Enum
 
 class CaribouActions(Enum):
@@ -10,8 +12,13 @@ class CaribouActions(Enum):
     INTRAFORAGE = 4
 
 class CaribouAgent(Agent):
-    def __init__(self, who, xcor, ycor, bioenergy, fcm: CaribouFCM):
-        super().__init__(who, xcor, ycor)
+    def __init__(self, who, netlogo : NetLogoLink, xcor = None, ycor = None, bioenergy = None, fcm: CaribouFCM = None, ):
+        super().__init__(who, netlogo, xcor, ycor)
         self.bioenergy = bioenergy
         self.fcm: CaribouFCM = fcm
 
+        if self.fcm is None:
+            self.fcm = CaribouFCM()
+
+    def set_random_fcm(self):
+        self.fcm.randomize_weights()

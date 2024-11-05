@@ -9,6 +9,9 @@ import threading
 import json
 
 import time
+
+from Simulation.SimController import SimController
+
 with open('config.json', 'r') as config_file:
     config = json.load(config_file)
 
@@ -39,16 +42,15 @@ def setup_netlogo():
     netlogo.command('set scenario "caribou-evolution"')
     netlogo.command("setup")
 
-    setup_agents()
 
 
-
-def setup_agents:
 
 
 def run_simulation():
-    setup_netlogo()
-    simulation_loop()
+    sim_data_frames = {"energy" : df }
+    simulation = SimController(sim_data_frames)
+    simulation.setup()
+    simulation.run()
 
 
 # Dash app layout
