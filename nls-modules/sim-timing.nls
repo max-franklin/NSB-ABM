@@ -71,7 +71,7 @@ to global-on-new-year
 
   if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
   if exportSmallHunter? [export-logger-year-data]
-  if exportSmallCaribou? [export-logger-year-data-caribou]
+
   set year year + 1
   set day 152
   centroid-read day

@@ -123,55 +123,6 @@ to export-logger-year-data
 
 end
 
-to export-logger-year-data-caribou
-
-  file-open word run-num "/fcm-mats/c/caribou-0-dat.txt"
-  file-write word matrix:to-row-list caribou-prev-fcm-node-states-0 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perceptions-0 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perception-weights-0 ", \n"
-  file-write word matrix:to-row-list fcm-adja-0 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-node-states-0 ", \n"
-  file-write word c-action-0-count ", \n \n \n"
-  file-close
-
-  file-open word run-num "/fcm-mats/c/caribou-1-dat.txt"
-  file-write word matrix:to-row-list caribou-prev-fcm-node-states-1 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perceptions-1 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perception-weights-1 ", \n"
-  file-write word matrix:to-row-list fcm-adja-1 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-node-states-1 ", \n"
-  file-write word c-action-1-count ", \n \n \n"
-  file-close
-
-  file-open word run-num "/fcm-mats/c/caribou-2-dat.txt"
-  file-write word matrix:to-row-list caribou-prev-fcm-node-states-2 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perceptions-2 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perception-weights-2 ", \n"
-  file-write word matrix:to-row-list fcm-adja-2 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-node-states-2 ", \n"
-  file-write word c-action-2-count ", \n \n \n"
-  file-close
-
-  file-open word run-num "/fcm-mats/c/caribou-3-dat.txt"
-  file-write word matrix:to-row-list caribou-prev-fcm-node-states-3 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perceptions-3 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perception-weights-3 ", \n"
-  file-write word matrix:to-row-list fcm-adja-3 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-node-states-3 ", \n"
-  file-write word c-action-3-count ", \n \n \n"
-  file-close
-
-  file-open word run-num "/fcm-mats/c/caribou-4-dat.txt"
-  file-write word matrix:to-row-list caribou-prev-fcm-node-states-4 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perceptions-4 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-perception-weights-4 ", \n"
-  file-write word matrix:to-row-list fcm-adja-4 ", \n"
-  file-write word matrix:to-row-list caribou-fcm-node-states-4 ", \n"
-  file-write word c-action-4-count ", \n \n \n"
-  file-close
-
-end
-
 
 to export-logger-data
   file-open word run-num "/hunter-logger.txt"

@@ -9,3 +9,6 @@ class Patch:
     def __init__(self, xcor : int, ycor : int):
         self.xcor = xcor
         self.ycor = ycor
+
+
+

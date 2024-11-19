@@ -8,7 +8,7 @@ import pynetlogo
 from pynetlogo import NetLogoLink
 
 from Simulation.agents.CaribouAgent import CaribouAgent
-
+from Simulation.agents.DictonaryPatch import DictionaryPatch
 
 
 class SimController:
@@ -83,6 +83,9 @@ class SimController:
                 print("Simulation ended at year 1000.")
                 break
 
+            self.go_agents()
+
+
             # time.sleep(1)  # Slow down the simulation for smoother updates
 
     def setup_agents(self):
@@ -99,9 +102,49 @@ class SimController:
         self.caribou_agents = [CaribouAgent(who, self.netlogo) for who in zip(who_values)]
 
 
+    def load_patches(self):
+        """
+        Loads all patch variables into a nested dictionary where each patch is represented by
+        its coordinates (pxcor, pycor), and its associated variables are stored as key-value pairs.
+
+        Returns:
+            dict: A nested dictionary where the keys are (pxcor, pycor) tuples, and the values are
+                  dictionaries of patch variables.
+        """
+        # Get a list of all patch variables
+        patch_variables = self.netlogo.report("patches-own")
+
+        # Initialize the dictionary to store patch data
+        patches_dict = {}
+
+        # Retrieve data for all patches
+        all_patches_data = self.netlogo.report(f"[list pxcor pycor {patch_variables}] of patches")
+
+        # Populate the dictionary
+        for patch_data in all_patches_data:
+            pxcor, pycor, *variables = patch_data
+            variable_dict = dict(zip(patch_variables, variables))
+            patches_dict[(pxcor, pycor)] = DictionaryPatch(pxcor, pycor, variable_dict)
+
+        return patches_dict
+
+
+    def go_agents(self):
+        caribou_perceptions = self.netlogo.report(f"[(list who caribou-high-food-distance energy caribou-local-utility caribou-disturbance-distance caribou-hunter-distance)] of caribou")
+
+        caribou_by_who = {entry[0]: entry[1:] for entry in caribou_perceptions}
+
+        for caribou in self.caribou_agents:
+            if caribou.who in caribou_by_who:
+                perceptions = caribou_by_who[caribou.who]
+                caribou.set_perceptions(*perceptions)
+
+
+
     def setup(self):
         self.setup_netlogo()
         self.setup_agents()
+        self.load_patches()
 
 
     def run(self):

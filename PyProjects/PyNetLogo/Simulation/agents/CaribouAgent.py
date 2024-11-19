@@ -20,5 +20,9 @@ class CaribouAgent(Agent):
         if self.fcm is None:
             self.fcm = CaribouFCM()
 
+
+    def set_perceptions(self, high_food_dist, bioenergy, local_food_qual, disturb_dist, hunt_dist):
+
+
     def set_random_fcm(self):
         self.fcm.randomize_weights()
