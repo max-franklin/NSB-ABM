@@ -244,7 +244,7 @@ to grid-read
   
   let pos position (day + 14) day-list
   
-  show pos
+  ;show pos
   
   if pos != false [
     

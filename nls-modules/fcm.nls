@@ -624,7 +624,7 @@ to test-prob
     set x x + 1
   ]
   
-  show prob-list
+  ;show prob-list
 end
 
 

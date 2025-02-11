@@ -17,11 +17,11 @@ class CaribouFCM:
 
         # track these as our "memory" layers to run through on the n+1 computation
         self.last_action = np.ones((1, 5))
-        self.last_hidden = np.ones((1, 6))
+        self.last_hidden = np.ones((1, 15))
 
         # Weights
         self.input_to_hidden_weights = np.zeros((15, 15))
-        self.hidden_to_action_weights = np.zeros((15, 15))
+        self.hidden_to_action_weights = np.zeros((15, 5))
 
 
     def process_forward(self):
@@ -40,25 +40,80 @@ class CaribouFCM:
 
         :return: None
         """
+        # Concatenate the perception and last_action layers into the input layer
+        self.input_layer = np.hstack((self.perception_mat, self.last_action_mat))
+
+
         self.hidden_layer = np.dot(self.input_layer, self.input_to_hidden_weights)
+        self.hidden_layer = np.vectorize(fcm_sigmoid_simple)(self.hidden_layer)
+
         self.action_layer = np.dot(self.hidden_layer, self.hidden_to_action_weights)
 
         # run the sigmoid activation against the values
-        self.action_layer = fcm_sigmoid_simple(self.action_layer)
+        self.action_layer = np.vectorize(fcm_sigmoid_simple)(self.action_layer)
 
         # set our action layer for next forward process
         self.last_action_mat = self.action_layer
 
 
+    # TODO: Set this such that the result is stochastic instead of the current MAX value
     def get_action(self):
         return np.argmax(self.action_layer)
 
 
     def randomize_weights(self):
-        self.input_to_hidden_weights = np.zeros((15, 15))
-        self.hidden_to_action_weights = np.zeros((15, 15))
+        self.input_to_hidden_weights = np.random.rand(15, 15)
+        self.hidden_to_action_weights = np.random.rand(15, 5)
+
+    # TODO: Bind these to a simulation configuration file
+    def set_perceptions(self, high_food_dist, bioenergy, local_food_qual, disturb_dist, hunt_dist):
+        """
+        :param high_food_dist: Distance to the high-quality food source. A float value representing the distance in some unit of measurement.
+        :param bioenergy: The current bioenergy level of the organism. A float value between 22000 and 33000.
+        :param local_food_qual: The quality of the local food source. A float value between 0 and 1.
+        :param disturb_dist: Distance to the disturbance source. A float value representing the distance in some unit of measurement.
+        :param hunt_dist: Distance to the hunter. A float value between 0.25 and 0.75.
+        :return: None
+        """
+        # Hunter Distance
+        self.perception_mat[0][0] =  1 - normalize_value(0.25, 0.75, hunt_dist)
+        self.perception_mat[0][1] =  normalize_value(0.25, 0.75, hunt_dist)
+
+        # Food Distance
+        self.perception_mat[0][2] = 1 - normalize_value(0, 3, high_food_dist)
+        self.perception_mat[0][3] = normalize_value(0, 3, high_food_dist)
+
+        # Bioenergy
+        self.perception_mat[0][4] = 1 - normalize_value(22000, 33000, bioenergy)
+        self.perception_mat[0][5] = normalize_value(22000, 33000, bioenergy)
+
+        # Local Food Quality
+        self.perception_mat[0][6] = 1 - normalize_value(0, 0.50, local_food_qual)
+        self.perception_mat[0][7] = normalize_value(0.50, 1, local_food_qual)
+
+        # Disturbance Distance
+        self.perception_mat[0][8] = 1 - normalize_value(1, 3, disturb_dist)
+        self.perception_mat[0][9] = normalize_value(1, 3, disturb_dist)
 
 
 
 def fcm_sigmoid_simple(x):
     return 1 / (1 + np.exp(-x))
+
+def normalize_value(min_val, max_val, value):
+    """
+    Normalize a value within a given range [min_val, max_val] to a percentage between 0 and 1.
+    In the model this was referred to as a "ternary" function
+
+    Args:
+        min_val (float): The minimum value of the range.
+        max_val (float): The maximum value of the range.
+        value (float): The value to be normalized.
+
+    Returns:
+        float: The normalized value between 0 and 1.
+    """
+    if min_val == max_val:
+        raise ValueError("min_val and max_val must be different")
+
+    return (value - min_val) / (max_val - min_val)

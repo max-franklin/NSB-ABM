@@ -40,6 +40,9 @@ globals
 [
   is-using-external-tool
 
+  caribou-by-energy
+
+
   ;; File and Run Control
   file-output-prepend
   stop-run
@@ -309,6 +312,7 @@ cent-links-own
 
 ;wraps to other setup functions
 to setup
+  reset-ticks
   set file-output-prepend ""
   clear-all
   ;set seed -2147483648 + random-num (2147483648 * 2)
@@ -361,12 +365,9 @@ to setup
   setup-patch-list
   set-precipitation-data-list
   go-precipitation
-  if(is-random?)
-  [
-    caribou-random-fcm
-  ]
 
-  set caribou-fcm-adja-list [fcm-adja] of caribou
+
+
   go-veg-ranking
   set-streams
 
@@ -376,15 +377,15 @@ to setup
 
   test-flow
 
-  if export-logger-data?
-  [
-    setup-logger-data
-  ]
+;  if export-logger-data?
+;  [
+;    setup-logger-data
+;  ]
 
   setup-caribou-var-cal
   if exportCaribouData? [
-    setup-caribou-state-data
-    setup-caribou-fcm-data
+    ;setup-caribou-state-data
+    ;setup-caribou-fcm-data
   ]
 
   set hunter-streams-restriction (0.025 * (max [streams] of patches))
@@ -399,8 +400,8 @@ to setup
 
   ;KDE-SAMPLE
   setup-kde-sample
-  setup-caribou-kde-file
-  setup-hunter-kde-file
+  ;setup-caribou-kde-file
+  ;setup-hunter-kde-file
 
   reset-ticks
   scenario-controller
@@ -504,22 +505,23 @@ to setup-deflectors
 end
 
 to profile-test
-  let profileOut "profiler-dat.txt"
-  profiler:reset
-  profiler:start
+ ; let profileOut "profiler-dat.txt"
+ ; profiler:reset
+ ; profiler:start
 
-  setup
-  while [ year != 2 ] [ go ]
+  ;setup
+  ;while [ year != 2 ] [ go ]
 
-  profiler:stop
+  ;profiler:stop
   ;print profiler:report
-  file-open profileOut
-  file-print profiler:report
-  file-close-all
+  ;file-open profileOut
+  ;file-print profiler:report
+  ;file-close-all
 end
 
 ;Go, wraps to other go's
 to go
+
   ; set day (ticks mod 365)
   ask caribou
   [
@@ -532,16 +534,16 @@ to go
     ]
   ]
 
-  if (hour = 0 and day = 257 and enable-kde-write)
-  [
+ ; if (hour = 0 and day = 257 and enable-kde-write)
+ ; [
       ;print "KDE WRITE"
-      kde-write-out-files
-    ask patches [
-      set patch-caribou-KDE array:from-list n-values 6 [0]
-      set patch-hunter-KDE array:from-list n-values 6 [0]
-    ]
+     ; 'kde-write-out-files
+    ;ask patches [
+    ;  set patch-caribou-KDE array:from-list n-values 6 [0]
+    ;  set patch-hunter-KDE array:from-list n-values 6 [0]
+    ;]
 
-  ]
+  ;]
 
   ;event firing for special events/logging
   let new-day false
@@ -569,12 +571,12 @@ to go
 
   if dynamic-display? [ go-dynamic-display ]
 
-  if exportCaribouData?[ export-caribou-state-data ]
+;  if exportCaribouData?[ export-caribou-state-data ]
 
-  if export-logger-data?
-  [
-    export-logger-data
-  ]
+;  if export-logger-data?
+ ; [
+ ;   export-logger-data
+;  ]
 
   if use-hunters? [
     go-hunters-nls
@@ -1516,7 +1518,7 @@ INPUTBOX
 656
 804
 caribou-veg-factor
-0.961
+0.465
 1
 0
 Number
@@ -1527,7 +1529,7 @@ INPUTBOX
 730
 804
 caribou-rough-factor
-0.509
+0.851
 1
 0
 Number
@@ -1548,7 +1550,7 @@ INPUTBOX
 805
 803
 caribou-insect-factor
-0.252
+0.455
 1
 0
 Number
@@ -1559,7 +1561,7 @@ INPUTBOX
 879
 803
 caribou-modifier-factor
-0.363
+0.32
 1
 0
 Number
@@ -1636,7 +1638,7 @@ INPUTBOX
 727
 905
 decay-rate
-0.607
+0.78
 1
 0
 Number
@@ -1702,7 +1704,7 @@ INPUTBOX
 953
 803
 caribou-deflection-factor
-0.201
+0.026
 1
 0
 Number
@@ -1863,7 +1865,7 @@ INPUTBOX
 1020
 803
 caribou-precip-factor
-0.207
+0.571
 1
 0
 Number
@@ -1914,7 +1916,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-0.645
+0.661
 0.01
 1
 NIL
@@ -1926,7 +1928,7 @@ INPUTBOX
 655
 906
 energy-gain-factor
-66.8
+16.3
 1
 0
 Number
@@ -2509,7 +2511,7 @@ SWITCH
 628
 use-hunters?
 use-hunters?
-0
+1
 1
 -1000
 

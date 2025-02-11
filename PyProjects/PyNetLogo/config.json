@@ -1,6 +1,18 @@
 {
   "Paths": {
     "ModelPath": "../../NSB-ABM.nlogo",
-    "NetlogoPath": "C:\\Program Files\\NetLogo 6.4.0"
+    "NetlogoPath": "C:\\Program Files\\NetLogo 6.4.0",
+    "LoggingPath": "..\\..\\DataLogs\\"
+  },
+  "Model": {
+    "TicksPerDay": 16
+  },
+  "Parameters": {
+    "UseStateSimilarity": false
+
+  },
+  "Logging":
+  {
+    "WriteEveryNRows": 5000
   }
 }

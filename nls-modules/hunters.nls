@@ -16,10 +16,10 @@ globals [
           global-fcm-internal
           global-fcm-motor
           ;prints
-          global-full-print
-          global-sensory-print
-          global-internal-print
-          global-motor-print
+          ;global-full-print
+          ;global-sensory-print
+          ;global-internal-print
+          ;global-motor-print
           
           num-harvests-global
           home-patch-global
@@ -220,7 +220,7 @@ to go-hunters-nls
   [
     if(trip-length = 0)
     [ 
-      if export-hunter-data? [export-hunter-data 0]
+      ;if export-hunter-data? [export-hunter-data 0]
       set new-trip? true 
     ] 
     if(new-trip? = true)

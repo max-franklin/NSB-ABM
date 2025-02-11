@@ -8,7 +8,6 @@ from dash.dependencies import Input, Output
 import threading
 import json
 
-import time
 
 from Simulation.SimController import SimController
 
@@ -47,7 +46,12 @@ def setup_netlogo():
 
 
 def run_simulation():
-    sim_data_frames = {"energy" : df }
+    global df
+
+    # Create a dictionary of DataFrames for storing metrics for the simulation
+    sim_data_frames = define_dataframes()
+
+
     simulation = SimController(sim_data_frames)
     simulation.setup()
     simulation.run()
@@ -66,6 +70,18 @@ app.layout = html.Div([
     )
 ])
 
+
+def define_dataframes() -> dict[str, object]:
+    # Capture Energy Data
+    df_energy = pd.DataFrame(columns=['tick', 'mean_bio_energy', 'median_bio_energy', 'max_bio_energy', 'min_bio_energy'])
+
+    # Capture State Data
+    df_state = pd.DataFrame(columns=['day', 'evade', 'interforage', 'migrate', 'rest', 'intraforage'])
+
+    sim_data_frames = {"energy" : df_energy,
+                       "state" : df_state }
+
+    return sim_data_frames
 
 @app.callback(
     Output('live-graph', 'figure'),

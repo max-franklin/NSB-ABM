@@ -56,6 +56,7 @@ to scenario-controller
 
     if scenario = "caribou-evolution" [
       set-ndvi-data-list
+      set use-hunters? false
       set calibrateCaribouVar? true
       set randomCaribouVarStart? true
       set import-caribou-var? false
