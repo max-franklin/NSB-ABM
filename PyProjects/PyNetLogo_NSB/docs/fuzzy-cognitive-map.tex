@@ -1,0 +1,28 @@
+% !TEX root = fuzzy-cognitive-map.tex
+\documentclass{article}
+\usepackage[letterpaper]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+\begin{document}
+
+\section*{Fuzzy Cognitive Map (FCM)}
+
+The Fuzzy Cognitive Map is represented using the feed forward property of a neural network.
+
+The input layer is composed of two vectors representing both the perceptions of the agent and former activations
+
+The first vector, \( P \) with dimensions \( 1 \times 10 \)  representing the perceptions of the caribou agent
+
+
+The second vector, \( A_{t-1} \) with dimensions \(1 \times 5\)  representing the previous time step final activations of the network.
+
+Where the input vector \( I \) is:
+
+\begin{bmatrix}
+P &  A_{t-1}
+\end{bmatrix}
+
+Whose concatenation results in a  \(1 \times 15\) vector
+
+\end{document}

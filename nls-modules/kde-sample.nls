@@ -13,32 +13,32 @@ to setup-kde-sample
   ]
 end
 
-to setup-caribou-kde-file
-  if collect-kde? [
-    
-    
-    let file-out word run-num "/control-scenario-caribou-kde-data.txt"
-    if file-exists? file-out [ file-delete file-out ]
-    file-open file-out
-    file-write "xcor"
-    file-write "ycor"
-    file-write "list"
+;to setup-caribou-kde-file
+;  if collect-kde? [
+;    
+;    
+;    let file-out word run-num "/control-scenario-caribou-kde-data.txt"
+;    if file-exists? file-out [ file-delete file-out ]
+;    file-open file-out
+;    file-write "xcor"
+;    file-write "ycor"
+;    file-write "list"
+;
+;    file-close
+;  ]
+;end
 
-    file-close
-  ]
-end
-
-to setup-hunter-kde-file
-  if collect-kde? [
-    let file-out word run-num "/control-scenario-hunter-kde-data.txt"
-    if file-exists? file-out [ file-delete file-out ]
-    file-open file-out
-    file-write "xcor"
-    file-write "ycor"
-    file-write "list"
-    file-close
-  ]
-end
+;to setup-hunter-kde-file
+;  if collect-kde? [
+;    let file-out word run-num "/control-scenario-hunter-kde-data.txt"
+;    if file-exists? file-out [ file-delete file-out ]
+;    file-open file-out
+;    file-write "xcor"
+;    file-write "ycor"
+;    file-write "list"
+;    file-close
+;  ]
+;end
 
 to collect-caribou-coordinates
   if collect-kde? [
@@ -94,36 +94,36 @@ to collect-hunter-coordinates
   ]
 end
 
-to kde-write-out-files 
-  if collect-kde?
-  [
-    let file-out word run-num "/control-scenario-caribou-kde-data.txt"
-    file-open file-out
-    ask patches [
-      file-print ""
-      file-write year
-      file-write pxcor
-      file-write pycor
-      file-write array:to-list patch-caribou-KDE
-    ]
-    file-print ""
-    file-print ""
-    file-print ""
-    file-close
-    
-    set file-out word run-num "/control-scenario-hunter-kde-data.txt"
-    file-open file-out
-    ask patches [
-      file-print ""
-      file-write year
-      file-write pxcor
-      file-write pycor
-      file-write array:to-list patch-hunter-KDE
-    ]
-    file-print ""
-    file-print ""
-    file-print ""
-    file-close
-    
-  ]
-end
+;to kde-write-out-files 
+;  if collect-kde?
+;  [
+;    let file-out word run-num "/control-scenario-caribou-kde-data.txt"
+;    file-open file-out
+;    ask patches [
+;      file-print ""
+;      file-write year
+;      file-write pxcor
+;      file-write pycor
+;      file-write array:to-list patch-caribou-KDE
+;    ]
+;    file-print ""
+;    file-print ""
+;    file-print ""
+;    file-close
+;    
+;    set file-out word run-num "/control-scenario-hunter-kde-data.txt"
+;    file-open file-out
+;    ask patches [
+;      file-print ""
+;      file-write year
+;      file-write pxcor
+;      file-write pycor
+;      file-write array:to-list patch-hunter-KDE
+;    ]
+;    file-print ""
+;    file-print ""
+;    file-print ""
+;    file-close
+;    
+;  ]
+;end

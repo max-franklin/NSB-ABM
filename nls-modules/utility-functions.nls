@@ -15,7 +15,7 @@ to setup-caribou-utility
     let rough-value (roughness / max-roughness)
 
     
-    ;set veg-value vegetation-beta * (ndvi-quality / ndvi-all-max) 
+    ;set veg-value vegetation-beta * (ndvi-quaslity / ndvi-all-max) 
     ;Utility follows form of (var * varFactor) + (var2 * var2Factor)
     ;OLD LINE; set caribou-utility (veg-value + (caribou-rough-factor * rough-value) + (caribou-insect-factor * insect-value) - (deflection * caribou-deflection-factor))
     ;check w/ Cory over semantics of following line.
@@ -32,6 +32,9 @@ to setup-caribou-utility
     ;Prevent divide by 0. Rewrite this later to preven the error in new Function.
     set caribou-utility-max caribou-utility
   ]
+  
+  setup-patch-qual
+  
 end
 
 to update-para-utility

@@ -1,0 +1,1 @@
+{"profiledFunctions": [{"file": "F:\\Research\\NSB\\NSB-2024-AUG\\PyProjects\\PyNetLogo\\test.py", "lineNo": 3, "functionName": "test_work", "profiledLines": [{"lineNo": 5, "hits": 10001, "time": 25098}, {"lineNo": 6, "hits": 10000, "time": 25481}], "unit": 1e-07}], "unit": 1e-07}

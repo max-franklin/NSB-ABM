@@ -364,16 +364,16 @@ to go-caribou
     set final-states matrix:map fcm-sigmoid-simple final-states
     
     
-    if(who = 148 and debug-fcm?)
-    [
-      print "Initial Sense States"
-      print matrix:pretty-print-text fcm-mat-sensor
-      print "Concepts"
-      print matrix:pretty-print-text internal
-      
-      print "Results"
-      print matrix:pretty-print-text final-states
-    ]
+    ;if(who = 148 and debug-fcm?)
+    ;[
+    ;  print "Initial Sense States"
+    ;  print matrix:pretty-print-text fcm-mat-sensor
+    ;  print "Concepts"
+    ;  print matrix:pretty-print-text internal
+    ;  
+    ;  print "Results"
+    ;  print matrix:pretty-print-text final-states
+    ;]
     
     set state fcm-index-max final-states
 ;    

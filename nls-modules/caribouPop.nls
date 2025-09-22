@@ -110,7 +110,7 @@ to go-caribou-pop ;call this procedure in the mothership go procedure b/w model
         set weight (132 * caribou-group-number)
         set bioenergy (27.5 * caribou-group-number * 1000) ; In kJ
 
-       set cog-map matrix:copy base-fcm-caribou
+       ;set cog-map matrix:copy base-fcm-caribou
 
        if(is-training?)
        [

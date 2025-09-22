@@ -1,0 +1,27 @@
+to set-external-caribou-states [who-list state-list]
+  set caribou-external-table table:make
+  (foreach who-list state-list [
+    [w s] -> table:put caribou-external-table w s
+  ])
+  
+  ask caribou [
+    if table:has-key? caribou-external-table who [
+      set caribou-external-state table:get caribou-external-table who
+    ]
+  ]
+end
+
+; Used to speed up Pynetlogo parsing
+to-report caribou-perception-string
+  let out ""
+  ask caribou [
+    set out (word out
+      who " "
+      caribou-high-food-distance " "
+      energy " "
+      caribou-local-utility " "
+      caribou-disturbance-distance " "
+      caribou-hunter-distance "\n")
+  ]
+  report out
+end

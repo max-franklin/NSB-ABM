@@ -24,7 +24,8 @@ __includes["nls-modules/precip.nls"
   "nls-modules/logging.nls"
   "nls-modules/helpers.nls"
   "nls-modules/sim-timing.nls"
-  "nls-modules/scenario-controller.nls"]
+  "nls-modules/scenario-controller.nls"
+  "nls-modules/external.nls"]
 
 
 breed [centroids centroid]
@@ -38,6 +39,11 @@ directed-link-breed [ cent-links cent-link ]
 
 globals
 [
+  is-using-external-tool
+  caribou-external-table
+  caribou-by-energy
+
+
   ;; File and Run Control
   file-output-prepend
   stop-run
@@ -206,6 +212,23 @@ patches-own
   ndvi-quality
   vegetation-beta
 
+  dryas-prob
+  erivag-prob
+  picgla-prob
+  picmar-prob
+  salshr-prob
+  sphagn-prob
+  vacvit-prob
+  vegetation-prob-quality
+
+  veg-group-1 ; Seasonal Shorgress / Vegetation Complex (85% centers)  --  Grazing 9.60%
+  veg-group-2 ; Vegetation Complex (67% centers or troughs) / Seasonal Shortgrass  --  Grazing 9.60%
+  veg-group-3 ; Evergreen Dwarf Shrub / Seasonal Shortgrass  --  Grazing 46.70%
+  veg-group-4 ; Vegetation Complex (85% Ponds) / Deciduous Shrub Savannah / Vegetation Complex (67% centers or troughs)  --  Grazing 30.80%
+  veg-group-5 ; Deciduous Shrub   --  Grazing 1.40%
+  veg-group-6 ; Seasonal Desert Shrub / Deciduous Desert Shrub / Deciduous Dwarf Shrub  --  Grazing 1.90%
+
+
   ;; Caribou Spawn
   caribou-spawn-calving-nonparturient
   caribou-spawn-parturient
@@ -290,6 +313,7 @@ cent-links-own
 
 ;wraps to other setup functions
 to setup
+  reset-ticks
   set file-output-prepend ""
   clear-all
   ;set seed -2147483648 + random-num (2147483648 * 2)
@@ -335,18 +359,16 @@ to setup
   set-ndvi-data-list ; set the default
   setup-precipitation
   setup-terrain-layers
-  setup-caribou-utility
+  ;setup-caribou-utility ; Old Utility
+  setup-patch-qual
   setup-caribou
 
   setup-patch-list
   set-precipitation-data-list
   go-precipitation
-  if(is-random?)
-  [
-    caribou-random-fcm
-  ]
 
-  set caribou-fcm-adja-list [fcm-adja] of caribou
+
+
   go-veg-ranking
   set-streams
 
@@ -356,15 +378,15 @@ to setup
 
   test-flow
 
-  if export-logger-data?
-  [
-    setup-logger-data
-  ]
+;  if export-logger-data?
+;  [
+;    setup-logger-data
+;  ]
 
   setup-caribou-var-cal
   if exportCaribouData? [
-    setup-caribou-state-data
-    setup-caribou-fcm-data
+    ;setup-caribou-state-data
+    ;setup-caribou-fcm-data
   ]
 
   set hunter-streams-restriction (0.025 * (max [streams] of patches))
@@ -379,8 +401,8 @@ to setup
 
   ;KDE-SAMPLE
   setup-kde-sample
-  setup-caribou-kde-file
-  setup-hunter-kde-file
+  ;setup-caribou-kde-file
+  ;setup-hunter-kde-file
 
   reset-ticks
   scenario-controller
@@ -484,22 +506,23 @@ to setup-deflectors
 end
 
 to profile-test
-  let profileOut "profiler-dat.txt"
-  profiler:reset
-  profiler:start
+ ; let profileOut "profiler-dat.txt"
+ ; profiler:reset
+ ; profiler:start
 
-  setup
-  while [ year != 2 ] [ go ]
+  ;setup
+  ;while [ year != 2 ] [ go ]
 
-  profiler:stop
+  ;profiler:stop
   ;print profiler:report
-  file-open profileOut
-  file-print profiler:report
-  file-close-all
+  ;file-open profileOut
+  ;file-print profiler:report
+  ;file-close-all
 end
 
 ;Go, wraps to other go's
 to go
+
   ; set day (ticks mod 365)
   ask caribou
   [
@@ -512,16 +535,16 @@ to go
     ]
   ]
 
-  if (hour = 0 and day = 257 and enable-kde-write)
-  [
+ ; if (hour = 0 and day = 257 and enable-kde-write)
+ ; [
       ;print "KDE WRITE"
-      kde-write-out-files
-    ask patches [
-      set patch-caribou-KDE array:from-list n-values 6 [0]
-      set patch-hunter-KDE array:from-list n-values 6 [0]
-    ]
+     ; 'kde-write-out-files
+    ;ask patches [
+    ;  set patch-caribou-KDE array:from-list n-values 6 [0]
+    ;  set patch-hunter-KDE array:from-list n-values 6 [0]
+    ;]
 
-  ]
+  ;]
 
   ;event firing for special events/logging
   let new-day false
@@ -549,12 +572,12 @@ to go
 
   if dynamic-display? [ go-dynamic-display ]
 
-  if exportCaribouData?[ export-caribou-state-data ]
+;  if exportCaribouData?[ export-caribou-state-data ]
 
-  if export-logger-data?
-  [
-    export-logger-data
-  ]
+;  if export-logger-data?
+ ; [
+ ;   export-logger-data
+;  ]
 
   if use-hunters? [
     go-hunters-nls
@@ -700,6 +723,37 @@ to setup-terrain-layers
   foreach sort patches [x -> ask x[set roughness file-read ]]
   file-close
 
+  file-open "data/patches/Vegetation/dryas.pdata"
+  foreach sort patches [x -> ask x[set dryas-prob file-read ]]
+  file-close
+
+  file-open "data/patches/Vegetation/erivag.pdata"
+  foreach sort patches [x -> ask x[set erivag-prob file-read ]]
+  file-close
+
+  file-open "data/patches/Vegetation/picgla.pdata"
+    foreach sort patches [x -> ask x[set picgla-prob file-read ]]
+  file-close
+
+  file-open "data/patches/Vegetation/picmar.pdata"
+    foreach sort patches [x -> ask x[set picmar-prob file-read ]]
+  file-close
+
+  file-open "data/patches/Vegetation/salshr.pdata"
+  foreach sort patches [x -> ask x[set salshr-prob file-read ]]
+  file-close
+
+  file-open "data/patches/Vegetation/sphagn.pdata"
+  foreach sort patches [x -> ask x[set sphagn-prob file-read ]]
+
+  file-close
+
+
+  file-open "data/patches/Vegetation/vacvit.pdata"
+  foreach sort patches [x -> ask x[set vacvit-prob file-read ]]
+  file-close
+
+
   file-open "patch-caribou-spawn-calving-nonparturient.pdata"
   foreach sort patches [x -> ask x[set caribou-spawn-calving-nonparturient file-read ]]
   file-close
@@ -841,7 +895,55 @@ end
 
 
 
+to setup-patch-qual
 
+
+  ask patches [
+
+    set veg-group-1 ((dryas-prob + erivag-prob + salshr-prob + sphagn-prob + vacvit-prob) / 5)
+    set veg-group-2 ((dryas-prob + erivag-prob + picgla-prob + sphagn-prob + vacvit-prob) / 5)
+    set veg-group-3 ((dryas-prob + erivag-prob + picgla-prob + picmar-prob + sphagn-prob + vacvit-prob) / 6)
+    set veg-group-4 ((erivag-prob + salshr-prob + sphagn-prob) / 3)
+    set veg-group-5 ((salshr-prob))
+    set veg-group-6 ((dryas-prob + salshr-prob) / 2)
+
+    set veg-group-1 (veg-group-1 * 0.096)
+    set veg-group-2 (veg-group-2 * 0.096)
+    set veg-group-3 (veg-group-3 * 0.467)
+    set veg-group-4 (veg-group-4 * 0.308)
+    set veg-group-5 (veg-group-5 * 0.014)
+    set veg-group-6 (veg-group-6 * 0.019)
+
+    let max-value max (list veg-group-1 veg-group-2 veg-group-3 veg-group-4 veg-group-5 veg-group-6)
+
+    set caribou-utility max-value
+  ]
+
+  let min-util-value min [caribou-utility] of patches
+  let max-util-value max [caribou-utility] of patches
+
+  ask patches [
+    set caribou-utility (caribou-utility - min-util-value) / (max-util-value - min-util-value)
+  ]
+
+  let wet-detriment-factor -0.25
+  let rough-detriment-factor  -0.25
+  let height-cutoff 200
+
+  ask patches [
+    set caribou-utility (caribou-utility + (wetness * wet-detriment-factor) + (roughness * rough-detriment-factor))
+
+    if elevation > height-cutoff
+    [
+      set caribou-utility 0
+    ]
+
+
+  ]
+
+
+
+end
 
 
 ;SET COASTLINE
@@ -1417,7 +1519,7 @@ INPUTBOX
 656
 804
 caribou-veg-factor
-1.0
+0.465
 1
 0
 Number
@@ -1428,7 +1530,7 @@ INPUTBOX
 730
 804
 caribou-rough-factor
-1.0
+0.851
 1
 0
 Number
@@ -1449,7 +1551,7 @@ INPUTBOX
 805
 803
 caribou-insect-factor
-1.0
+0.455
 1
 0
 Number
@@ -1460,7 +1562,7 @@ INPUTBOX
 879
 803
 caribou-modifier-factor
-1.0
+0.32
 1
 0
 Number
@@ -1537,7 +1639,7 @@ INPUTBOX
 727
 905
 decay-rate
-0.0
+0.78
 1
 0
 Number
@@ -1603,7 +1705,7 @@ INPUTBOX
 953
 803
 caribou-deflection-factor
-1.0
+0.026
 1
 0
 Number
@@ -1764,7 +1866,7 @@ INPUTBOX
 1020
 803
 caribou-precip-factor
-1.0
+0.571
 1
 0
 Number
@@ -1815,7 +1917,7 @@ ndvi-weight
 ndvi-weight
 0
 1
-1.0
+0.661
 0.01
 1
 NIL
@@ -1827,7 +1929,7 @@ INPUTBOX
 655
 906
 energy-gain-factor
-100.0
+16.3
 1
 0
 Number
@@ -1839,7 +1941,7 @@ SWITCH
 1063
 is-random?
 is-random?
-1
+0
 1
 -1000
 
@@ -2095,7 +2197,7 @@ SWITCH
 969
 calibrateCaribouVar?
 calibrateCaribouVar?
-1
+0
 1
 -1000
 
@@ -2106,7 +2208,7 @@ SWITCH
 960
 randomCaribouVarStart?
 randomCaribouVarStart?
-1
+0
 1
 -1000
 
@@ -2341,7 +2443,7 @@ hunter-density-low-constant
 hunter-density-low-constant
 0
 0.5
-0.15
+0.4
 .05
 1
 NIL
@@ -2449,7 +2551,7 @@ SWITCH
 998
 hunter-recombine?
 hunter-recombine?
-1
+0
 1
 -1000
 
@@ -2460,7 +2562,7 @@ SWITCH
 1035
 hunter-mutate?
 hunter-mutate?
-1
+0
 1
 -1000
 
@@ -2553,7 +2655,7 @@ SWITCH
 625
 hunter-training?
 hunter-training?
-1
+0
 1
 -1000
 
@@ -2648,7 +2750,7 @@ SWITCH
 1097
 import-caribou-var?
 import-caribou-var?
-0
+1
 1
 -1000
 
@@ -2670,7 +2772,7 @@ SWITCH
 596
 Nuiqsut?
 Nuiqsut?
-0
+1
 1
 -1000
 
@@ -2681,7 +2783,7 @@ SWITCH
 597
 CD5?
 CD5?
-0
+1
 1
 -1000
 
@@ -2692,7 +2794,7 @@ SWITCH
 582
 deflect-pipeline?
 deflect-pipeline?
-0
+1
 1
 -1000
 
@@ -2703,7 +2805,7 @@ SWITCH
 617
 deflect-roads?
 deflect-roads?
-0
+1
 1
 -1000
 
@@ -2714,7 +2816,7 @@ SWITCH
 651
 deflect-oil?
 deflect-oil?
-0
+1
 1
 -1000
 
@@ -2726,7 +2828,7 @@ CHOOSER
 scenario
 scenario
 "none" "hunter-evolution" "caribou-evolution" "control-w-hunters" "control-no-hunters" "obd-w-hunters" "obd-no-hunters" "veg-later-shift-w-hunters" "veg-later-shift-no-hunters" "veg-early-shift-w-hunters" "veg-early-shift-no-hunters" "combined-early-ndvi-no-hunters" "combined-early-ndvi-w-hunters" "combined-late-ndvi-no-hunters" "combined-late-ndvi-w-hunters"
-0
+2
 
 BUTTON
 566
@@ -2791,7 +2893,7 @@ SWITCH
 818
 exportSmallCaribou?
 exportSmallCaribou?
-0
+1
 1
 -1000
 
@@ -2877,6 +2979,57 @@ BUTTON
 1173
 PROCESS GIS
 load-and-export-gis-raster
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1978
+229
+2289
+262
+Utility
+  ; Find the maximum utility value across all patches\n  let max-utility max [vacvit-prob] of patches\n\n  ; Color each patch based on its utility value\n  ask patches [\n    if max-utility > 0 [\n      let utility-fraction (vacvit-prob / max-utility) ; Normalize utility between 0 and 1\n      set pcolor scale-color blue utility-fraction 0 1 ; Scale color from blue (low) to white (high)\n    ]\n  ]\n
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+2018
+403
+2110
+436
+Veg-debug
+let min-value min [caribou-utility] of patches\nlet max-value max [caribou-utility] of patches\n\nask patches [\n  let value-scale scale-color green caribou-utility 0 50\n  set pcolor value-scale\n]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+2021
+442
+2084
+475
+View
+  let prefix \"./data/patches/Vegetation/\"\n  let input-file word prefix \"vacvit.asc\"\n\n  ; Load the GIS raster dataset\n  let raster-dataset-debug gis:load-dataset input-file\n\n  ; Apply the raster values to the patches\n  gis:set-world-envelope gis:envelope-of raster-dataset-debug\n  \n  ; Overlay the raster image on the patches\n  gis:paint raster-dataset-debug 128
 NIL
 1
 T
@@ -3229,7 +3382,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.3
+NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

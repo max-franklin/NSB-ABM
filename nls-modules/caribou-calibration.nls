@@ -154,7 +154,7 @@ to go-caribou-var-cal
         
   ]
  
-  if exportCaribouData? [ export-var-data mutatedVars? recombined? varProb convergence oldCaribouVarCal soln-success  ]
+  ;if exportCaribouData? [ export-var-data mutatedVars? recombined? varProb convergence oldCaribouVarCal soln-success  ]
 end
 
 to gradient-caribou-variables
@@ -217,11 +217,11 @@ to-report cross-var-genome [ genome-1 genome-2 ]
   
   ;;quickly check to make sure we didn't botch the process..
   if test? [
-    show genome-1
-    show snip-1
-    show genome-2
-    show snip-2
-    show genome-out
+    ;show genome-1
+    ;show snip-1
+    ;show genome-2
+    ;show snip-2
+    ;show genome-out
   ]
   
   report genome-out
@@ -260,28 +260,28 @@ to setup-var-file
   file-close
 end
 
-to export-var-data [ mutatedVars? recombined? varProb convergence oldCaribouVarCal soln-success ]
-  let fileOut "caribou-var-calibration-data-"
-  set fileOut word fileOut seed
-  set fileOut word fileOut ".txt"
-  
-  ;let convergence length caribou-fcm-adja-list
-  ;set convergence 1 - ( convergence / caribou-group-amt )
-  
-  file-open fileOut
-  file-print ""
-  ;file-write (year + 1)
-  file-write year
-  file-write mean [bioenergy-success] of caribou
-  file-write convergence
-  file-write varProb
-  ;;for next two variables, they track with the incoming next line of variable calibration solns.
-  file-write mutatedVars?
-  file-write recombined?
-  foreach oldCaribouVarCal file-write 
-  file-write soln-success
-  file-close 
-end
+;to export-var-data [ mutatedVars? recombined? varProb convergence oldCaribouVarCal soln-success ]
+;  let fileOut "caribou-var-calibration-data-"
+;  set fileOut word fileOut seed
+;  set fileOut word fileOut ".txt"
+;  
+;  ;let convergence length caribou-fcm-adja-list
+;  ;set convergence 1 - ( convergence / caribou-group-amt )
+;  
+;  file-open fileOut
+;  file-print ""
+;  ;file-write (year + 1)
+;  file-write year
+;  file-write mean [bioenergy-success] of caribou
+;  file-write convergence
+;  file-write varProb
+;  ;;for next two variables, they track with the incoming next line of variable calibration solns.
+;  file-write mutatedVars?
+;  file-write recombined?
+;  foreach oldCaribouVarCal file-write 
+;  file-write soln-success
+;  file-close 
+;end
 
 to mutate-caribou-variables 
   
@@ -373,14 +373,14 @@ to-report calculate-var-prob ;;calculates the probability of variable calibratio
   let varProb (y * convergence) - (x * fitness)
   
   if test? [
-    ;print "fitness from caribou seasonal bioE:"
-    show fitness
-    
-    ;print "convergence:"
-    show convergence
-    
-    ;print "probability of mutating one of caribou variables:"
-    show varProb
+  ; ;print "fitness from caribou seasonal bioE:"
+  ; show fitness
+  ; 
+  ; ;print "convergence:"
+  ; show convergence
+  ; 
+  ; ;print "probability of mutating one of caribou variables:"
+  ; show varProb
   ]
   
   set datOut lput varProb datOut

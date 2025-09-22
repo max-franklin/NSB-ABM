@@ -1,0 +1,1 @@
+*.pdata files are just ASCII files with the header remove. It expects to match the (row_num x col_num) of the patches in the model

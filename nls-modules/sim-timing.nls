@@ -53,6 +53,7 @@ end
 ;Event calls to other NLS modules for new years
 to on-new-year
   global-on-new-year
+  caribou-on-new-year
 end
 
 ;Specifically global new year calls/old calls
@@ -60,18 +61,18 @@ to global-on-new-year
   if caribouPopMod? = true
   [ go-caribou-pop ]
 
-  if calibrateCaribouVar? [ go-caribou-var-cal ]
+ ; if calibrateCaribouVar? [ go-caribou-var-cal ]
 
-  if(is-training?) [ update-caribou-fcm ]
+ ; if(is-training?) [ update-caribou-fcm ]
 
 
-  if(export-hunter-data?) [ export-hunter-data 1 ];export hutner data at year end
-  set hunter-harvest-total 0
-  if(hunter-training?) [ update-hunter-fcms ]
+  ;if(export-hunter-data?) [ export-hunter-data 1 ];export hutner data at year end
+ ; set hunter-harvest-total 0
+ ; if(hunter-training?) [ update-hunter-fcms ]
 
-  if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
-  if exportSmallHunter? [export-logger-year-data]
-  if exportSmallCaribou? [export-logger-year-data-caribou]
+ ; if exportCaribouData? [ export-fcm-data ];;at end of year, export FCMs, success thereof, and stateflux (just export individual state flux variables.)
+ ; if exportSmallHunter? [export-logger-year-data]
+
   set year year + 1
   set day 152
   centroid-read day
